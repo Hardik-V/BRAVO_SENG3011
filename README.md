@@ -1,3 +1,1 @@
-# 3011_Bravo
-A project developed to learn about software engineering.
-# 3011_Bravo
+Cloud-native financial sentiment visualiser built with Python, AWS, and Docker. Correlates Twitter/X keyword trends with Yahoo Finance price data across 3 microservices. In active development - full deployment expected April 2026.
