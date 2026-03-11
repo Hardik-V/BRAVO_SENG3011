@@ -13,6 +13,6 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install -r requirements.txt
-      - run: pytest --cov=. --cov-report=term-missing --allow-no-tests-yet
+      - run: pytest --cov=. --cov-report=term-missing
       - run: flake8 .
       - run: mypy .
