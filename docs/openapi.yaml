@@ -1,0 +1,251 @@
+openapi: 3.0.0
+info:
+  title: ADAGE 3.0 Financial Event API
+  description: >-
+    A RESTful API for collecting, retrieving and visualising financial market 
+    event data normalised into the ADAGE 3.0 Standard Event Model.
+  version: 1.0.0
+
+servers:
+  - url: https://api.Bravo.awsapp.com/v1
+
+security:
+  - BearerAuth: []
+
+paths:
+  /collect/financial:
+    post:
+      summary: Trigger collection of financial market data
+      description: >-
+        Accepts a ticker symbol and date range, fetches historical market data
+        from Yahoo Finance, normalises it into the ADAGE 3.0 event model,
+        and stores it in AWS S3.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ticker
+                - from
+                - to
+              properties:
+                ticker:
+                  type: string
+                  example: "DX-Y.NYB"
+                from:
+                  type: string
+                  format: date
+                  example: "2024-01-01"
+                to:
+                  type: string
+                  format: date
+                  example: "2024-12-31"
+      responses:
+        '201':
+          description: Data successfully collected and stored in S3
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Data collection successful"
+                  dataset_id:
+                    type: string
+                    example: "s3://adage-event-store/DX-Y.NYB_2024-01-01_2024-12-31.json"
+        '400':
+          description: Invalid ticker symbol or date range
+        '401':
+          description: Unauthorized - missing or invalid bearer token
+        '500':
+          description: Internal server error
+
+  /retrieve/financial:
+    get:
+      summary: Retrieve stored financial event data
+      description: >-
+        Fetches stored financial event data from AWS S3 for a given ticker
+        and date range, returned in ADAGE 3.0 format.
+      parameters:
+        - name: ticker
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "DX-Y.NYB"
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          example: "2024-01-01"
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          example: "2024-12-31"
+      responses:
+        '200':
+          description: Successfully retrieved financial event data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Adage3Event'
+        '400':
+          description: Invalid ticker symbol or date range
+        '401':
+          description: Unauthorized - missing or invalid bearer token
+        '404':
+          description: No data found for the requested ticker and date range
+        '500':
+          description: Internal server error
+
+  /visualise/financial:
+    get:
+      summary: Get a price chart for a given ticker
+      description: >-
+        Returns a time series price chart for the specified financial instrument
+        and date range. Data is retrieved from the ADAGE 3.0 event store in S3
+        and rendered as a chart image or embeddable JSON object.
+      parameters:
+        - name: ticker
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "DX-Y.NYB"
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          example: "2024-01-01"
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          example: "2024-12-31"
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [png, json]
+            default: png
+          description: Output format - PNG image or embeddable chart JSON
+      responses:
+        '200':
+          description: Successfully generated price chart
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chart_type:
+                    type: string
+                    example: "time_series"
+                  ticker:
+                    type: string
+                    example: "DX-Y.NYB"
+                  from:
+                    type: string
+                    example: "2024-01-01"
+                  to:
+                    type: string
+                    example: "2024-12-31"
+                  chart_data:
+                    type: object
+                    description: Embeddable chart JSON for frontend rendering
+        '400':
+          description: Invalid ticker symbol or date range
+        '401':
+          description: Unauthorized - missing or invalid bearer token
+        '404':
+          description: No financial data found for the requested ticker and date range
+        '500':
+          description: Internal server error
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Adage3Event:
+      type: object
+      properties:
+        data_source:
+          type: string
+          example: "yahoo_finance"
+        dataset_type:
+          type: string
+          example: "Daily stock data"
+        dataset_id:
+          type: string
+          example: "s3://adage-event-store/DX-Y.NYB_2024-01-01_2024-12-31.json"
+        time_object:
+          type: object
+          properties:
+            timestamp:
+              type: string
+              example: "2026-03-02 09:51:44.152"
+            timezone:
+              type: string
+              example: "UTC"
+        events:
+          type: array
+          items:
+            type: object
+            properties:
+              time_object:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    example: "2024-01-02 09:30:00.000"
+                  duration:
+                    type: integer
+                    example: 1
+                  duration_unit:
+                    type: string
+                    example: "day"
+                  timezone:
+                    type: string
+                    example: "UTC"
+              event_type:
+                type: string
+                example: "Stock ohlc"
+              attribute:
+                type: object
+                properties:
+                  Open:
+                    type: number
+                    example: 149.46
+                  High:
+                    type: number
+                    example: 150.64
+                  Low:
+                    type: number
+                    example: 124.17
+                  Close:
+                    type: number
+                    example: 151.01
+                  Adj_Close:
+                    type: number
+                    example: 151.01
+                  Volume:
+                    type: integer
+                    example: 57295299
