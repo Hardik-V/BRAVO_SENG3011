@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+yfinance
+boto3
+pytest
+pytest-cov
+flake8
+mypy
+httpx
