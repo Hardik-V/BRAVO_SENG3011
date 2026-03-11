@@ -12,21 +12,26 @@ A set of microservices for collecting, retrieving and visualising financial mark
 
 - Python 3.11+
 - Docker
-- AWS credentials configured
-
+- AWS CLI configured with credentials
+- Terraform (for deployment)
+  
 ## Running with Docker
 ```bash
 # Collection
 docker build -t bravo-collection ./collection
-docker run -p 8001:8001 bravo-collection
+docker run -p 9001:8080 bravo-collection
+
+# Then test it locally with:
+curl -X POST "http://localhost:9001/2015-03-31/functions/function/invocations" \
+  -d '{"body": "{\"ticker\": \"DX-Y.NYB\", \"from\": \"2024-01-01\", \"to\": \"2024-12-31\"}"}'
 
 # Retrieval
 docker build -t bravo-retrieval ./retrieval
-docker run -p 8002:8002 bravo-retrieval
+docker run -p 9002:8080 bravo-retrieval
 
 # Visualisation
 docker build -t bravo-visualisation ./visualisation
-docker run -p 8003:8003 bravo-visualisation
+docker run -p 9003:8080 bravo-visualisation
 ```
 
 ## Running Tests
