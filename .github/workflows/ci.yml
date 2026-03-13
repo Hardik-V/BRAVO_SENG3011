@@ -1,9 +1,11 @@
-name: CI
+name: CI/CD
+
 on:
   push:
     branches: [main, dev]
   pull_request:
     branches: [main, dev]
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -15,4 +17,74 @@ jobs:
       - run: pip install -r requirements.txt
       - run: pytest --cov=. --cov-report=term-missing
       - run: flake8 .
-      - run: mypy .
+      - run: mypy --explicit-package-bases collection/handler.py retrieval/handler.py visualisation/handler.py
+
+  deploy-dev:
+    needs: test
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ap-southeast-2
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Deploy Collection Lambda
+        run: |
+          cd collection
+          zip deployment.zip handler.py
+          aws lambda update-function-code \
+            --function-name bravo-collection-dev \
+            --zip-file fileb://deployment.zip
+
+      - name: Deploy Retrieval Lambda
+        run: |
+          cd retrieval
+          zip deployment.zip handler.py
+          aws lambda update-function-code \
+            --function-name bravo-retrieval-dev \
+            --zip-file fileb://deployment.zip
+
+      - name: Deploy Visualisation Lambda
+        run: |
+          cd visualisation
+          zip deployment.zip handler.py
+          aws lambda update-function-code \
+            --function-name bravo-visualisation-dev \
+            --zip-file fileb://deployment.zip
+
+  deploy-prod:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ap-southeast-2
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Deploy Collection Lambda
+        run: |
+          cd collection
+          zip deployment.zip handler.py
+          aws lambda update-function-code \
+            --function-name bravo-collection-prod \
+            --zip-file fileb://deployment.zip
+
+      - name: Deploy Retrieval Lambda
+        run: |
+          cd retrieval
+          zip deployment.zip handler.py
+          aws lambda update-function-code \
+            --function-name bravo-retrieval-prod \
+            --zip-file fileb://deployment.zip
+
+      - name: Deploy Visualisation Lambda
+        run: |
+          cd visualisation
+          zip deployment.zip handler.py
+          aws lambda update-function-code \
+            --function-name bravo-visualisation-prod \
+            --zip-file fileb://deployment.zip

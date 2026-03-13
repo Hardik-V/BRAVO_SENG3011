@@ -11,10 +11,12 @@ A set of microservices for collecting, retrieving and visualising financial mark
 ## Prerequisites
 
 - Python 3.11+
-- Docker
 - AWS CLI configured with credentials
 - Terraform (for deployment)
 
+## Our urls
+https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com/dev
+https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com/prod
 
 ## Running Tests
 ```bash
