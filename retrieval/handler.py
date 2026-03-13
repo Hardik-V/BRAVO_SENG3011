@@ -16,8 +16,12 @@ def handler(event, context):
         }
 
     elif path == "/retrieve/financial":
-        # main retrieval logic here
-        pass
+        return {
+            "statusCode": 200,
+            "body": json.dumps({
+                "message": "Retrieval endpoint coming soon"
+            })
+        }
 
     else:
         return {

@@ -16,8 +16,12 @@ def handler(event, context):
         }
 
     elif path == "/visualise/financial":
-        # main visualisation logic here
-        pass
+        return {
+            "statusCode": 200,
+            "body": json.dumps({
+                "message": "Visualisation endpoint coming soon"
+            })
+        }
 
     else:
         return {

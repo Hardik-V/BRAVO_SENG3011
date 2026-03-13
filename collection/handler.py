@@ -15,8 +15,12 @@ def handler(event, context):
         }
 
     elif path == "/collect/financial":
-        # main collection logic here
-        pass
+        return {
+            "statusCode": 200,
+            "body": json.dumps({
+                "message": "Collection endpoint coming soon"
+            })
+        }
 
     else:
         return {

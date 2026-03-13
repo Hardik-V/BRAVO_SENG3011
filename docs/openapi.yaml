@@ -7,7 +7,7 @@ info:
   version: 1.0.0
 
 servers:
-  - url: https://api.Bravo.awsapp.com/v1
+  - url: https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com/dev
 
 security:
   - ApiKeyAuth: []
