@@ -1,4 +1,5 @@
 name: CI/CD
+
 on:
   push:
     branches: [main, dev]
@@ -26,6 +27,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ap-southeast-2
+
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -39,9 +41,11 @@ jobs:
           cp handler.py package/
           cd package && zip -r ../deployment.zip .
           cd ..
+          aws s3 cp deployment.zip s3://${{ secrets.AWS_BUCKET_NAME }}/dev/deployments/collection.zip
           aws lambda update-function-code \
             --function-name bravo-collection-dev \
-            --zip-file fileb://deployment.zip
+            --s3-bucket ${{ secrets.AWS_BUCKET_NAME }} \
+            --s3-key dev/deployments/collection.zip
 
       - name: Deploy Retrieval Lambda
         run: |
@@ -50,9 +54,11 @@ jobs:
           cp handler.py package/
           cd package && zip -r ../deployment.zip .
           cd ..
+          aws s3 cp deployment.zip s3://${{ secrets.AWS_BUCKET_NAME }}/dev/deployments/retrieval.zip
           aws lambda update-function-code \
             --function-name bravo-retrieval-dev \
-            --zip-file fileb://deployment.zip
+            --s3-bucket ${{ secrets.AWS_BUCKET_NAME }} \
+            --s3-key dev/deployments/retrieval.zip
 
       - name: Deploy Visualisation Lambda
         run: |
@@ -61,9 +67,11 @@ jobs:
           cp handler.py package/
           cd package && zip -r ../deployment.zip .
           cd ..
+          aws s3 cp deployment.zip s3://${{ secrets.AWS_BUCKET_NAME }}/dev/deployments/visualisation.zip
           aws lambda update-function-code \
             --function-name bravo-visualisation-dev \
-            --zip-file fileb://deployment.zip
+            --s3-bucket ${{ secrets.AWS_BUCKET_NAME }} \
+            --s3-key dev/deployments/visualisation.zip
 
   deploy-prod:
     needs: test
@@ -73,6 +81,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ap-southeast-2
+
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -86,9 +95,11 @@ jobs:
           cp handler.py package/
           cd package && zip -r ../deployment.zip .
           cd ..
+          aws s3 cp deployment.zip s3://${{ secrets.AWS_BUCKET_NAME }}/prod/deployments/collection.zip
           aws lambda update-function-code \
             --function-name bravo-collection-prod \
-            --zip-file fileb://deployment.zip
+            --s3-bucket ${{ secrets.AWS_BUCKET_NAME }} \
+            --s3-key prod/deployments/collection.zip
 
       - name: Deploy Retrieval Lambda
         run: |
@@ -97,9 +108,11 @@ jobs:
           cp handler.py package/
           cd package && zip -r ../deployment.zip .
           cd ..
+          aws s3 cp deployment.zip s3://${{ secrets.AWS_BUCKET_NAME }}/prod/deployments/retrieval.zip
           aws lambda update-function-code \
             --function-name bravo-retrieval-prod \
-            --zip-file fileb://deployment.zip
+            --s3-bucket ${{ secrets.AWS_BUCKET_NAME }} \
+            --s3-key prod/deployments/retrieval.zip
 
       - name: Deploy Visualisation Lambda
         run: |
@@ -108,6 +121,8 @@ jobs:
           cp handler.py package/
           cd package && zip -r ../deployment.zip .
           cd ..
+          aws s3 cp deployment.zip s3://${{ secrets.AWS_BUCKET_NAME }}/prod/deployments/visualisation.zip
           aws lambda update-function-code \
             --function-name bravo-visualisation-prod \
-            --zip-file fileb://deployment.zip
+            --s3-bucket ${{ secrets.AWS_BUCKET_NAME }} \
+            --s3-key prod/deployments/visualisation.zip
