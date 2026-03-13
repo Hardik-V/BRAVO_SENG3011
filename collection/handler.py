@@ -1,8 +1,9 @@
 import json
 
+
 def handler(event, context):
     path = event.get("path", "")
-    
+
     if path == "/collect/health":
         return {
             "statusCode": 200,
@@ -12,11 +13,11 @@ def handler(event, context):
                 "version": "1.0.0"
             })
         }
-    
+
     elif path == "/collect/financial":
         # main collection logic here
         pass
-    
+
     else:
         return {
             "statusCode": 404,

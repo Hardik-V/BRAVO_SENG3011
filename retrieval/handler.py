@@ -1,9 +1,10 @@
 
 import json
 
+
 def handler(event, context):
     path = event.get("path", "")
-    
+
     if path == "/retrieve/health":
         return {
             "statusCode": 200,
@@ -13,7 +14,7 @@ def handler(event, context):
                 "version": "1.0.0"
             })
         }
-    
+
     elif path == "/retrieve/financial":
         # main retrieval logic here
         pass
