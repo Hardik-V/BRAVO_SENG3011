@@ -10,7 +10,7 @@ servers:
   - url: https://api.Bravo.awsapp.com/v1
 
 security:
-  - BearerAuth: []
+  - ApiKeyAuth: []
 
 paths:
   /collect/financial:
@@ -59,7 +59,7 @@ paths:
         '400':
           description: Invalid ticker symbol or date range
         '401':
-          description: Unauthorized - missing or invalid bearer token
+          description: Unauthorized - missing or invalid token
         '500':
           description: Internal server error
 
@@ -177,12 +177,78 @@ paths:
           description: No financial data found for the requested ticker and date range
         '500':
           description: Internal server error
+  /collect/health:
+    get:
+      summary: Collection service health check
+      security: []
+      responses:
+        '200':
+          description: Collection service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  service:
+                    type: string
+                    example: "bravo-collection"
+                  version:
+                    type: string
+                    example: "1.0.0"
+    
+  /retrieve/health:
+    get:
+      summary: Retrieval service health check
+      security: []
+      responses:
+        '200':
+          description: Retrieval service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  service:
+                    type: string
+                    example: "bravo-retrieval"
+                  version:
+                    type: string
+                    example: "1.0.0"
+  
+  /visualise/health:
+    get:
+      summary: Visualisation service health check
+      security: []
+      responses:
+        '200':
+          description: Visualisation service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  service:
+                    type: string
+                    example: "bravo-visualisation"
+                  version:
+                    type: string
+                    example: "1.0.0"
 
 components:
   securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
   schemas:
     Adage3Event:
       type: object
