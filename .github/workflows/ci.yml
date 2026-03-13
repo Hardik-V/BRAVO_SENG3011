@@ -17,7 +17,7 @@ jobs:
       - run: pip install -r requirements.txt
       - run: pytest --cov=. --cov-report=term-missing
       - run: flake8 .
-      - run: mypy .
+      - run: mypy --explicit-package-bases collection/handler.py retrieval/handler.py visualisation/handler.py
 
   deploy-dev:
     needs: test
@@ -27,51 +27,32 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ap-southeast-2
-
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
 
       - name: Deploy Collection Lambda
         run: |
           cd collection
-          pip install -r requirements.txt -t package/
-          cp handler.py package/
-          cd package && zip -r ../deployment.zip .
-          cd ..
-          aws s3 cp deployment.zip s3://${{ secrets.AWS_BUCKET_NAME }}/dev/deployments/collection.zip
+          zip deployment.zip handler.py
           aws lambda update-function-code \
             --function-name bravo-collection-dev \
-            --s3-bucket ${{ secrets.AWS_BUCKET_NAME }} \
-            --s3-key dev/deployments/collection.zip
+            --zip-file fileb://deployment.zip
 
       - name: Deploy Retrieval Lambda
         run: |
           cd retrieval
-          pip install -r requirements.txt -t package/
-          cp handler.py package/
-          cd package && zip -r ../deployment.zip .
-          cd ..
-          aws s3 cp deployment.zip s3://${{ secrets.AWS_BUCKET_NAME }}/dev/deployments/retrieval.zip
+          zip deployment.zip handler.py
           aws lambda update-function-code \
             --function-name bravo-retrieval-dev \
-            --s3-bucket ${{ secrets.AWS_BUCKET_NAME }} \
-            --s3-key dev/deployments/retrieval.zip
+            --zip-file fileb://deployment.zip
 
       - name: Deploy Visualisation Lambda
         run: |
           cd visualisation
-          pip install -r requirements.txt -t package/
-          cp handler.py package/
-          cd package && zip -r ../deployment.zip .
-          cd ..
-          aws s3 cp deployment.zip s3://${{ secrets.AWS_BUCKET_NAME }}/dev/deployments/visualisation.zip
+          zip deployment.zip handler.py
           aws lambda update-function-code \
             --function-name bravo-visualisation-dev \
-            --s3-bucket ${{ secrets.AWS_BUCKET_NAME }} \
-            --s3-key dev/deployments/visualisation.zip
+            --zip-file fileb://deployment.zip
 
   deploy-prod:
     needs: test
@@ -81,48 +62,29 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ap-southeast-2
-
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
 
       - name: Deploy Collection Lambda
         run: |
           cd collection
-          pip install -r requirements.txt -t package/
-          cp handler.py package/
-          cd package && zip -r ../deployment.zip .
-          cd ..
-          aws s3 cp deployment.zip s3://${{ secrets.AWS_BUCKET_NAME }}/prod/deployments/collection.zip
+          zip deployment.zip handler.py
           aws lambda update-function-code \
             --function-name bravo-collection-prod \
-            --s3-bucket ${{ secrets.AWS_BUCKET_NAME }} \
-            --s3-key prod/deployments/collection.zip
+            --zip-file fileb://deployment.zip
 
       - name: Deploy Retrieval Lambda
         run: |
           cd retrieval
-          pip install -r requirements.txt -t package/
-          cp handler.py package/
-          cd package && zip -r ../deployment.zip .
-          cd ..
-          aws s3 cp deployment.zip s3://${{ secrets.AWS_BUCKET_NAME }}/prod/deployments/retrieval.zip
+          zip deployment.zip handler.py
           aws lambda update-function-code \
             --function-name bravo-retrieval-prod \
-            --s3-bucket ${{ secrets.AWS_BUCKET_NAME }} \
-            --s3-key prod/deployments/retrieval.zip
+            --zip-file fileb://deployment.zip
 
       - name: Deploy Visualisation Lambda
         run: |
           cd visualisation
-          pip install -r requirements.txt -t package/
-          cp handler.py package/
-          cd package && zip -r ../deployment.zip .
-          cd ..
-          aws s3 cp deployment.zip s3://${{ secrets.AWS_BUCKET_NAME }}/prod/deployments/visualisation.zip
+          zip deployment.zip handler.py
           aws lambda update-function-code \
             --function-name bravo-visualisation-prod \
-            --s3-bucket ${{ secrets.AWS_BUCKET_NAME }} \
-            --s3-key prod/deployments/visualisation.zip
+            --zip-file fileb://deployment.zip
