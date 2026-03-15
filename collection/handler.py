@@ -1,9 +1,13 @@
 import json
 import os
 import boto3
-from .collection import fetch_and_standardize_finance, generate_s3_key
-# Replace prev line with commment for local testing
-# from collection import fetch_and_standardize_finance, generate_s3_key
+
+# Allows code to run locally and on AWS
+try:
+    from .collection import fetch_and_standardize_finance, generate_s3_key
+except ImportError:
+    from collection import fetch_and_standardize_finance, generate_s3_key
+
 
 def handler(event, context):
     # Initialize S3 client and Environment Variables
