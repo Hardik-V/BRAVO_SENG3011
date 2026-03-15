@@ -12,6 +12,7 @@ APP_ENV = os.environ.get("ENVIRONMENT", "dev")
 def get_s3_client():
     return boto3.client("s3", region_name="ap-southeast-2")
 
+
 def build_response(status_code, body):
     return {
         "statusCode": status_code,
@@ -84,7 +85,7 @@ def handler(event, context):
 
             if error_code in ["NoSuchKey", "404", "NoSuchObject"]:
                 return build_response(404, {
-                    "error": "No data found for the requested ticker and date range"
+                    "error": "No data found for the requested params"
                 })
 
             return build_response(500, {

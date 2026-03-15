@@ -3,13 +3,10 @@ import sys
 import os
 from unittest.mock import patch, MagicMock
 from botocore.exceptions import ClientError
-
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
 os.environ["AWS_BUCKET_NAME"] = "bravo-adage-event-store"
 os.environ["ENVIRONMENT"] = "dev"
-
-from handler import handler
+from handler import handler  # noqa: E402
 
 
 def test_health_check():
