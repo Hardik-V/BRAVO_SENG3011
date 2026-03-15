@@ -7,3 +7,4 @@ pytest-cov
 flake8
 mypy
 httpx
+pandas
