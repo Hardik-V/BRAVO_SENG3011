@@ -5,17 +5,12 @@ from datetime import datetime
 from botocore.exceptions import ClientError
 
 
-AWS_REGION = os.environ.get("AWS_REGION", "ap-southeast-2")
 BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME")
-APP_ENV = os.environ.get("APP_ENV", "dev")
+APP_ENV = os.environ.get("ENVIRONMENT", "dev")
 
-s3 = boto3.client(
-    "s3",
-    aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-    aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-    region_name=AWS_REGION
-)
 
+def get_s3_client():
+    return boto3.client("s3", region_name="ap-southeast-2")
 
 def build_response(status_code, body):
     return {
@@ -38,6 +33,7 @@ def is_valid_date(date_string):
 def handler(event, context):
     path = event.get("path", "")
     http_method = event.get("httpMethod", "")
+    s3 = get_s3_client()
 
     if path == "/retrieve/health" and http_method == "GET":
         return build_response(200, {
