@@ -4,9 +4,10 @@ import sys
 import os
 
 # Add parent directory to path so handler can be imported locally
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, root)
 
-from handler import handler
+from handler import handler  # noqa: E402
 
 
 # Test Case 1: Valid request with correct API key and parameters
@@ -91,7 +92,11 @@ def test_handler_no_data(mock_boto_client, mock_fetch):
         "path": "/collect/financial",
         "httpMethod": "POST",
         "headers": {"X-API-Key": "ecosystem-secret-123"},
-        "body": json.dumps({"ticker": "FAKE", "from": "2024-01-01", "to": "10"})
+        "body": json.dumps({
+            "ticker": "FAKE",
+            "from": "2024-01-01",
+            "to": "10"
+        })
     }
 
     response = handler(mock_event, None)
