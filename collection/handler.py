@@ -26,7 +26,6 @@ def handler(event, context):
 
     path = event.get("path", "")
     method = event.get("httpMethod", "")
-    headers = event.get("headers", {}) or {}
 
     # Route: Health Check
     if path == "/collect/health":
@@ -35,7 +34,6 @@ def handler(event, context):
             "service": "bravo-collection",
             "version": "1.0.0"
         })
-
 
     # Route: Financial Collection
     elif path == "/collect/financial" and method == "POST":
