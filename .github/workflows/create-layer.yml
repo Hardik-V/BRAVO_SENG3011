@@ -17,16 +17,18 @@ jobs:
             -v $(pwd):/output \
             public.ecr.aws/lambda/python:3.11 \
             -c "pip install yfinance --only-binary=:all: -t /output/python/"
+          sudo chmod -R 755 python/
           zip -r yfinance-layer.zip python/
           aws s3 cp yfinance-layer.zip s3://${{ secrets.AWS_BUCKET_NAME }}/dev/yfinance-layer.zip
 
       - name: Build and upload matplotlib layer
         run: |
-          rm -rf python
+          sudo rm -rf python
           docker run --rm \
             --entrypoint /bin/sh \
             -v $(pwd):/output \
             public.ecr.aws/lambda/python:3.11 \
             -c "pip install matplotlib --only-binary=:all: -t /output/python/"
+          sudo chmod -R 755 python/
           zip -r matplotlib-layer.zip python/
           aws s3 cp matplotlib-layer.zip s3://${{ secrets.AWS_BUCKET_NAME }}/dev/matplotlib-layer.zip
