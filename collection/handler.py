@@ -4,9 +4,13 @@ import boto3  # type: ignore
 
 # Allows code to run locally and on AWS
 try:
-    from .collection import fetch_and_standardize_finance, generate_s3_key  # type: ignore
+    from .collection import (  # type: ignore
+        fetch_and_standardize_finance, generate_s3_key
+    )
 except ImportError:
-    from collection import fetch_and_standardize_finance, generate_s3_key  # type: ignore
+    from collection import (  # type: ignore
+        fetch_and_standardize_finance, generate_s3_key
+    )
 
 
 def handler(event, context):
