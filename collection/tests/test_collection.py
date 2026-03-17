@@ -1,0 +1,109 @@
+import json
+from unittest.mock import patch, MagicMock
+import sys
+import os
+
+# Add parent directory to path so handler can be imported locally
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from handler import handler
+
+
+# Test Case 1: Valid request with correct API key and parameters
+@patch('boto3.client')
+def test_handler_success(mock_boto_client):
+    """Verifies that a valid POST request returns 201 and an S3 ID."""
+    mock_s3 = MagicMock()
+    mock_boto_client.return_value = mock_s3
+
+    mock_event = {
+        "path": "/collect/financial",
+        "httpMethod": "POST",
+        "headers": {"X-API-Key": "ecosystem-secret-123"},
+        "body": json.dumps({
+            "ticker": "AAPL",
+            "from": "2024-01-01",
+            "to": "2024-01-10"
+        })
+    }
+
+    response = handler(mock_event, None)
+    assert response['statusCode'] == 201
+    assert "id" in json.loads(response['body'])
+
+
+# Test Case 2: Security check with an incorrect API key
+@patch('boto3.client')
+def test_handler_invalid_api_key(mock_boto_client):
+    """Verifies that an incorrect API key returns 401 Unauthorized."""
+    mock_event = {
+        "path": "/collect/financial",
+        "httpMethod": "POST",
+        "headers": {"X-API-Key": "wrong-key"},
+        "body": json.dumps({"ticker": "AAPL", "from": "2024-01-01"})
+    }
+
+    response = handler(mock_event, None)
+    assert response['statusCode'] == 401
+    assert "invalid API key" in json.loads(response['body'])['message']
+
+
+# Test Case 3: Validation check for missing required body fields
+@patch('boto3.client')
+def test_handler_missing_params(mock_boto_client):
+    """Verifies that missing ticker/dates returns 400 Bad Request."""
+    mock_event = {
+        "path": "/collect/financial",
+        "httpMethod": "POST",
+        "headers": {"X-API-Key": "ecosystem-secret-123"},
+        "body": json.dumps({"from": "2024-01-01", "to": "2024-01-10"})
+    }
+
+    response = handler(mock_event, None)
+    assert response['statusCode'] == 400
+    assert "invalid parameters" in json.loads(response['body'])['message']
+
+
+# Test Case 4: Validation check for syntax errors in the JSON body
+@patch('boto3.client')
+def test_handler_malformed_json(mock_boto_client):
+    """Verifies that malformed JSON strings return 400 Bad Request."""
+    mock_event = {
+        "path": "/collect/financial",
+        "httpMethod": "POST",
+        "headers": {"X-API-Key": "ecosystem-secret-123"},
+        "body": "{ticker: 'AAPL'}"  # Invalid JSON syntax
+    }
+
+    response = handler(mock_event, None)
+    assert response['statusCode'] == 400
+    assert "invalid JSON body" in json.loads(response['body'])['message']
+
+
+# Test Case 5: Logic check for when yfinance finds no market data
+@patch('collection.fetch_and_standardize_finance')
+@patch('boto3.client')
+def test_handler_no_data(mock_boto_client, mock_fetch):
+    """Verifies 400 response when the ticker exists but has no data."""
+    mock_fetch.return_value = None
+
+    mock_event = {
+        "path": "/collect/financial",
+        "httpMethod": "POST",
+        "headers": {"X-API-Key": "ecosystem-secret-123"},
+        "body": json.dumps({"ticker": "FAKE", "from": "2024-01-01", "to": "10"})
+    }
+
+    response = handler(mock_event, None)
+    assert response['statusCode'] == 400
+    assert "no data found" in json.loads(response['body'])['message']
+
+
+# Test Case 6: Basic service availability check
+def test_handler_health():
+    """Verifies that the /health endpoint returns 200 Healthy."""
+    mock_event = {"path": "/collect/health", "httpMethod": "GET"}
+    response = handler(mock_event, None)
+
+    assert response['statusCode'] == 200
+    assert json.loads(response['body'])['status'] == "healthy"
