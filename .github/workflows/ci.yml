@@ -33,7 +33,7 @@ jobs:
       - name: Deploy Collection Lambda
         run: |
           cd collection
-          zip deployment.zip handler.py
+          zip deployment.zip handler.py collection.py
           aws lambda update-function-code \
             --function-name bravo-collection-dev \
             --zip-file fileb://deployment.zip
@@ -68,7 +68,7 @@ jobs:
       - name: Deploy Collection Lambda
         run: |
           cd collection
-          zip deployment.zip handler.py
+          zip deployment.zip handler.py collection.py
           aws lambda update-function-code \
             --function-name bravo-collection-prod \
             --zip-file fileb://deployment.zip
