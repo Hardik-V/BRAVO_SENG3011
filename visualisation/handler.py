@@ -23,7 +23,7 @@ def handler(event, context):
         ticker = query.get("ticker")
         date_from = query.get("from")
         date_to = query.get("to")
-        fmt = query.get("format", "png")  # ← add this
+        fmt = query.get("format", "png")
          
         if not all([ticker, date_from, date_to]):
             return respond(400, {
