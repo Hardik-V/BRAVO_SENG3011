@@ -43,7 +43,7 @@ def handler(event, context):
 
         try:
             data = get_financial_data(ticker, date_from, date_to)
-            if not data or "event" not in data:
+            if not data or "events" not in data:
                 return respond(404, {"message": "no financial data found"})
 
             if fmt == "json":

@@ -36,7 +36,6 @@ def test_visualise_missing_params():
     event = {
         "path": "/visualise/financial",
         "httpMethod": "GET",
-        "headers": {"x-api-key": "ecosystem-secret-123"},
         "queryStringParameters": {
             "ticker": "AAPL"
         }
@@ -49,7 +48,6 @@ def test_visualise_no_query_params():
     event = {
         "path": "/visualise/financial",
         "httpMethod": "GET",
-        "headers": {"x-api-key": "ecosystem-secret-123"},
         "queryStringParameters": None
     }
     response = handler(event, None)
@@ -61,7 +59,19 @@ def test_visualise_no_query_params():
 def test_visualise_success(mock_create_graph, mock_get_financial_data):
     mock_get_financial_data.return_value = {
         "data_source": "Yahoo Finance",
-        "event": [{"event_attributes": {"ticker": "AAPL"}}]
+        "events": [  # ← plural
+            {
+                "event_time_object": {"timestamp": "2024-01-09T00:00:00Z"},
+                "event_attributes": {
+                    "ticker": "AAPL",
+                    "open": 182.0,
+                    "high": 183.0,
+                    "low": 180.0,
+                    "close": 182.5,
+                    "volume": 42000000
+                }
+            }
+        ]
     }
     mock_create_graph.return_value = "/tmp/chart.png"
 
@@ -73,7 +83,6 @@ def test_visualise_success(mock_create_graph, mock_get_financial_data):
         event = {
             "path": "/visualise/financial",
             "httpMethod": "GET",
-            "headers": {"x-api-key": "ecosystem-secret-123"},
             "queryStringParameters": {
                 "ticker": "AAPL",
                 "from": "2024-01-01",
@@ -91,7 +100,6 @@ def test_visualise_no_data(mock_get_financial_data):
     event = {
         "path": "/visualise/financial",
         "httpMethod": "GET",
-        "headers": {"x-api-key": "ecosystem-secret-123"},
         "queryStringParameters": {
             "ticker": "AAPL",
             "from": "2024-01-01",
@@ -110,7 +118,6 @@ def test_visualise_no_events(mock_get_financial_data):
     event = {
         "path": "/visualise/financial",
         "httpMethod": "GET",
-        "headers": {"x-api-key": "ecosystem-secret-123"},
         "queryStringParameters": {
             "ticker": "AAPL",
             "from": "2024-01-01",
