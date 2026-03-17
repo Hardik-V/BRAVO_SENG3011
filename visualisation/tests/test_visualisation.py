@@ -4,8 +4,8 @@ import json
 import importlib.util
 from unittest.mock import patch, MagicMock
 
-visualisation_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+visualisation_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))    # noqa
+repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))    # noqa
 sys.path.insert(0, visualisation_dir)
 sys.path.insert(0, repo_root)
 
@@ -61,28 +61,15 @@ def test_visualise_no_query_params():
 def test_visualise_success(mock_create_graph, mock_get_financial_data):
     mock_get_financial_data.return_value = {
         "data_source": "Yahoo Finance",
-        "events": [
-            {
-                "event_attributes": {
-                    "ticker": "AAPL",
-                    "open": 182.0,
-                    "high": 183.0,
-                    "low": 180.0,
-                    "close": 182.5,
-                    "volume": 42000000
-                }
-            }
-        ]
+        "events": [{"event_attributes": {"ticker": "AAPL"}}]
     }
     mock_create_graph.return_value = "/tmp/chart.png"
 
-    # mock file open
-    with patch("builtins.open", patch("builtins.open", 
-               return_value=MagicMock(
-                   __enter__=lambda s, *a: s,
-                   __exit__=MagicMock(return_value=False),
-                   read=lambda: b"fakepngbytes"
-               ))):
+    m = MagicMock()
+    m.__enter__ = MagicMock(return_value=MagicMock(read=MagicMock(return_value=b"fakepngbytes")))    # noqa
+    m.__exit__ = MagicMock(return_value=False)
+
+    with patch("builtins.open", return_value=m):
         event = {
             "path": "/visualise/financial",
             "httpMethod": "GET",
@@ -112,6 +99,7 @@ def test_visualise_no_data(mock_get_financial_data):
         }
     }
     response = handler(event, None)
+    print("RESPONSE:", response)
     assert response["statusCode"] == 404
 
 

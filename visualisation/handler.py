@@ -1,11 +1,7 @@
 import json
-import os
 import base64
 from visualisation.retrieval import get_financial_data
 from visualisation.graph_service import create_graph
-
-
-EXPECTED_API_KEY = os.getenv("FINANCE_API_KEY", "ecosystem-secret-123")
 
 
 def handler(event, context):
@@ -36,7 +32,7 @@ def handler(event, context):
 
         try:
             # 1️ Retrieve financial data from retrieval microservice
-            data = get_financial_data(ticker, date_from, date_to, api_key)
+            data = get_financial_data(ticker, date_from, date_to)
             if not data or "events" not in data:
                 return respond(404, {"message": "no financial data found"})
 
