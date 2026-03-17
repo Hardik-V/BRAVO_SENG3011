@@ -1,13 +1,25 @@
 import json
-import sys
+import importlib.util
 import os
+import sys
 from unittest.mock import patch, MagicMock
 from botocore.exceptions import ClientError
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-os.environ["AWS_BUCKET_NAME"] = "bravo-adage-event-store"
-os.environ["ENVIRONMENT"] = "dev"
-from handler import handler  # noqa: E402
 
+retrieval_dir = os.path.join(os.path.dirname(__file__), '..')
+sys.path.insert(0, os.path.abspath(retrieval_dir))
+
+os.environ["AWS_BUCKET_NAME"] = "bravo-adage-event-store"
+os.environ["ENVIRONMENT"] = "dev"                         
+
+spec = importlib.util.spec_from_file_location(
+    "retrieval_handler",
+    os.path.join(os.path.dirname(__file__), '..', 'handler.py')
+)
+module = importlib.util.module_from_spec(spec)
+sys.modules["retrieval_handler"] = module  # ← register it
+spec.loader.exec_module(module)
+handler = module.handler
+get_s3_client = module.get_s3_client
 
 def test_health_check():
     event = {"path": "/retrieve/health", "httpMethod": "GET"}
@@ -70,7 +82,7 @@ def test_no_query_parameters():
     assert response["statusCode"] == 400
 
 
-@patch("handler.get_s3_client")
+@patch("retrieval_handler.get_s3_client")
 def test_successful_retrieval(mock_get_s3):
     mock_s3 = MagicMock()
     mock_get_s3.return_value = mock_s3
@@ -96,7 +108,7 @@ def test_successful_retrieval(mock_get_s3):
     assert body["data_source"] == "yahoo_finance"
 
 
-@patch("handler.get_s3_client")
+@patch("retrieval_handler.get_s3_client")
 def test_data_not_found(mock_get_s3):
     mock_s3 = MagicMock()
     mock_get_s3.return_value = mock_s3
@@ -117,7 +129,7 @@ def test_data_not_found(mock_get_s3):
     assert response["statusCode"] == 404
 
 
-@patch("handler.get_s3_client")
+@patch("retrieval_handler.get_s3_client")
 def test_ticker_uppercased(mock_get_s3):
     mock_s3 = MagicMock()
     mock_get_s3.return_value = mock_s3
@@ -137,7 +149,6 @@ def test_ticker_uppercased(mock_get_s3):
         }
     }
     response = handler(event, None)
-    # should still work - ticker gets uppercased in handler
     assert response["statusCode"] == 200
 
 
