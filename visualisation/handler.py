@@ -13,7 +13,6 @@ def handler(event, context):
 
     path = event.get("path", "")
     method = event.get("httpMethod", "")
-    headers = event.get("headers", {}) or {}
 
     if path == "/visualise/health":
         return respond(200, {
@@ -23,10 +22,6 @@ def handler(event, context):
         })
 
     elif path == "/visualise/financial" and method == "GET":
-        # API Key check
-        api_key = headers.get("X-API-Key") or headers.get("x-api-key")
-        if api_key != EXPECTED_API_KEY:
-            return respond(401, {"message": "missing or invalid API key"})
 
         # Parse query parameters
         query = event.get("queryStringParameters") or {}
