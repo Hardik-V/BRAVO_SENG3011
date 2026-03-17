@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
 def create_graph(adage_data):
     data_list = []
     for event in adage_data.get("events", []):
