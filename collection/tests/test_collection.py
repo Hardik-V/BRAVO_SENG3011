@@ -1,13 +1,24 @@
 import json
-from unittest.mock import patch, MagicMock
-import sys
+import importlib.util
 import os
+import sys
+from unittest.mock import patch, MagicMock
 
-# Add parent directory to path so handler can be imported locally
-root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.insert(0, root)
 
-from handler import handler  # noqa: E402
+collection_dir = os.path.join(os.path.dirname(__file__), '..')
+sys.path.insert(0, os.path.abspath(collection_dir))
+
+os.environ["AWS_BUCKET_NAME"] = "bravo-adage-event-store"
+os.environ["ENVIRONMENT"] = "dev"
+
+spec = importlib.util.spec_from_file_location(
+    "collection_handler",
+    os.path.join(os.path.dirname(__file__), '..', 'handler.py')
+)
+module = importlib.util.module_from_spec(spec)
+sys.modules["collection_handler"] = module
+spec.loader.exec_module(module)
+handler = module.handler
 
 
 # Test Case 1: Valid request with correct API key and parameters
@@ -82,8 +93,8 @@ def test_handler_malformed_json(mock_boto_client):
 
 
 # Test Case 5: Logic check for when yfinance finds no market data
-@patch('collection.fetch_and_standardize_finance')
 @patch('boto3.client')
+@patch('collection.fetch_and_standardize_finance')
 def test_handler_no_data(mock_boto_client, mock_fetch):
     """Verifies 400 response when the ticker exists but has no data."""
     mock_fetch.return_value = None

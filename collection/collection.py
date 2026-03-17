@@ -1,5 +1,5 @@
 import yfinance as yf  # type: ignore
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 
 # Get the stage (dev or prod) from environment variables
@@ -32,7 +32,7 @@ def fetch_and_standardize_finance(ticker: str, date_from: str, date_to: str):
         "dataset_type": "Financial Records",
         "dataset_id": "PENDING",  # Set by the caller after S3 upload
         "dataset_time_object": {
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "timezone": "UTC"
         },
         "event": {
@@ -58,6 +58,4 @@ def fetch_and_standardize_finance(ticker: str, date_from: str, date_to: str):
 
 def generate_s3_key(ticker: str, date_from: str, date_to: str):
     """Generates a descriptive S3 path using ticker and date range."""
-    # Path format: dev/financial/AAPL/AAPL_2024-01-01_2024-01-10.json
-    filename = f"{date_from}_{date_to}.json"
-    return f"{STAGE}/financial/{ticker}/{filename}"
+    return f"{STAGE}/financial/{ticker}_{date_from}_{date_to}.json"

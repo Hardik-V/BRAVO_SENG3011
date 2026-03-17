@@ -34,7 +34,6 @@ def is_valid_date(date_string):
 def handler(event, context):
     path = event.get("path", "")
     http_method = event.get("httpMethod", "")
-    s3 = get_s3_client()
 
     if path == "/retrieve/health" and http_method == "GET":
         return build_response(200, {
@@ -74,6 +73,7 @@ def handler(event, context):
         s3_key = f"{APP_ENV}/financial/{ticker}_{from_date}_{to_date}.json"
 
         try:
+            s3 = get_s3_client()
             response = s3.get_object(Bucket=BUCKET_NAME, Key=s3_key)
             file_content = response["Body"].read().decode("utf-8")
             data = json.loads(file_content)
