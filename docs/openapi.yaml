@@ -7,7 +7,13 @@ info:
   version: 1.0.0
 
 servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/unsw-f67/Bravo_api/1.0.0
   - url: https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com/dev
+    description: Development
+  - url: https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com/prod
+    description: Production
 
 security:
   - ApiKeyAuth: []
@@ -33,7 +39,7 @@ paths:
               properties:
                 ticker:
                   type: string
-                  example: "DX-Y.NYB"
+                  example: "AAPL"
                 from:
                   type: string
                   format: date
@@ -41,7 +47,7 @@ paths:
                 to:
                   type: string
                   format: date
-                  example: "2024-12-31"
+                  example: "2024-01-10"
       responses:
         '201':
           description: Data successfully collected and stored in S3
@@ -50,18 +56,53 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
+                  id:
                     type: string
-                    example: "Data collection successful"
-                  dataset_id:
-                    type: string
-                    example: "s3://adage-event-store/DX-Y.NYB_2024-01-01_2024-12-31.json"
+                    example: "dev/financial/AAPL_2024-01-01_2024-01-10.json"
         '400':
           description: Invalid ticker symbol or date range
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "invalid parameters: ticker, from, and to are required"
         '401':
-          description: Unauthorized - missing or invalid token
+          description: Unauthorized - missing or invalid API key
         '500':
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "server error: ..."
+
+  /collect/health:
+    get:
+      summary: Collection service health check
+      security: []
+      responses:
+        '200':
+          description: Collection service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  service:
+                    type: string
+                    example: "bravo-collection"
+                  version:
+                    type: string
+                    example: "1.0.0"
 
   /retrieve/financial:
     get:
@@ -75,7 +116,7 @@ paths:
           required: true
           schema:
             type: string
-          example: "DX-Y.NYB"
+          example: "AAPL"
         - name: from
           in: query
           required: true
@@ -89,7 +130,7 @@ paths:
           schema:
             type: string
             format: date
-          example: "2024-12-31"
+          example: "2024-01-10"
       responses:
         '200':
           description: Successfully retrieved financial event data
@@ -99,12 +140,50 @@ paths:
                 $ref: '#/components/schemas/Adage3Event'
         '400':
           description: Invalid ticker symbol or date range
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing required query parameters: ticker, from, to"
         '401':
-          description: Unauthorized - missing or invalid bearer token
+          description: Unauthorized - missing or invalid API key
         '404':
           description: No data found for the requested ticker and date range
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No data found for the requested params"
         '500':
           description: Internal server error
+
+  /retrieve/health:
+    get:
+      summary: Retrieval service health check
+      security: []
+      responses:
+        '200':
+          description: Retrieval service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  service:
+                    type: string
+                    example: "bravo-retrieval"
+                  version:
+                    type: string
+                    example: "1.0.0"
 
   /visualise/financial:
     get:
@@ -119,7 +198,7 @@ paths:
           required: true
           schema:
             type: string
-          example: "DX-Y.NYB"
+          example: "AAPL"
         - name: from
           in: query
           required: true
@@ -133,7 +212,7 @@ paths:
           schema:
             type: string
             format: date
-          example: "2024-12-31"
+          example: "2024-01-10"
         - name: format
           in: query
           required: false
@@ -159,68 +238,25 @@ paths:
                     example: "time_series"
                   ticker:
                     type: string
-                    example: "DX-Y.NYB"
+                    example: "AAPL"
                   from:
                     type: string
                     example: "2024-01-01"
                   to:
                     type: string
-                    example: "2024-12-31"
+                    example: "2024-01-10"
                   chart_data:
                     type: object
                     description: Embeddable chart JSON for frontend rendering
         '400':
           description: Invalid ticker symbol or date range
         '401':
-          description: Unauthorized - missing or invalid bearer token
+          description: Unauthorized - missing or invalid API key
         '404':
           description: No financial data found for the requested ticker and date range
         '500':
           description: Internal server error
-  /collect/health:
-    get:
-      summary: Collection service health check
-      security: []
-      responses:
-        '200':
-          description: Collection service is healthy
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "healthy"
-                  service:
-                    type: string
-                    example: "bravo-collection"
-                  version:
-                    type: string
-                    example: "1.0.0"
-    
-  /retrieve/health:
-    get:
-      summary: Retrieval service health check
-      security: []
-      responses:
-        '200':
-          description: Retrieval service is healthy
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "healthy"
-                  service:
-                    type: string
-                    example: "bravo-retrieval"
-                  version:
-                    type: string
-                    example: "1.0.0"
-  
+
   /visualise/health:
     get:
       summary: Visualisation service health check
@@ -255,63 +291,61 @@ components:
       properties:
         data_source:
           type: string
-          example: "yahoo_finance"
+          example: "Yahoo Finance"
         dataset_type:
           type: string
-          example: "Daily stock data"
+          example: "Financial Records"
         dataset_id:
           type: string
-          example: "s3://adage-event-store/DX-Y.NYB_2024-01-01_2024-12-31.json"
-        time_object:
+          example: "s3://bravo-adage-event-store/dev/financial/AAPL_2024-01-01_2024-01-10.json"
+        dataset_time_object:
           type: object
           properties:
             timestamp:
               type: string
-              example: "2026-03-02 09:51:44.152"
+              example: "2026-03-17T07:36:16.772248+00:00"
             timezone:
               type: string
               example: "UTC"
-        events:
-          type: array
-          items:
-            type: object
-            properties:
-              time_object:
-                type: object
-                properties:
-                  timestamp:
-                    type: string
-                    example: "2024-01-02 09:30:00.000"
-                  duration:
-                    type: integer
-                    example: 1
-                  duration_unit:
-                    type: string
-                    example: "day"
-                  timezone:
-                    type: string
-                    example: "UTC"
-              event_type:
-                type: string
-                example: "Stock ohlc"
-              attribute:
-                type: object
-                properties:
-                  Open:
-                    type: number
-                    example: 149.46
-                  High:
-                    type: number
-                    example: 150.64
-                  Low:
-                    type: number
-                    example: 124.17
-                  Close:
-                    type: number
-                    example: 151.01
-                  Adj_Close:
-                    type: number
-                    example: 151.01
-                  Volume:
-                    type: integer
-                    example: 57295299
+        event:
+          type: object
+          properties:
+            event_time_object:
+              type: object
+              properties:
+                timestamp:
+                  type: string
+                  example: "2024-01-09T00:00:00Z"
+                duration:
+                  type: integer
+                  example: 86400
+                unit:
+                  type: string
+                  example: "seconds"
+                timezone:
+                  type: string
+                  example: "UTC"
+            event_type:
+              type: string
+              example: "financial_market_reading"
+            event_attributes:
+              type: object
+              properties:
+                ticker:
+                  type: string
+                  example: "AAPL"
+                open:
+                  type: number
+                  example: 182.03
+                high:
+                  type: number
+                  example: 183.25
+                low:
+                  type: number
+                  example: 180.85
+                close:
+                  type: number
+                  example: 183.24
+                volume:
+                  type: integer
+                  example: 42841800
