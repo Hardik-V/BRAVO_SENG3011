@@ -23,31 +23,20 @@ def handler(event, context):
     )
 
     S3_BUCKET = os.environ.get('AWS_BUCKET_NAME', 'bravo-adage-event-store')
-    EXPECTED_API_KEY = os.getenv("FINANCE_API_KEY", "ecosystem-secret-123")
 
     path = event.get("path", "")
     method = event.get("httpMethod", "")
-    headers = event.get("headers", {}) or {}
 
     # Route: Health Check
     if path == "/collect/health":
-        try:
-            return respond(200, {
-                "status": "healthy",
-                "service": "bravo-collection",
-                "version": "1.0.0"
-            })
-        except Exception:
-            # F401 fix: Removed 'as e' since it wasn't used
-            return respond(500, {"message": "Internal Server Error"})
+        return respond(200, {
+            "status": "healthy",
+            "service": "bravo-collection",
+            "version": "1.0.0"
+        })
 
     # Route: Financial Collection
     elif path == "/collect/financial" and method == "POST":
-
-        # Security Check: API Key (401)
-        api_key = headers.get("X-API-Key") or headers.get("x-api-key")
-        if api_key != EXPECTED_API_KEY:
-            return respond(401, {"message": "missing or invalid API key"})
 
         try:
             # Parse and Validate Request Body (400)

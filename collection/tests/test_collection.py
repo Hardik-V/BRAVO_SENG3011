@@ -44,23 +44,7 @@ def test_handler_success(mock_boto_client):
     assert "id" in json.loads(response['body'])
 
 
-# Test Case 2: Security check with an incorrect API key
-@patch('boto3.client')
-def test_handler_invalid_api_key(mock_boto_client):
-    """Verifies that an incorrect API key returns 401 Unauthorized."""
-    mock_event = {
-        "path": "/collect/financial",
-        "httpMethod": "POST",
-        "headers": {"X-API-Key": "wrong-key"},
-        "body": json.dumps({"ticker": "AAPL", "from": "2024-01-01"})
-    }
-
-    response = handler(mock_event, None)
-    assert response['statusCode'] == 401
-    assert "invalid API key" in json.loads(response['body'])['message']
-
-
-# Test Case 3: Validation check for missing required body fields
+# Test Case 2: Validation check for missing required body fields
 @patch('boto3.client')
 def test_handler_missing_params(mock_boto_client):
     """Verifies that missing ticker/dates returns 400 Bad Request."""
@@ -76,7 +60,7 @@ def test_handler_missing_params(mock_boto_client):
     assert "invalid parameters" in json.loads(response['body'])['message']
 
 
-# Test Case 4: Validation check for syntax errors in the JSON body
+# Test Case 3: Validation check for syntax errors in the JSON body
 @patch('boto3.client')
 def test_handler_malformed_json(mock_boto_client):
     """Verifies that malformed JSON strings return 400 Bad Request."""
@@ -92,7 +76,7 @@ def test_handler_malformed_json(mock_boto_client):
     assert "invalid JSON body" in json.loads(response['body'])['message']
 
 
-# Test Case 5: Logic check for when yfinance finds no market data
+# Test Case 4: Logic check for when yfinance finds no market data
 @patch('boto3.client')
 @patch('collection.fetch_and_standardize_finance')
 def test_handler_no_data(mock_boto_client, mock_fetch):
@@ -115,7 +99,7 @@ def test_handler_no_data(mock_boto_client, mock_fetch):
     assert "no data found" in json.loads(response['body'])['message']
 
 
-# Test Case 6: Basic service availability check
+# Test Case 5: Basic service availability check
 def test_handler_health():
     """Verifies that the /health endpoint returns 200 Healthy."""
     mock_event = {"path": "/collect/health", "httpMethod": "GET"}
