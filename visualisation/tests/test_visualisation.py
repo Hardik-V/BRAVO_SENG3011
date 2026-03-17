@@ -4,8 +4,10 @@ import json
 import importlib.util
 from unittest.mock import patch, MagicMock
 
-visualisation_dir = os.path.join(os.path.dirname(__file__), '..')
-sys.path.insert(0, os.path.abspath(visualisation_dir))
+visualisation_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, visualisation_dir)
+sys.path.insert(0, repo_root)
 
 os.environ["AWS_BUCKET_NAME"] = "bravo-adage-event-store"
 os.environ["ENVIRONMENT"] = "dev"
