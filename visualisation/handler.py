@@ -65,7 +65,15 @@ def handler(event, context):
                     img_bytes = f.read()
                 img_base64 = base64.b64encode(img_bytes).decode("utf-8")
          
-                return respond(200, {"image_base64": img_base64})
+                return {
+                    "statusCode": 200,
+                    "headers": {
+                        "Content-Type": "image/png"
+                        "Access-Control-Allow_origin": "*"
+                    },
+                    "isBase64Encoded": True,
+                    "body": img_base64
+                }
          
         except Exception as e:
             return respond(500, {"message": f"server error: {str(e)}"})
