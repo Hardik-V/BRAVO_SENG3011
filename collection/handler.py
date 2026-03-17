@@ -23,7 +23,6 @@ def handler(event, context):
     )
 
     S3_BUCKET = os.environ.get('AWS_BUCKET_NAME', 'bravo-adage-event-store')
-    EXPECTED_API_KEY = os.getenv("FINANCE_API_KEY", "ecosystem-secret-123")
 
     path = event.get("path", "")
     method = event.get("httpMethod", "")
