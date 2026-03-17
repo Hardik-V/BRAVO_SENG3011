@@ -19,48 +19,43 @@ def handler(event, context):
 
     elif path == "/visualise/financial" and method == "GET":
 
-        # Parse query parameters
         query = event.get("queryStringParameters") or {}
         ticker = query.get("ticker")
         date_from = query.get("from")
         date_to = query.get("to")
-
+        fmt = query.get("format", "png")  # ← add this
+         
         if not all([ticker, date_from, date_to]):
             return respond(400, {
                 "message": "ticker, from, and to are required"
             })
-
+         
         try:
-            # 1️ Retrieve financial data from retrieval microservice
             data = get_financial_data(ticker, date_from, date_to)
-            if not data or "events" not in data:
+            if not data or "event" not in data:
                 return respond(404, {"message": "no financial data found"})
-
-            # 2️ Generate graph
-            graph_path = create_graph(data)
-            if not graph_path:
-                return respond(500, {"message": "failed to generate graph"})
-
-            # 3️ Encode PNG as base64 and return JSON
-            with open(graph_path, "rb") as f:
-                img_bytes = f.read()
-            img_base64 = base64.b64encode(img_bytes).decode("utf-8")
-
-            return respond(200, {"image_base64": img_base64})
-
+         
+            if fmt == "json":
+                return respond(200, {
+                    "chart_type": "time_series",
+                    "ticker": ticker,
+                    "from": date_from,
+                    "to": date_to,
+                    "chart_data": data
+                })
+         
+            else:
+                # Default to PNG
+                graph_path = create_graph(data)
+                if not graph_path:
+                    return respond(500, {"message": "failed to generate graph"})
+         
+                with open(graph_path, "rb") as f:
+                    img_bytes = f.read()
+                img_base64 = base64.b64encode(img_bytes).decode("utf-8")
+         
+                return respond(200, {"image_base64": img_base64})
+         
         except Exception as e:
             return respond(500, {"message": f"server error: {str(e)}"})
-
-    else:
-        return respond(404, {"message": "Route not found"})
-
-
-def respond(status_code, body):
-    return {
-        "statusCode": status_code,
-        "headers": {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"
-        },
-        "body": json.dumps(body)
-    }
+         
