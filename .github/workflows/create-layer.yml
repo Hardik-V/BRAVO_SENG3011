@@ -16,7 +16,7 @@ jobs:
             --entrypoint /bin/sh \
             -v $(pwd):/output \
             public.ecr.aws/lambda/python:3.11 \
-            -c "pip install yfinance -t /output/python/"
+            -c "pip install yfinance --only-binary=:all: -t /output/python/"
           zip -r yfinance-layer.zip python/
           aws s3 cp yfinance-layer.zip s3://${{ secrets.AWS_BUCKET_NAME }}/dev/yfinance-layer.zip
 
@@ -27,6 +27,6 @@ jobs:
             --entrypoint /bin/sh \
             -v $(pwd):/output \
             public.ecr.aws/lambda/python:3.11 \
-            -c "pip install matplotlib -t /output/python/"
+            -c "pip install matplotlib --only-binary=:all: -t /output/python/"
           zip -r matplotlib-layer.zip python/
           aws s3 cp matplotlib-layer.zip s3://${{ secrets.AWS_BUCKET_NAME }}/dev/matplotlib-layer.zip
