@@ -1,0 +1,21 @@
+name: Create Lambda Layer
+on:
+  workflow_dispatch:
+
+jobs:
+  create-layer:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ap-southeast-2
+    steps:
+      - name: Build and publish layer
+        run: |
+          mkdir python
+          pip install yfinance boto3 matplotlib -t python/
+          zip -r dependencies-layer.zip python/
+          aws lambda publish-layer-version \
+            --layer-name bravo-dependencies \
+            --zip-file fileb://dependencies-layer.zip \
+            --compatible-runtimes python3.11
