@@ -61,7 +61,7 @@ def test_visualise_no_query_params():
 def test_visualise_success(mock_create_graph, mock_get_financial_data):
     mock_get_financial_data.return_value = {
         "data_source": "Yahoo Finance",
-        "events": [{"event_attributes": {"ticker": "AAPL"}}]
+        "event": [{"event_attributes": {"ticker": "AAPL"}}]
     }
     mock_create_graph.return_value = "/tmp/chart.png"
 
