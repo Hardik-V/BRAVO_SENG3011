@@ -1,34 +1,26 @@
-name: Create Lambda Layer
+name: Upload Dependencies to S3
 on:
   workflow_dispatch:
 
 jobs:
-  create-layer:
+  upload-deps:
     runs-on: ubuntu-latest
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ap-southeast-2
     steps:
-      - name: Build base layer (boto3 + yfinance)
+      - name: Build and upload yfinance layer
         run: |
           mkdir python
-          pip install yfinance boto3 -t python/
-          zip -r base-layer.zip python/
-          aws s3 cp base-layer.zip s3://${{ secrets.AWS_BUCKET_NAME }}/dev/base-layer.zip
-          aws lambda publish-layer-version \
-            --layer-name bravo-base \
-            --content S3Bucket=${{ secrets.AWS_BUCKET_NAME }},S3Key=dev/base-layer.zip \
-            --compatible-runtimes python3.11
+          pip install yfinance -t python/
+          zip -r yfinance-layer.zip python/
+          aws s3 cp yfinance-layer.zip s3://${{ secrets.AWS_BUCKET_NAME }}/dev/yfinance-layer.zip
 
-      - name: Build visualisation layer (matplotlib)
+      - name: Build and upload matplotlib layer
         run: |
           rm -rf python
           mkdir python
           pip install matplotlib -t python/
-          zip -r viz-layer.zip python/
-          aws s3 cp viz-layer.zip s3://${{ secrets.AWS_BUCKET_NAME }}/dev/viz-layer.zip
-          aws lambda publish-layer-version \
-            --layer-name bravo-visualisation \
-            --content S3Bucket=${{ secrets.AWS_BUCKET_NAME }},S3Key=dev/viz-layer.zip \
-            --compatible-runtimes python3.11
+          zip -r matplotlib-layer.zip python/
+          aws s3 cp matplotlib-layer.zip s3://${{ secrets.AWS_BUCKET_NAME }}/dev/matplotlib-layer.zip
