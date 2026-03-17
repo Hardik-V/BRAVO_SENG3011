@@ -1,7 +1,7 @@
 import json
 import base64
-from visualisation.retrieval import get_financial_data
-from visualisation.graph_service import create_graph
+from graph_service import create_graph
+from retrieval_service import get_financial_data
 
 
 def handler(event, context):
