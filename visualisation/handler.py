@@ -4,6 +4,17 @@ from graph_service import create_graph
 from retrieval_service import get_financial_data
 
 
+def respond(status_code, body):
+    return {
+        "statusCode": status_code,
+        "headers": {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+        },
+        "body": json.dumps(body)
+    }
+
+
 def handler(event, context):
     """AWS Lambda handler for the Visualisation microservice."""
 
@@ -58,4 +69,6 @@ def handler(event, context):
          
         except Exception as e:
             return respond(500, {"message": f"server error: {str(e)}"})
+    else:
+        return respond(404, {"message": "Route not found"})
          
