@@ -69,7 +69,7 @@ def handler(event, context):
                     "statusCode": 200,
                     "headers": {
                         "Content-Type": "image/png"
-                        "Access-Control-Allow_Origin": "*"
+                        "Access-Control-Allow-Origin": "*"
                     },
                     "isBase64Encoded": True,
                     "body": img_base64
