@@ -6,3 +6,4 @@ flake8
 mypy
 httpx
 matplotlib
+types-requests
