@@ -1,21 +1,34 @@
-name: Create Lambda Layer
+name: Upload Dependencies to S3
 on:
   workflow_dispatch:
 
 jobs:
-  create-layer:
+  upload-deps:
     runs-on: ubuntu-latest
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ap-southeast-2
     steps:
-      - name: Build and publish layer
+      - name: Build and upload yfinance layer
         run: |
-          mkdir python
-          pip install yfinance boto3 matplotlib -t python/
-          zip -r dependencies-layer.zip python/
-          aws lambda publish-layer-version \
-            --layer-name bravo-dependencies \
-            --zip-file fileb://dependencies-layer.zip \
-            --compatible-runtimes python3.11
+          docker run --rm \
+            --entrypoint /bin/sh \
+            -v $(pwd):/output \
+            public.ecr.aws/lambda/python:3.11 \
+            -c "pip install yfinance --only-binary=:all: -t /output/python/"
+          sudo chmod -R 755 python/
+          zip -r yfinance-layer.zip python/
+          aws s3 cp yfinance-layer.zip s3://${{ secrets.AWS_BUCKET_NAME }}/dev/yfinance-layer.zip
+
+      - name: Build and upload matplotlib layer
+        run: |
+          sudo rm -rf python
+          docker run --rm \
+            --entrypoint /bin/sh \
+            -v $(pwd):/output \
+            public.ecr.aws/lambda/python:3.11 \
+            -c "pip install matplotlib --only-binary=:all: -t /output/python/"
+          sudo chmod -R 755 python/
+          zip -r matplotlib-layer.zip python/
+          aws s3 cp matplotlib-layer.zip s3://${{ secrets.AWS_BUCKET_NAME }}/dev/matplotlib-layer.zip
