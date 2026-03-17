@@ -49,7 +49,8 @@ jobs:
       - name: Deploy Visualisation Lambda
         run: |
           cd visualisation
-          zip deployment.zip handler.py graph_service.py retrieval_service.py
+          pip install requests -t .
+          zip -r deployment.zip handler.py graph_service.py retrieval_service.py requests urllib3 certifi charset_normalizer idna
           aws lambda update-function-code \
             --function-name bravo-visualisation-dev \
             --zip-file fileb://deployment.zip
@@ -84,7 +85,8 @@ jobs:
       - name: Deploy Visualisation Lambda
         run: |
           cd visualisation
-          zip deployment.zip handler.py graph_service.py retrieval_service.py
+          pip install requests -t .
+          zip -r deployment.zip handler.py graph_service.py retrieval_service.py requests urllib3 certifi charset_normalizer idna
           aws lambda update-function-code \
             --function-name bravo-visualisation-prod \
             --zip-file fileb://deployment.zip
