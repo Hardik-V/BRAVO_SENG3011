@@ -1,12 +1,12 @@
 import json
 import os
-import boto3
+import boto3  # type: ignore
 
 # Allows code to run locally and on AWS
 try:
-    from .collection import fetch_and_standardize_finance, generate_s3_key
+    from .collection import fetch_and_standardize_finance, generate_s3_key  # type: ignore
 except ImportError:
-    from collection import fetch_and_standardize_finance, generate_s3_key
+    from collection import fetch_and_standardize_finance, generate_s3_key  # type: ignore
 
 
 def handler(event, context):
