@@ -35,17 +35,17 @@ def handler(event, context):
         date_from = query.get("from")
         date_to = query.get("to")
         fmt = query.get("format", "png")
-         
+
         if not all([ticker, date_from, date_to]):
             return respond(400, {
                 "message": "ticker, from, and to are required"
             })
-         
+
         try:
             data = get_financial_data(ticker, date_from, date_to)
             if not data or "event" not in data:
                 return respond(404, {"message": "no financial data found"})
-         
+
             if fmt == "json":
                 return respond(200, {
                     "chart_type": "time_series",
@@ -54,17 +54,18 @@ def handler(event, context):
                     "to": date_to,
                     "chart_data": data
                 })
-         
+
             else:
                 # Default to PNG
                 graph_path = create_graph(data)
                 if not graph_path:
-                    return respond(500, {"message": "failed to generate graph"})
-         
+                    return respond(500, {
+                        "message": "failed to generate graph"})
+
                 with open(graph_path, "rb") as f:
                     img_bytes = f.read()
                 img_base64 = base64.b64encode(img_bytes).decode("utf-8")
-         
+
                 return {
                     "statusCode": 200,
                     "headers": {
@@ -74,9 +75,8 @@ def handler(event, context):
                     "isBase64Encoded": True,
                     "body": img_base64
                 }
-         
+
         except Exception as e:
             return respond(500, {"message": f"server error: {str(e)}"})
     else:
         return respond(404, {"message": "Route not found"})
-         
