@@ -15,7 +15,6 @@ def handler(event, context):
     method = event.get("httpMethod", "")
     headers = event.get("headers", {}) or {}
 
- 
     if path == "/visualise/health":
         return respond(200, {
             "status": "healthy",
@@ -36,7 +35,9 @@ def handler(event, context):
         date_to = query.get("to")
 
         if not all([ticker, date_from, date_to]):
-            return respond(400, {"message": "ticker, from, and to are required"})
+            return respond(400, {
+                "message": "ticker, from, and to are required"
+            })
 
         try:
             # 1️ Retrieve financial data from retrieval microservice
