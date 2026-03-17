@@ -15,12 +15,7 @@ except ImportError:
 
 def handler(event, context):
     # Initialize S3 client and Environment Variables
-    s3_client = boto3.client(
-        's3',
-        aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
-        aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
-        region_name='ap-southeast-2'
-    )
+    s3_client = boto3.client('s3', region_name='ap-southeast-2')
 
     S3_BUCKET = os.environ.get('AWS_BUCKET_NAME', 'bravo-adage-event-store')
 
