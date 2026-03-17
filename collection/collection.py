@@ -59,4 +59,3 @@ def fetch_and_standardize_finance(ticker: str, date_from: str, date_to: str):
 def generate_s3_key(ticker: str, date_from: str, date_to: str):
     """Generates a descriptive S3 path using ticker and date range."""
     return f"{STAGE}/financial/{ticker}_{date_from}_{date_to}.json"
-

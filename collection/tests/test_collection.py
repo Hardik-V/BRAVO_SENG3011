@@ -4,11 +4,12 @@ import os
 import sys
 from unittest.mock import patch, MagicMock
 
+
 collection_dir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.insert(0, os.path.abspath(collection_dir))
 
 os.environ["AWS_BUCKET_NAME"] = "bravo-adage-event-store"
-os.environ["ENVIRONMENT"] = "dev"                         
+os.environ["ENVIRONMENT"] = "dev"
 
 spec = importlib.util.spec_from_file_location(
     "collection_handler",
@@ -18,6 +19,7 @@ module = importlib.util.module_from_spec(spec)
 sys.modules["collection_handler"] = module
 spec.loader.exec_module(module)
 handler = module.handler
+
 
 # Test Case 1: Valid request with correct API key and parameters
 @patch('boto3.client')

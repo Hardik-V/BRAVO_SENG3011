@@ -9,7 +9,7 @@ retrieval_dir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.insert(0, os.path.abspath(retrieval_dir))
 
 os.environ["AWS_BUCKET_NAME"] = "bravo-adage-event-store"
-os.environ["ENVIRONMENT"] = "dev"                         
+os.environ["ENVIRONMENT"] = "dev"
 
 spec = importlib.util.spec_from_file_location(
     "retrieval_handler",
@@ -20,6 +20,7 @@ sys.modules["retrieval_handler"] = module  # ← register it
 spec.loader.exec_module(module)
 handler = module.handler
 get_s3_client = module.get_s3_client
+
 
 def test_health_check():
     event = {"path": "/retrieve/health", "httpMethod": "GET"}
