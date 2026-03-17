@@ -10,21 +10,21 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ap-southeast-2
     steps:
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
       - name: Build and upload yfinance layer
         run: |
-          mkdir python
-          pip install yfinance -t python/
+          docker run --rm \
+            -v $(pwd):/output \
+            public.ecr.aws/lambda/python:3.11 \
+            /bin/sh -c "pip install yfinance -t /output/python/"
           zip -r yfinance-layer.zip python/
           aws s3 cp yfinance-layer.zip s3://${{ secrets.AWS_BUCKET_NAME }}/dev/yfinance-layer.zip
 
       - name: Build and upload matplotlib layer
         run: |
           rm -rf python
-          mkdir python
-          pip install matplotlib -t python/
+          docker run --rm \
+            -v $(pwd):/output \
+            public.ecr.aws/lambda/python:3.11 \
+            /bin/sh -c "pip install matplotlib -t /output/python/"
           zip -r matplotlib-layer.zip python/
           aws s3 cp matplotlib-layer.zip s3://${{ secrets.AWS_BUCKET_NAME }}/dev/matplotlib-layer.zip
