@@ -8,36 +8,20 @@ STAGE = os.getenv("STAGE", "dev")
 
 # Logic for fetching and structuring the data
 def fetch_and_standardize_finance(ticker: str, date_from: str, date_to: str):
-    """
-    Fetches data from Yahoo Finance and maps it to the
-    Ecosystem Data Model (ADAGE 3.0 style).
-    """
-    # Fetch specified data using yfinance
     df = yf.download(ticker, start=date_from, end=date_to)
 
     if df.empty:
         return None
 
-    # Get latest record for the 'Event'
-    latest = df.iloc[-1]
+    events = []
+    for date, row in df.iterrows():
+        def get_val(col):
+            val = row[col]
+            return val.item() if hasattr(val, 'item') else val
 
-    # Helper to handle yfinance Series/Item conversion within line limits
-    def get_val(col):
-        val = latest[col]
-        return val.item() if hasattr(val, 'item') else val
-
-    # Construct the ADAGE 3.0 model
-    standardized_data = {
-        "data_source": "Yahoo Finance",
-        "dataset_type": "Financial Records",
-        "dataset_id": "PENDING",  # Set by the caller after S3 upload
-        "dataset_time_object": {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "timezone": "UTC"
-        },
-        "event": {
+        events.append({
             "event_time_object": {
-                "timestamp": latest.name.isoformat() + "Z",
+                "timestamp": date.isoformat() + "Z",
                 "duration": 86400,
                 "unit": "seconds",
                 "timezone": "UTC"
@@ -51,7 +35,17 @@ def fetch_and_standardize_finance(ticker: str, date_from: str, date_to: str):
                 "close": float(get_val('Close')),
                 "volume": int(get_val('Volume'))
             }
-        }
+        })
+
+    standardized_data = {
+        "data_source": "Yahoo Finance",
+        "dataset_type": "Financial Records",
+        "dataset_id": "PENDING",
+        "dataset_time_object": {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timezone": "UTC"
+        },
+        "events": events
     }
     return standardized_data
 
