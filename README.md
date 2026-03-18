@@ -57,9 +57,13 @@ curl "https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com/dev/visualise/
 ```
 
 ## Running Tests
+Run through pipeline:
 ```bash
 pytest --cov=. --cov-report=term-missing
 ```
+
+Integration Tests:
+API_KEY=your-key pytest test_integration.py -v --timeout=60
 
 ## Tech Stack
 
