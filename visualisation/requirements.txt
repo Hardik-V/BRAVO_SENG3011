@@ -5,3 +5,8 @@ pytest-cov
 flake8
 mypy
 httpx
+pandas
+matplotlib
+requests
+fastapi
+uvicorn
