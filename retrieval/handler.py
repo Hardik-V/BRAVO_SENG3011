@@ -4,7 +4,6 @@ import boto3
 from datetime import datetime
 from botocore.exceptions import ClientError
 
-
 BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME")
 APP_ENV = os.environ.get("ENVIRONMENT", "dev")
 
@@ -70,15 +69,80 @@ def handler(event, context):
             })
 
         ticker = ticker.upper()
-        s3_key = f"{APP_ENV}/financial/{ticker}_{from_date}_{to_date}.json"
+        prefix = f"{APP_ENV}/financial/{ticker}_"
 
         try:
             s3 = get_s3_client()
-            response = s3.get_object(Bucket=BUCKET_NAME, Key=s3_key)
-            file_content = response["Body"].read().decode("utf-8")
-            data = json.loads(file_content)
 
-            return build_response(200, data)
+            list_response = s3.list_objects_v2(
+                Bucket=BUCKET_NAME,
+                Prefix=prefix
+            )
+            objects = list_response.get("Contents", [])
+
+            if not objects:
+                return build_response(404, {
+                    "error": "No collected data found for this ticker"
+                })
+
+            overlapping_keys = []
+            for obj in objects:
+                key = obj["Key"]
+                filename = key.replace(prefix, "").replace(".json", "")
+                parts = filename.split("_")
+                if len(parts) == 2:
+                    file_from, file_to = parts
+
+                    if file_from <= to_date and file_to >= from_date:
+                        overlapping_keys.append(key)
+
+            if not overlapping_keys:
+                return build_response(404, {
+                    "error": (
+                        "No collected data covers the requested date range. "
+                        "Please collect data for this range first."
+                    )
+                })
+
+            all_events = []
+            base_data = None
+
+            for key in overlapping_keys:
+                s3_response = s3.get_object(Bucket=BUCKET_NAME, Key=key)
+                file_content = s3_response["Body"].read().decode("utf-8")
+                data = json.loads(file_content)
+
+                if base_data is None:
+                    base_data = data
+
+                all_events.extend(data.get("events", []))
+
+            filtered_events = [
+                e for e in all_events
+                if from_date
+                <= e["event_time_object"]["timestamp"][:10]
+                <= to_date
+            ]
+
+            seen = set()
+            unique_events = []
+            for e in filtered_events:
+                ts = e["event_time_object"]["timestamp"][:10]
+                if ts not in seen:
+                    seen.add(ts)
+                    unique_events.append(e)
+
+            unique_events.sort(
+                key=lambda e: e["event_time_object"]["timestamp"][:10]
+            )
+
+            if not unique_events:
+                return build_response(404, {
+                    "error": "No data found within the requested date range"
+                })
+
+            base_data["events"] = unique_events
+            return build_response(200, base_data)
 
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
