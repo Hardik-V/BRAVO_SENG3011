@@ -1,7 +1,7 @@
 import os
 import requests
 
-ENV = os.getenv("ENVIRONMENT", "dev")
+ENV = os.getenv("ENVIRONMENT", "")
 
 STAGE = "/prod" if ENV == "prod" else "/dev"
 

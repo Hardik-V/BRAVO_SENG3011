@@ -41,7 +41,6 @@ def handler(event, context):
             date_to = body.get("to")
 
             if not all([ticker, date_from, date_to]):
-                # E501 fix: Split long string
                 msg = "invalid parameters: ticker, from, and to are required"
                 return respond(400, {"message": msg})
 
