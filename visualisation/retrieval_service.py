@@ -1,7 +1,11 @@
 import os
 import requests
 
-RETRIEVAL_API = "https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com/dev/retrieve/financial"    # noqa
+ENV = os.getenv("ENVIRONMENT", "dev")
+
+STAGE = "/prod" if ENV == "prod" else "/dev"
+
+RETRIEVAL_API = f"https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com{STAGE}/retrieve/financial" # noqa
 
 
 def get_financial_data(ticker, start, end):

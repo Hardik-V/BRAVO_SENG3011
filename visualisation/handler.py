@@ -2,6 +2,7 @@ import json
 import base64
 from graph_service import create_graph
 from retrieval_service import get_financial_data
+from requests.exceptions import HTTPError
 
 
 def respond(status_code, body):
@@ -43,7 +44,7 @@ def handler(event, context):
 
         try:
             data = get_financial_data(ticker, date_from, date_to)
-            if not data or "events" not in data:
+            if not data or not data.get("events"):
                 return respond(404, {"message": "no financial data found"})
 
             if fmt == "json":
@@ -75,7 +76,10 @@ def handler(event, context):
                     "isBase64Encoded": True,
                     "body": img_base64
                 }
-
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                return respond(404, {"message": "no financial data found"})  # noqa
+            return respond(500, {"message": f"retrieval service error: {str(e)}"})  # noqa
         except Exception as e:
             return respond(500, {"message": f"server error: {str(e)}"})
     else:
