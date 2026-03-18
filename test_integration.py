@@ -9,8 +9,6 @@ Note: These tests are slow (10-30s each) due to live API calls.
 They are excluded from the CI pipeline and should be run manually.
 """
 
-import json
-import pytest
 import requests
 import os
 import time
@@ -26,11 +24,12 @@ FROM_DATE = "2024-01-01"
 TO_DATE = "2024-01-10"
 
 
-# ─── Health Checks ────────────────────────────────────────────────────────────
+# ─── Health Checks ────────────────────────────────
 
 def test_collection_health():
     """Collection service should be live and healthy."""
-    response = requests.get(f"{BASE_URL}/collect/health", timeout=30)
+    response = requests.get(f"{BASE_URL}/collect/health",
+                            timeout=30)
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "healthy"
@@ -40,7 +39,8 @@ def test_collection_health():
 
 def test_retrieval_health():
     """Retrieval service should be live and healthy."""
-    response = requests.get(f"{BASE_URL}/retrieve/health", timeout=30)
+    response = requests.get(f"{BASE_URL}/retrieve/health",
+                            timeout=30)
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "healthy"
@@ -50,7 +50,8 @@ def test_retrieval_health():
 
 def test_visualisation_health():
     """Visualisation service should be live and healthy."""
-    response = requests.get(f"{BASE_URL}/visualise/health", timeout=30)
+    response = requests.get(f"{BASE_URL}/visualise/health",
+                            timeout=30)
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "healthy"
@@ -58,7 +59,7 @@ def test_visualisation_health():
     assert body["version"] == "1.0.0"
 
 
-# ─── Authentication ───────────────────────────────────────────────────────────
+# ─── Authentication ─────────────────────────────────────────
 
 def test_collect_without_api_key_returns_403():
     """Requests without API key should be rejected by API Gateway."""
@@ -80,7 +81,7 @@ def test_retrieve_without_api_key_returns_403():
     assert response.status_code == 403
 
 
-# ─── Collection ───────────────────────────────────────────────────────────────
+# ─── Collection ───────────────────────────────────────────────
 
 def test_collect_valid_request():
     """Collection should fetch from Yahoo Finance and store in S3."""
@@ -129,7 +130,7 @@ def test_collect_missing_dates():
     assert response.status_code == 400
 
 
-# ─── Retrieval ────────────────────────────────────────────────────────────────
+# ─── Retrieval ────────────────────────────────────────────────────
 
 def test_retrieve_after_collect():
     """Retrieval should return ADAGE 3.0 data after collection."""
@@ -193,7 +194,6 @@ def test_retrieve_sub_range():
     body = response.json()
     assert len(body["events"]) > 0
 
-    # All returned events should be within requested range
     for event in body["events"]:
         date = event["event_time_object"]["timestamp"][:10]
         assert "2024-01-05" <= date <= "2024-01-10"
@@ -225,7 +225,7 @@ def test_retrieve_invalid_date_format():
     assert response.status_code == 400
 
 
-# ─── Visualisation ────────────────────────────────────────────────────────────
+# ─── Visualisation ───────────────────────────────────────────────
 
 def test_visualise_png():
     """Visualisation should return a base64 PNG after collection."""
@@ -256,7 +256,7 @@ def test_visualise_png():
         assert "image_base64" in body
     else:
         assert isinstance(response.text, str)
-        assert len(response.text) > 100 
+        assert len(response.text) > 100
         import base64
         base64.b64decode(response.text)
 
@@ -307,7 +307,7 @@ def test_visualise_missing_params():
     assert response.status_code == 400
 
 
-# ─── End to End ───────────────────────────────────────────────────────────────
+# ─── End to End ────────────────────────────────────────────────────
 
 def test_full_pipeline():
     """

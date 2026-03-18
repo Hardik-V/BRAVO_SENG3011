@@ -4,6 +4,7 @@ from graph_service import create_graph
 from retrieval_service import get_financial_data
 from requests.exceptions import HTTPError
 
+
 def respond(status_code, body):
     return {
         "statusCode": status_code,
@@ -77,8 +78,8 @@ def handler(event, context):
                 }
         except HTTPError as e:
             if e.response.status_code == 404:
-                return respond(404, {"message": "no financial data found"})
-            return respond(500, {"message": f"retrieval service error: {str(e)}"})
+                return respond(404, {"message": "no financial data found"})  # noqa
+            return respond(500, {"message": f"retrieval service error: {str(e)}"})  # noqa
         except Exception as e:
             return respond(500, {"message": f"server error: {str(e)}"})
     else:
