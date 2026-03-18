@@ -59,7 +59,7 @@ def test_visualise_no_query_params():
 def test_visualise_success(mock_create_graph, mock_get_financial_data):
     mock_get_financial_data.return_value = {
         "data_source": "Yahoo Finance",
-        "events": [  # ← plural
+        "events": [
             {
                 "event_time_object": {"timestamp": "2024-01-09T00:00:00Z"},
                 "event_attributes": {
