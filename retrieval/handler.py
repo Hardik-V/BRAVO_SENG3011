@@ -5,7 +5,7 @@ from datetime import datetime
 from botocore.exceptions import ClientError
 
 BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME")
-APP_ENV = os.environ.get("ENVIRONMENT", "dev")
+APP_ENV = os.environ.get("ENVIRONMENT", "")
 
 
 def get_s3_client():

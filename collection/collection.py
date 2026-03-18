@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 import os
 
 # Get the stage (dev or prod) from environment variables
-STAGE = os.getenv("STAGE", "dev")
+STAGE = os.getenv("ENVIRONMENT", "")
 
 
 # Logic for fetching and structuring the data
