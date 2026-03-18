@@ -144,7 +144,7 @@ def test_retrieve_after_collect():
     assert collect_response.status_code == 201
 
     # Small buffer between calls
-    time.sleep(2)
+    time.sleep(5)
 
     # Then retrieve
     retrieve_response = requests.get(
