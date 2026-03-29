@@ -12,7 +12,7 @@ def get_s3_client():
     return boto3.client("s3", region_name="ap-southeast-2")
 
 
-def build_response(status_code, body):
+def build_response(status_code, body): 
     return {
         "statusCode": status_code,
         "headers": {

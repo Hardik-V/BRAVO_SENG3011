@@ -80,7 +80,7 @@ def test_invalid_date_format():
 
 def test_from_date_after_to_date():
     event = {
-        "path": "/retrieve/financial",
+        "path": "/retrieve/financial", 
         "httpMethod": "GET",
         "queryStringParameters": {
             "ticker": "AAPL",
