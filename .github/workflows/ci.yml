@@ -33,6 +33,8 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-collection-dev \
             --zip-file fileb://deployment.zip
+          aws lambda wait function-updated \
+            --function-name bravo-collection-dev
           aws lambda update-function-configuration \
             --function-name bravo-collection-dev \
             --timeout 60
@@ -43,6 +45,8 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-retrieval-dev \
             --zip-file fileb://deployment.zip
+          aws lambda wait function-updated \
+            --function-name bravo-retrieval-dev
           aws lambda update-function-configuration \
             --function-name bravo-retrieval-dev \
             --timeout 60
@@ -54,6 +58,8 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-visualisation-dev \
             --zip-file fileb://deployment.zip
+          aws lambda wait function-updated \
+            --function-name bravo-visualisation-dev
           aws lambda update-function-configuration \
             --function-name bravo-visualisation-dev \
             --timeout 60
@@ -74,6 +80,8 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-collection-prod \
             --zip-file fileb://deployment.zip
+          aws lambda wait function-updated \
+            --function-name bravo-collection-prod
           aws lambda update-function-configuration \
             --function-name bravo-collection-prod \
             --timeout 60
@@ -84,6 +92,8 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-retrieval-prod \
             --zip-file fileb://deployment.zip
+          aws lambda wait function-updated \
+            --function-name bravo-retrieval-prod
           aws lambda update-function-configuration \
             --function-name bravo-retrieval-prod \
             --timeout 60
@@ -95,6 +105,8 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-visualisation-prod \
             --zip-file fileb://deployment.zip
+          aws lambda wait function-updated \
+            --function-name bravo-visualisation-prod
           aws lambda update-function-configuration \
             --function-name bravo-visualisation-prod \
             --timeout 60
