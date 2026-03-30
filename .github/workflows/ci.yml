@@ -4,6 +4,7 @@ on:
     branches: [main, dev]
   pull_request:
     branches: [main, dev]
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -16,6 +17,7 @@ jobs:
       - run: pytest --cov=. --cov-report=term-missing
       - run: flake8 .
       - run: mypy --explicit-package-bases collection/handler.py retrieval/handler.py visualisation/handler.py
+
   deploy-dev:
     needs: test
     if: github.ref == 'refs/heads/dev'
@@ -33,6 +35,8 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-collection-dev \
             --zip-file fileb://deployment.zip
+          aws lambda wait function-updated \
+            --function-name bravo-collection-dev
           aws lambda update-function-configuration \
             --function-name bravo-collection-dev \
             --timeout 60
@@ -43,6 +47,8 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-retrieval-dev \
             --zip-file fileb://deployment.zip
+          aws lambda wait function-updated \
+            --function-name bravo-retrieval-dev
           aws lambda update-function-configuration \
             --function-name bravo-retrieval-dev \
             --timeout 60
@@ -54,9 +60,12 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-visualisation-dev \
             --zip-file fileb://deployment.zip
+          aws lambda wait function-updated \
+            --function-name bravo-visualisation-dev
           aws lambda update-function-configuration \
             --function-name bravo-visualisation-dev \
             --timeout 60
+
   deploy-prod:
     needs: test
     if: github.ref == 'refs/heads/main'
@@ -74,6 +83,8 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-collection-prod \
             --zip-file fileb://deployment.zip
+          aws lambda wait function-updated \
+            --function-name bravo-collection-prod
           aws lambda update-function-configuration \
             --function-name bravo-collection-prod \
             --timeout 60
@@ -84,6 +95,8 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-retrieval-prod \
             --zip-file fileb://deployment.zip
+          aws lambda wait function-updated \
+            --function-name bravo-retrieval-prod
           aws lambda update-function-configuration \
             --function-name bravo-retrieval-prod \
             --timeout 60
@@ -95,6 +108,8 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-visualisation-prod \
             --zip-file fileb://deployment.zip
+          aws lambda wait function-updated \
+            --function-name bravo-visualisation-prod
           aws lambda update-function-configuration \
             --function-name bravo-visualisation-prod \
             --timeout 60
