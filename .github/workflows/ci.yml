@@ -4,6 +4,7 @@ on:
     branches: [main, dev]
   pull_request:
     branches: [main, dev]
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -16,6 +17,7 @@ jobs:
       - run: pytest --cov=. --cov-report=term-missing
       - run: flake8 .
       - run: mypy --explicit-package-bases collection/handler.py retrieval/handler.py visualisation/handler.py
+
   deploy-dev:
     needs: test
     if: github.ref == 'refs/heads/dev'
@@ -63,6 +65,7 @@ jobs:
           aws lambda update-function-configuration \
             --function-name bravo-visualisation-dev \
             --timeout 60
+
   deploy-prod:
     needs: test
     if: github.ref == 'refs/heads/main'
