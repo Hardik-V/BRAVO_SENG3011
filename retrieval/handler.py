@@ -2,7 +2,7 @@ import json
 import os
 import boto3
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timedelta
 from botocore.exceptions import ClientError
 
 BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME")
@@ -39,6 +39,21 @@ def is_valid_date(date_string):
         return True
     except ValueError:
         return False
+
+
+def get_expected_dates(from_date, to_date):
+    """
+    Returns a set of all dates (YYYY-MM-DD) in the requested range,
+    excluding weekends since markets are closed.
+    """
+    expected = set()
+    current = datetime.strptime(from_date, "%Y-%m-%d")
+    end = datetime.strptime(to_date, "%Y-%m-%d")
+    while current <= end:
+        if current.weekday() < 5:  # 0-4 are Monday to Friday
+            expected.add(current.strftime("%Y-%m-%d"))
+        current += timedelta(days=1)
+    return expected
 
 
 def call_collection_service(ticker, from_date, to_date):
@@ -102,6 +117,18 @@ def fetch_from_s3(s3, ticker, from_date, to_date):
                 overlapping_keys.append(key)
 
     return overlapping_keys, objects
+
+
+def has_complete_data(events, from_date, to_date):
+    """
+    Checks if the events cover all expected trading days in the range.
+    Returns True if complete, False if any dates are missing.
+    """
+    expected_dates = get_expected_dates(from_date, to_date)
+    actual_dates = set(
+        e["event_time_object"]["timestamp"][:10] for e in events
+    )
+    return expected_dates.issubset(actual_dates)
 
 
 def handler(event, context):
@@ -174,6 +201,7 @@ def handler(event, context):
                         "error": "No data found after collection attempt"
                     })
 
+            # Build events from overlapping keys
             all_events = []
             base_data = None
 
@@ -201,6 +229,51 @@ def handler(event, context):
                 if ts not in seen:
                     seen.add(ts)
                     unique_events.append(e)
+
+            # If data is incomplete, call collection for the full range
+            if not has_complete_data(unique_events, from_date, to_date):
+                collected = call_collection_service(
+                    ticker, from_date, to_date
+                )
+
+                if collected:
+                    # Retry S3 fetch after collection
+                    overlapping_keys, objects = fetch_from_s3(
+                        s3, ticker, from_date, to_date
+                    )
+
+                    if overlapping_keys:
+                        all_events = []
+                        base_data = None
+
+                        for key in overlapping_keys:
+                            s3_response = s3.get_object(
+                                Bucket=BUCKET_NAME, Key=key
+                            )
+                            file_content = (
+                                s3_response["Body"].read().decode("utf-8")
+                            )
+                            data = json.loads(file_content)
+
+                            if base_data is None:
+                                base_data = data
+
+                            all_events.extend(data.get("events", []))
+
+                        filtered_events = [
+                            e for e in all_events
+                            if from_date
+                            <= e["event_time_object"]["timestamp"][:10]
+                            <= to_date
+                        ]
+
+                        seen = set()
+                        unique_events = []
+                        for e in filtered_events:
+                            ts = e["event_time_object"]["timestamp"][:10]
+                            if ts not in seen:
+                                seen.add(ts)
+                                unique_events.append(e)
 
             unique_events.sort(
                 key=lambda e: e["event_time_object"]["timestamp"][:10]
