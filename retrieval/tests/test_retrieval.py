@@ -469,4 +469,3 @@ def test_route_not_found():
     event = {"path": "/invalid", "httpMethod": "GET"}
     response = handler(event, None)
     assert response["statusCode"] == 404
-    

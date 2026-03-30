@@ -8,7 +8,8 @@ from botocore.exceptions import ClientError
 BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME")
 APP_ENV = os.environ.get("ENVIRONMENT", "")
 
-COLLECTION_BASE_URL = "https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com"
+COLLECTION_BASE_URL = (
+    "https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com")
 
 
 def get_collection_url():
@@ -145,7 +146,8 @@ def handler(event, context):
                 s3, ticker, from_date, to_date
             )
 
-            # No data in S3 at all, or no overlapping files — try auto-collection
+            # No data in S3 at all, or no overlapping files
+            # Try auto-collection
             if not objects or not overlapping_keys:
                 collected = call_collection_service(ticker, from_date, to_date)
 
