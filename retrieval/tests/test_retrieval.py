@@ -209,7 +209,7 @@ def test_auto_collection_triggered_when_s3_empty(mock_get_s3, mock_collect):
 @patch("retrieval_handler.call_collection_service")
 @patch("retrieval_handler.get_s3_client")
 def test_auto_collection_triggered_when_no_overlap(mock_get_s3, mock_collect):
-    """When S3 has files but none overlap the date range, collection is called."""
+    """When S3 has files but none overlap the range, collection is called."""
     s3_data = {
         "dev/financial/AAPL_2025-01-01_2025-01-31.json": {
             "data_source": "Yahoo Finance",
@@ -290,7 +290,9 @@ def test_404_when_ticker_does_not_exist(mock_get_s3, mock_collect):
     }
     response = handler(event, None)
     assert response["statusCode"] == 404
-    mock_collect.assert_called_once_with("INVALID", "2025-01-01", "2025-01-31")
+    mock_collect.assert_called_once_with(
+        "INVALID", "2025-01-01", "2025-01-31"
+    )
 
 
 @patch("retrieval_handler.call_collection_service")
@@ -467,3 +469,4 @@ def test_route_not_found():
     event = {"path": "/invalid", "httpMethod": "GET"}
     response = handler(event, None)
     assert response["statusCode"] == 404
+    
