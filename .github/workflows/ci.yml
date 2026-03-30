@@ -1,4 +1,5 @@
 name: CI/CD
+
 on:
   push:
     branches: [main, dev]
@@ -28,6 +29,7 @@ jobs:
       AWS_DEFAULT_REGION: ap-southeast-2
     steps:
       - uses: actions/checkout@v3
+
       - name: Deploy Collection Lambda
         run: |
           cd collection
@@ -35,11 +37,7 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-collection-dev \
             --zip-file fileb://deployment.zip
-          aws lambda wait function-updated \
-            --function-name bravo-collection-dev
-          aws lambda update-function-configuration \
-            --function-name bravo-collection-dev \
-            --timeout 60
+
       - name: Deploy Retrieval Lambda
         run: |
           cd retrieval
@@ -47,12 +45,7 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-retrieval-dev \
             --zip-file fileb://deployment.zip
-          aws lambda wait function-updated \
-            --function-name bravo-retrieval-dev
-          aws lambda update-function-configuration \
-            --function-name bravo-retrieval-dev \
-            --timeout 60 \
-            --environment Variables="{API_KEY=${{ secrets.API_KEY }},AWS_BUCKET_NAME=${{ secrets.AWS_BUCKET_NAME }},ENVIRONMENT=dev}"
+
       - name: Deploy Visualisation Lambda
         run: |
           cd visualisation
@@ -61,11 +54,6 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-visualisation-dev \
             --zip-file fileb://deployment.zip
-          aws lambda wait function-updated \
-            --function-name bravo-visualisation-dev
-          aws lambda update-function-configuration \
-            --function-name bravo-visualisation-dev \
-            --timeout 60
 
   deploy-prod:
     needs: test
@@ -77,6 +65,7 @@ jobs:
       AWS_DEFAULT_REGION: ap-southeast-2
     steps:
       - uses: actions/checkout@v3
+
       - name: Deploy Collection Lambda
         run: |
           cd collection
@@ -84,11 +73,7 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-collection-prod \
             --zip-file fileb://deployment.zip
-          aws lambda wait function-updated \
-            --function-name bravo-collection-prod
-          aws lambda update-function-configuration \
-            --function-name bravo-collection-prod \
-            --timeout 60
+
       - name: Deploy Retrieval Lambda
         run: |
           cd retrieval
@@ -96,12 +81,7 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-retrieval-prod \
             --zip-file fileb://deployment.zip
-          aws lambda wait function-updated \
-            --function-name bravo-retrieval-prod
-          aws lambda update-function-configuration \
-            --function-name bravo-retrieval-prod \
-            --timeout 60 \
-            --environment Variables="{API_KEY=${{ secrets.API_KEY }},AWS_BUCKET_NAME=${{ secrets.AWS_BUCKET_NAME }},ENVIRONMENT=prod}"
+
       - name: Deploy Visualisation Lambda
         run: |
           cd visualisation
@@ -110,8 +90,3 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-visualisation-prod \
             --zip-file fileb://deployment.zip
-          aws lambda wait function-updated \
-            --function-name bravo-visualisation-prod
-          aws lambda update-function-configuration \
-            --function-name bravo-visualisation-prod \
-            --timeout 60
