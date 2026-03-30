@@ -7,9 +7,11 @@ from botocore.exceptions import ClientError
 
 BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME")
 APP_ENV = os.environ.get("ENVIRONMENT", "")
+API_KEY = os.environ.get("API_KEY", "")
 
 COLLECTION_BASE_URL = (
-    "https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com")
+    "https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com"
+)
 
 
 def get_collection_url():
@@ -54,7 +56,10 @@ def call_collection_service(ticker, from_date, to_date):
     req = urllib.request.Request(
         url,
         data=payload,
-        headers={"Content-Type": "application/json"},
+        headers={
+            "Content-Type": "application/json",
+            "x-api-key": API_KEY
+        },
         method="POST"
     )
 
@@ -147,13 +152,16 @@ def handler(event, context):
             )
 
             # No data in S3 at all, or no overlapping files
-            # Try auto-collection
             if not objects or not overlapping_keys:
-                collected = call_collection_service(ticker, from_date, to_date)
+                collected = call_collection_service(
+                    ticker, from_date, to_date
+                )
 
                 if not collected:
                     return build_response(404, {
-                        "error": "No data found for this ticker and date range"
+                        "error": (
+                            "No data found for this ticker and date range"
+                        )
                     })
 
                 # Retry S3 fetch after collection
