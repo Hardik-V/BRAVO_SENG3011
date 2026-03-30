@@ -51,7 +51,8 @@ jobs:
             --function-name bravo-retrieval-dev
           aws lambda update-function-configuration \
             --function-name bravo-retrieval-dev \
-            --timeout 60
+            --timeout 60 \
+            --environment Variables="{API_KEY=${{ secrets.API_KEY }},AWS_BUCKET_NAME=${{ secrets.AWS_BUCKET_NAME }},ENVIRONMENT=dev}"
       - name: Deploy Visualisation Lambda
         run: |
           cd visualisation
@@ -99,7 +100,8 @@ jobs:
             --function-name bravo-retrieval-prod
           aws lambda update-function-configuration \
             --function-name bravo-retrieval-prod \
-            --timeout 60
+            --timeout 60 \
+            --environment Variables="{API_KEY=${{ secrets.API_KEY }},AWS_BUCKET_NAME=${{ secrets.AWS_BUCKET_NAME }},ENVIRONMENT=prod}"
       - name: Deploy Visualisation Lambda
         run: |
           cd visualisation
