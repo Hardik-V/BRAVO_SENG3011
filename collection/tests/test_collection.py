@@ -45,6 +45,7 @@ def test_handler_success(mock_boto_client, mock_fetch):
     assert response['statusCode'] == 201
     assert "id" in json.loads(response['body'])
 
+
 # Test Case 2: Validation check for missing required body fields
 @patch('boto3.client')
 def test_handler_missing_params(mock_boto_client):

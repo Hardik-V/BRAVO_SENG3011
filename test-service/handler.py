@@ -51,7 +51,7 @@ def run_phase(phase: str):
     """Run pytest for a phase, return path to JSON report or None on error."""
     out = f"{REPORTS_DIR}/{phase}_report.json"
     paths = PHASE_PATHS.get(phase, [])
-    
+
     existing = [p for p in paths if os.path.exists(p)]
     if not existing:
         print(f"[WARN] No test paths found for phase: {phase}")
