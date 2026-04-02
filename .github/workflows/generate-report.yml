@@ -26,6 +26,7 @@ on:
 jobs:
   generate-report:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -39,25 +40,21 @@ jobs:
       - name: Invoke Testing Lambda (async)
         run: |
           FUNCTION="bravo-testing-${{ github.event.inputs.environment }}"
-          PAYLOAD='{"queryStringParameters": {"phase": "${{ github.event.inputs.phase }}"}}'
-          echo "$PAYLOAD" > payload.json
-
+          PAYLOAD=$(echo '{"queryStringParameters": {"phase": "${{ github.event.inputs.phase }}"}}' | base64 -w 0)
           aws lambda invoke \
             --function-name $FUNCTION \
             --invocation-type Event \
-            --payload file://payload.json \
+            --payload "$PAYLOAD" \
             response.json
-
           echo "Lambda invoked asynchronously, waiting for report..."
 
       - name: Poll S3 for report
         run: |
           ENV="${{ github.event.inputs.environment }}"
           S3_KEY="$ENV/reports/Unit_Integration_Report.pdf"
-          MAX_WAIT=360
+          MAX_WAIT=600
           INTERVAL=15
           ELAPSED=0
-
           while [ $ELAPSED -lt $MAX_WAIT ]; do
             echo "Checking S3 for report... (${ELAPSED}s elapsed)"
             if aws s3 ls "s3://bravo-adage-event-store/$S3_KEY" > /dev/null 2>&1; then
@@ -69,7 +66,6 @@ jobs:
             sleep $INTERVAL
             ELAPSED=$((ELAPSED + INTERVAL))
           done
-
           echo "Timed out waiting for report"
           exit 1
 
