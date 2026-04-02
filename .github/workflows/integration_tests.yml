@@ -1,0 +1,83 @@
+name: "Integration Tests"
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_base_url:
+        description: "Override API base URL (leave blank to use secret/default)"
+        required: false
+        default: ""
+      sleep_seconds:
+        description: "Seconds to wait between collect and retrieve steps"
+        required: false
+        default: "3"
+
+jobs:
+  integration-tests:
+    name: "Run Integration Tests & Generate Report"
+    runs-on: ubuntu-latest
+
+    env:
+      API_BASE_URL: ${{ inputs.api_base_url || secrets.API_BASE_URL || 'https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com/dev' }}
+      API_KEY:      ${{ secrets.API_KEY || 'ecosystem-secret-123' }}
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Python setup ────────────────────────────────────────────────────────
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r test-service/requirements.txt
+
+      # ── Run tests ───────────────────────────────────────────────────────────
+      - name: Run integration tests
+        run: |
+          mkdir -p test-service/reports
+          pytest test-service/tests/integration \
+            -v \
+            --tb=short \
+            --html=test-service/reports/integration_report.html \
+            --self-contained-html \
+            --json-report \
+            --json-report-file=test-service/reports/integration_report.json \
+            --json-report-indent=2 \
+            || true
+
+      # ── Generate PDF ─────────────────────────────────────────────────────────
+      - name: Generate PDF report
+        run: |
+          python test-service/test_runner.py \
+            test-service/reports/integration_report.json \
+            test-service/reports/Integration_Test_Report.pdf \
+            "Integration Testing"
+
+      # ── Print summary to Actions log ─────────────────────────────────────────
+      - name: Print test summary
+        run: |
+          python - <<'EOF'
+          import json
+          with open("test-service/reports/integration_report.json") as f:
+              r = json.load(f)
+          s = r.get("summary", {})
+          print(f"Total: {s.get('total',0)} | Passed: {s.get('passed',0)} | Failed: {s.get('failed',0)} | Duration: {r.get('duration',0):.2f}s")
+          EOF
+
+      # ── Upload all report artifacts ───────────────────────────────────────────
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Integration-Test-Reports
+          path: |
+            test-service/reports/integration_report.html
+            test-service/reports/integration_report.json
+            test-service/reports/Integration_Test_Report.pdf
+          retention-days: 30

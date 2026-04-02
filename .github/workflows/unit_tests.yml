@@ -1,0 +1,78 @@
+name: "Unit Tests"
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  unit-tests:
+    name: "Run Unit Tests & Generate Report"
+    runs-on: ubuntu-latest
+
+    env:
+      API_BASE_URL: ${{ secrets.API_BASE_URL || 'https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com/dev' }}
+      API_KEY:      ${{ secrets.API_KEY      || 'ecosystem-secret-123' }}
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Python setup ────────────────────────────────────────────────────────
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r test-service/requirements.txt
+
+      # ── Run tests ───────────────────────────────────────────────────────────
+      - name: Run unit tests
+        run: |
+          mkdir -p test-service/reports
+          pytest test-service/tests/unit \
+            -v \
+            --tb=short \
+            --html=test-service/reports/unit_report.html \
+            --self-contained-html \
+            --json-report \
+            --json-report-file=test-service/reports/unit_report.json \
+            --json-report-indent=2 \
+            || true
+          # '|| true' ensures the PDF step always runs even if some tests fail
+
+      # ── Generate PDF ─────────────────────────────────────────────────────────
+      - name: Generate PDF report
+        run: |
+          python test-service/test_runner.py \
+            test-service/reports/unit_report.json \
+            test-service/reports/Unit_Test_Report.pdf \
+            "Unit Testing"
+
+      # ── Print summary to Actions log ─────────────────────────────────────────
+      - name: Print test summary
+        run: |
+          python - <<'EOF'
+          import json
+          with open("test-service/reports/unit_report.json") as f:
+              r = json.load(f)
+          s = r.get("summary", {})
+          print(f"Total: {s.get('total',0)} | Passed: {s.get('passed',0)} | Failed: {s.get('failed',0)} | Duration: {r.get('duration',0):.2f}s")
+          EOF
+
+      # ── Upload all report artifacts ───────────────────────────────────────────
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Unit-Test-Reports
+          path: |
+            test-service/reports/unit_report.html
+            test-service/reports/unit_report.json
+            test-service/reports/Unit_Test_Report.pdf
+          retention-days: 30
