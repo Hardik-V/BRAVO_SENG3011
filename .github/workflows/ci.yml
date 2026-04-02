@@ -55,6 +55,39 @@ jobs:
             --function-name bravo-visualisation-dev \
             --zip-file fileb://deployment.zip
 
+      - name: Deploy Testing Lambda
+        run: |
+          cat > conftest.py << 'EOF'
+          import sys
+          from unittest.mock import MagicMock
+          sys.modules['yfinance'] = MagicMock()
+          sys.modules['matplotlib'] = MagicMock()
+          sys.modules['matplotlib.pyplot'] = MagicMock()
+          sys.modules['matplotlib.patches'] = MagicMock()
+          sys.modules['matplotlib.ticker'] = MagicMock()
+          sys.modules['matplotlib.dates'] = MagicMock()
+          EOF
+
+          docker run --rm \
+            --entrypoint pip \
+            -v $(pwd):/out \
+            public.ecr.aws/lambda/python:3.11 \
+            install reportlab pytest-json-report pytest requests pillow \
+            -t /out/deps/
+
+          zip -r test-service/deployment.zip \
+            conftest.py \
+            test-service/ \
+            collection/ \
+            retrieval/ \
+            visualisation/
+
+          cd deps && zip -r ../test-service/deployment.zip . && cd ..
+
+          aws lambda update-function-code \
+            --function-name bravo-testing-dev \
+            --zip-file fileb://test-service/deployment.zip
+
   deploy-prod:
     needs: test
     if: github.ref == 'refs/heads/main'
@@ -90,3 +123,36 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-visualisation-prod \
             --zip-file fileb://deployment.zip
+
+      - name: Deploy Testing Lambda
+        run: |
+          cat > conftest.py << 'EOF'
+          import sys
+          from unittest.mock import MagicMock
+          sys.modules['yfinance'] = MagicMock()
+          sys.modules['matplotlib'] = MagicMock()
+          sys.modules['matplotlib.pyplot'] = MagicMock()
+          sys.modules['matplotlib.patches'] = MagicMock()
+          sys.modules['matplotlib.ticker'] = MagicMock()
+          sys.modules['matplotlib.dates'] = MagicMock()
+          EOF
+
+          docker run --rm \
+            --entrypoint pip \
+            -v $(pwd):/out \
+            public.ecr.aws/lambda/python:3.11 \
+            install reportlab pytest-json-report pytest requests pillow \
+            -t /out/deps/
+
+          zip -r test-service/deployment.zip \
+            conftest.py \
+            test-service/ \
+            collection/ \
+            retrieval/ \
+            visualisation/
+
+          cd deps && zip -r ../test-service/deployment.zip . && cd ..
+
+          aws lambda update-function-code \
+            --function-name bravo-testing-prod \
+            --zip-file fileb://test-service/deployment.zip

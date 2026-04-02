@@ -102,10 +102,297 @@ def test_no_query_parameters():
     assert response["statusCode"] == 400
 
 
+@patch("retrieval_handler.call_collection_service")
 @patch("retrieval_handler.get_s3_client")
-def test_successful_retrieval(mock_get_s3):
+def test_successful_retrieval(mock_get_s3, mock_collect):
     mock_s3 = make_mock_s3({
         "dev/financial/AAPL_2025-01-01_2025-01-31.json": {
+            "data_source": "Yahoo Finance",
+            "dataset_type": "Financial Records",
+            "events": [
+                {
+                    "event_time_object": {
+                        "timestamp": "2025-01-10T00:00:00Z"
+                    },
+                    "event_attributes": {
+                        "ticker": "AAPL",
+                        "open": 180.0,
+                        "high": 182.0,
+                        "low": 179.0,
+                        "close": 181.0,
+                        "volume": 1000000
+                    }
+                }
+            ]
+        }
+    })
+    mock_get_s3.return_value = mock_s3
+    mock_collect.return_value = True
+
+    event = {
+        "path": "/retrieve/financial",
+        "httpMethod": "GET",
+        "queryStringParameters": {
+            "ticker": "AAPL",
+            "from": "2025-01-01",
+            "to": "2025-01-31"
+        }
+    }
+    response = handler(event, None)
+    assert response["statusCode"] == 200
+    body = json.loads(response["body"])
+    assert body["data_source"] == "Yahoo Finance"
+    assert len(body["events"]) == 1
+
+
+@patch("retrieval_handler.call_collection_service")
+@patch("retrieval_handler.get_s3_client")
+def test_auto_collection_triggered_when_s3_empty(mock_get_s3, mock_collect):
+    """When S3 has no data, collection is called and data is returned."""
+    s3_data = {
+        "dev/financial/AAPL_2025-01-01_2025-01-31.json": {
+            "data_source": "Yahoo Finance",
+            "dataset_type": "Financial Records",
+            "events": [
+                {
+                    "event_time_object": {
+                        "timestamp": "2025-01-10T00:00:00Z"
+                    },
+                    "event_attributes": {
+                        "ticker": "AAPL",
+                        "open": 180.0,
+                        "high": 182.0,
+                        "low": 179.0,
+                        "close": 181.0,
+                        "volume": 1000000
+                    }
+                }
+            ]
+        }
+    }
+
+    mock_s3 = MagicMock()
+    mock_s3.list_objects_v2.side_effect = [
+        {"Contents": []},
+        {"Contents": [
+            {"Key": "dev/financial/AAPL_2025-01-01_2025-01-31.json"}
+        ]},
+        {"Contents": [
+            {"Key": "dev/financial/AAPL_2025-01-01_2025-01-31.json"}
+        ]}
+    ]
+
+    def mock_get_object(Bucket, Key):
+        data = s3_data.get(Key, {})
+        return {
+            "Body": MagicMock(
+                read=lambda: json.dumps(data).encode("utf-8")
+            )
+        }
+
+    mock_s3.get_object.side_effect = mock_get_object
+    mock_get_s3.return_value = mock_s3
+    mock_collect.return_value = True
+
+    event = {
+        "path": "/retrieve/financial",
+        "httpMethod": "GET",
+        "queryStringParameters": {
+            "ticker": "AAPL",
+            "from": "2025-01-01",
+            "to": "2025-01-31"
+        }
+    }
+    response = handler(event, None)
+    assert response["statusCode"] == 200
+    body = json.loads(response["body"])
+    assert len(body["events"]) == 1
+
+
+@patch("retrieval_handler.call_collection_service")
+@patch("retrieval_handler.get_s3_client")
+def test_auto_collection_triggered_when_no_overlap(mock_get_s3, mock_collect):
+    """When S3 has files but none overlap the range, collection is called."""
+    s3_data = {
+        "dev/financial/AAPL_2025-01-01_2025-01-31.json": {
+            "data_source": "Yahoo Finance",
+            "dataset_type": "Financial Records",
+            "events": [
+                {
+                    "event_time_object": {
+                        "timestamp": "2025-01-10T00:00:00Z"
+                    },
+                    "event_attributes": {
+                        "ticker": "AAPL",
+                        "open": 180.0,
+                        "high": 182.0,
+                        "low": 179.0,
+                        "close": 181.0,
+                        "volume": 1000000
+                    }
+                }
+            ]
+        }
+    }
+
+    mock_s3 = MagicMock()
+    mock_s3.list_objects_v2.side_effect = [
+        {"Contents": [
+            {"Key": "dev/financial/AAPL_2024-01-01_2024-06-30.json"}
+        ]},
+        {"Contents": [
+            {"Key": "dev/financial/AAPL_2025-01-01_2025-01-31.json"}
+        ]},
+        {"Contents": [
+            {"Key": "dev/financial/AAPL_2025-01-01_2025-01-31.json"}
+        ]}
+    ]
+
+    def mock_get_object(Bucket, Key):
+        data = s3_data.get(Key, {})
+        return {
+            "Body": MagicMock(
+                read=lambda: json.dumps(data).encode("utf-8")
+            )
+        }
+
+    mock_s3.get_object.side_effect = mock_get_object
+    mock_get_s3.return_value = mock_s3
+    mock_collect.return_value = True
+
+    event = {
+        "path": "/retrieve/financial",
+        "httpMethod": "GET",
+        "queryStringParameters": {
+            "ticker": "AAPL",
+            "from": "2025-01-01",
+            "to": "2025-01-31"
+        }
+    }
+    response = handler(event, None)
+    assert response["statusCode"] == 200
+    mock_collect.assert_called_with("AAPL", "2025-01-01", "2025-01-31")
+
+
+@patch("retrieval_handler.call_collection_service")
+@patch("retrieval_handler.get_s3_client")
+def test_404_when_ticker_does_not_exist(mock_get_s3, mock_collect):
+    """When collection returns False (bad ticker), return 404."""
+    mock_s3 = MagicMock()
+    mock_s3.list_objects_v2.return_value = {"Contents": []}
+    mock_get_s3.return_value = mock_s3
+    mock_collect.return_value = False
+
+    event = {
+        "path": "/retrieve/financial",
+        "httpMethod": "GET",
+        "queryStringParameters": {
+            "ticker": "INVALID",
+            "from": "2025-01-01",
+            "to": "2025-01-31"
+        }
+    }
+    response = handler(event, None)
+    assert response["statusCode"] == 404
+    mock_collect.assert_called_once_with(
+        "INVALID", "2025-01-01", "2025-01-31"
+    )
+
+
+@patch("retrieval_handler.call_collection_service")
+@patch("retrieval_handler.get_s3_client")
+def test_no_overlapping_files(mock_get_s3, mock_collect):
+    mock_s3 = make_mock_s3({
+        "dev/financial/AAPL_2024-01-01_2024-06-30.json": {
+            "data_source": "Yahoo Finance",
+            "events": []
+        }
+    })
+    mock_get_s3.return_value = mock_s3
+    mock_collect.return_value = False
+
+    event = {
+        "path": "/retrieve/financial",
+        "httpMethod": "GET",
+        "queryStringParameters": {
+            "ticker": "AAPL",
+            "from": "2025-01-01",
+            "to": "2025-01-31"
+        }
+    }
+    response = handler(event, None)
+    assert response["statusCode"] == 404
+    mock_collect.assert_called_once_with("AAPL", "2025-01-01", "2025-01-31")
+
+
+@patch("retrieval_handler.call_collection_service")
+@patch("retrieval_handler.get_s3_client")
+def test_collection_triggered_when_data_incomplete(mock_get_s3, mock_collect):
+    """When S3 has partial data, collection is called for full range."""
+    partial_data = {
+        "dev/financial/AAPL_2025-01-01_2025-01-31.json": {
+            "data_source": "Yahoo Finance",
+            "dataset_type": "Financial Records",
+            "events": [
+                {
+                    "event_time_object": {
+                        "timestamp": "2025-01-10T00:00:00Z"
+                    },
+                    "event_attributes": {
+                        "ticker": "AAPL",
+                        "open": 180.0,
+                        "high": 182.0,
+                        "low": 179.0,
+                        "close": 181.0,
+                        "volume": 1000000
+                    }
+                }
+            ]
+        }
+    }
+
+    mock_s3 = MagicMock()
+    mock_s3.list_objects_v2.side_effect = [
+        {"Contents": [
+            {"Key": "dev/financial/AAPL_2025-01-01_2025-01-31.json"}
+        ]},
+        {"Contents": [
+            {"Key": "dev/financial/AAPL_2025-01-01_2025-01-31.json"}
+        ]}
+    ]
+
+    def mock_get_object(Bucket, Key):
+        data = partial_data.get(Key, {})
+        return {
+            "Body": MagicMock(
+                read=lambda: json.dumps(data).encode("utf-8")
+            )
+        }
+
+    mock_s3.get_object.side_effect = mock_get_object
+    mock_get_s3.return_value = mock_s3
+    mock_collect.return_value = True
+
+    event = {
+        "path": "/retrieve/financial",
+        "httpMethod": "GET",
+        "queryStringParameters": {
+            "ticker": "AAPL",
+            "from": "2025-01-01",
+            "to": "2025-01-31"
+        }
+    }
+    response = handler(event, None)
+    assert response["statusCode"] == 200
+    mock_collect.assert_called_once_with("AAPL", "2025-01-01", "2025-01-31")
+
+
+@patch("retrieval_handler.call_collection_service")
+@patch("retrieval_handler.get_s3_client")
+def test_no_collection_when_data_complete(mock_get_s3, mock_collect):
+    """When S3 has data for a single day range, collection is not called."""
+    mock_s3 = make_mock_s3({
+        "dev/financial/AAPL_2025-01-10_2025-01-10.json": {
             "data_source": "Yahoo Finance",
             "dataset_type": "Financial Records",
             "events": [
@@ -132,61 +419,18 @@ def test_successful_retrieval(mock_get_s3):
         "httpMethod": "GET",
         "queryStringParameters": {
             "ticker": "AAPL",
-            "from": "2025-01-01",
-            "to": "2025-01-31"
+            "from": "2025-01-10",
+            "to": "2025-01-10"
         }
     }
     response = handler(event, None)
     assert response["statusCode"] == 200
-    body = json.loads(response["body"])
-    assert body["data_source"] == "Yahoo Finance"
-    assert len(body["events"]) == 1
+    mock_collect.assert_not_called()
 
 
+@patch("retrieval_handler.call_collection_service")
 @patch("retrieval_handler.get_s3_client")
-def test_data_not_found(mock_get_s3):
-    mock_s3 = MagicMock()
-    mock_get_s3.return_value = mock_s3
-    mock_s3.list_objects_v2.return_value = {"Contents": []}
-
-    event = {
-        "path": "/retrieve/financial",
-        "httpMethod": "GET",
-        "queryStringParameters": {
-            "ticker": "AAPL",
-            "from": "2025-01-01",
-            "to": "2025-01-31"
-        }
-    }
-    response = handler(event, None)
-    assert response["statusCode"] == 404
-
-
-@patch("retrieval_handler.get_s3_client")
-def test_no_overlapping_files(mock_get_s3):
-    mock_s3 = make_mock_s3({
-        "dev/financial/AAPL_2024-01-01_2024-06-30.json": {
-            "data_source": "Yahoo Finance",
-            "events": []
-        }
-    })
-    mock_get_s3.return_value = mock_s3
-
-    event = {
-        "path": "/retrieve/financial",
-        "httpMethod": "GET",
-        "queryStringParameters": {
-            "ticker": "AAPL",
-            "from": "2025-01-01",
-            "to": "2025-01-31"
-        }
-    }
-    response = handler(event, None)
-    assert response["statusCode"] == 404
-
-
-@patch("retrieval_handler.get_s3_client")
-def test_ticker_uppercased(mock_get_s3):
+def test_ticker_uppercased(mock_get_s3, mock_collect):
     mock_s3 = make_mock_s3({
         "dev/financial/AAPL_2025-01-01_2025-01-31.json": {
             "data_source": "Yahoo Finance",
@@ -208,6 +452,7 @@ def test_ticker_uppercased(mock_get_s3):
         }
     })
     mock_get_s3.return_value = mock_s3
+    mock_collect.return_value = True
 
     event = {
         "path": "/retrieve/financial",
@@ -222,8 +467,9 @@ def test_ticker_uppercased(mock_get_s3):
     assert response["statusCode"] == 200
 
 
+@patch("retrieval_handler.call_collection_service")
 @patch("retrieval_handler.get_s3_client")
-def test_multi_file_merge(mock_get_s3):
+def test_multi_file_merge(mock_get_s3, mock_collect):
     mock_s3 = make_mock_s3({
         "dev/financial/AAPL_2024-01-01_2024-06-30.json": {
             "data_source": "Yahoo Finance",
@@ -265,6 +511,7 @@ def test_multi_file_merge(mock_get_s3):
         }
     })
     mock_get_s3.return_value = mock_s3
+    mock_collect.return_value = True
 
     event = {
         "path": "/retrieve/financial",
@@ -279,7 +526,6 @@ def test_multi_file_merge(mock_get_s3):
     assert response["statusCode"] == 200
     body = json.loads(response["body"])
     assert len(body["events"]) == 2
-    # Events should be sorted chronologically
     dates = [
         e["event_time_object"]["timestamp"][:10]
         for e in body["events"]
@@ -287,8 +533,9 @@ def test_multi_file_merge(mock_get_s3):
     assert dates == sorted(dates)
 
 
+@patch("retrieval_handler.call_collection_service")
 @patch("retrieval_handler.get_s3_client")
-def test_deduplication(mock_get_s3):
+def test_deduplication(mock_get_s3, mock_collect):
     mock_s3 = make_mock_s3({
         "dev/financial/AAPL_2024-01-01_2024-06-30.json": {
             "data_source": "Yahoo Finance",
@@ -314,6 +561,7 @@ def test_deduplication(mock_get_s3):
         }
     })
     mock_get_s3.return_value = mock_s3
+    mock_collect.return_value = True
 
     event = {
         "path": "/retrieve/financial",
