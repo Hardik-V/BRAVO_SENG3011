@@ -66,7 +66,7 @@ def create_graph(adage_data):
     )
 
     ax.set_ylabel("Price (USD)")
-    ax.set_title(f"{ticker} — OHLC Candlestick Chart")
+    ax.set_title(f"{ticker}   OHLC Candlestick Chart")
     ax.grid(axis='y', linestyle='--', alpha=0.5)
 
     green_patch = mpatches.Patch(color='green', label='Bullish')

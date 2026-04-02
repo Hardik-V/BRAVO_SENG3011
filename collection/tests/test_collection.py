@@ -22,11 +22,13 @@ handler = module.handler
 
 
 # Test Case 1: Valid request with correct API key and parameters
+@patch('collection_handler.fetch_and_standardize_finance')
 @patch('boto3.client')
-def test_handler_success(mock_boto_client):
+def test_handler_success(mock_boto_client, mock_fetch):
     """Verifies that a valid POST request returns 201 and an S3 ID."""
     mock_s3 = MagicMock()
     mock_boto_client.return_value = mock_s3
+    mock_fetch.return_value = {"events": [{"event_type": "financial_market_reading"}]}
 
     mock_event = {
         "path": "/collect/financial",
