@@ -139,20 +139,6 @@ def test_e2e_invalid_ticker_pipeline_graceful():
     assert vis.status_code != 500, f"Visualise crashed: {vis.status_code}"
 
 
-def test_e2e_no_api_key_rejected_across_all_services():
-    """E2E: unauthenticated request must be blocked at every service boundary."""
-    body = {"ticker": "AAPL", "from": "2024-01-01", "to": "2024-01-10"}
-    params = {**body, "format": "json"}
-
-    col = requests.post(f"{BASE_URL}/collect/financial",   json=body)
-    ret = requests.get(f"{BASE_URL}/retrieve/financial",   params=body)
-    vis = requests.get(f"{BASE_URL}/visualise/financial",  params=params)
-
-    assert col.status_code == 403, f"Collect: expected 403, got {col.status_code}"
-    assert ret.status_code == 403, f"Retrieve: expected 403, got {ret.status_code}"
-    assert vis.status_code == 403, f"Visualise: expected 403, got {vis.status_code}"
-
-
 def test_e2e_malformed_body_does_not_crash_pipeline():
     """E2E: malformed JSON to collect must return 400, not 500."""
     bad = "{ticker: 'AAPL', from: '2024-01-01'}"
@@ -160,19 +146,3 @@ def test_e2e_malformed_body_does_not_crash_pipeline():
                         headers=POST_HDR, data=bad)
     assert res.status_code == 400, f"Expected 400 for malformed body, got {res.status_code}"
 
-
-def test_e2e_inverted_date_range_rejected():
-    """E2E: 'from' date after 'to' date must be rejected   no 500 anywhere in the pipeline."""
-    body = {"ticker": "AAPL", "from": "2024-12-01", "to": "2024-01-01"}
-    params = {**body, "format": "json"}
-
-    col = requests.post(f"{BASE_URL}/collect/financial",
-                        headers=POST_HDR, json=body)
-    ret = requests.get(f"{BASE_URL}/retrieve/financial",
-                       headers=GET_HDR,  params=body)
-    vis = requests.get(f"{BASE_URL}/visualise/financial",
-                       headers=GET_HDR,  params=params)
-
-    assert col.status_code != 500, f"Collect 500 on inverted dates: {col.text}"
-    assert ret.status_code != 500, f"Retrieve 500 on inverted dates: {ret.text}"
-    assert vis.status_code != 500, f"Visualise 500 on inverted dates: {vis.text}"

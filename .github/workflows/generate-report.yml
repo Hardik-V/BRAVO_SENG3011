@@ -31,36 +31,47 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ap-southeast-2
     steps:
-      - name: Invoke Testing Lambda
-        id: invoke
+      - name: Clear old report
+        run: |
+          ENV="${{ github.event.inputs.environment }}"
+          aws s3 rm "s3://bravo-adage-event-store/$ENV/reports/Unit_Integration_Report.pdf" || true
+
+      - name: Invoke Testing Lambda (async)
         run: |
           FUNCTION="bravo-testing-${{ github.event.inputs.environment }}"
           PAYLOAD='{"queryStringParameters": {"phase": "${{ github.event.inputs.phase }}"}}'
-
           echo "$PAYLOAD" > payload.json
 
           aws lambda invoke \
             --function-name $FUNCTION \
+            --invocation-type Event \
             --payload file://payload.json \
             response.json
 
-          cat response.json
+          echo "Lambda invoked asynchronously, waiting for report..."
 
-          # Extract the report URL from the response
-          REPORT_URL=$(cat response.json | python3 -c "
-          import sys, json
-          outer = json.load(sys.stdin)
-          body = json.loads(outer.get('body', '{}'))
-          print(body.get('report_url', ''))
-          ")
-
-          echo "report_url=$REPORT_URL" >> $GITHUB_OUTPUT
-          echo "Report URL: $REPORT_URL"
-
-      - name: Download Report PDF
+      - name: Poll S3 for report
         run: |
-          curl -L "${{ steps.invoke.outputs.report_url }}" -o Test_Report.pdf
-          echo "Report downloaded successfully"
+          ENV="${{ github.event.inputs.environment }}"
+          S3_KEY="$ENV/reports/Unit_Integration_Report.pdf"
+          MAX_WAIT=360
+          INTERVAL=15
+          ELAPSED=0
+
+          while [ $ELAPSED -lt $MAX_WAIT ]; do
+            echo "Checking S3 for report... (${ELAPSED}s elapsed)"
+            if aws s3 ls "s3://bravo-adage-event-store/$S3_KEY" > /dev/null 2>&1; then
+              echo "Report found, downloading..."
+              aws s3 cp "s3://bravo-adage-event-store/$S3_KEY" Test_Report.pdf
+              echo "Downloaded successfully"
+              exit 0
+            fi
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
+          done
+
+          echo "Timed out waiting for report"
+          exit 1
 
       - name: Upload Report as Artifact
         uses: actions/upload-artifact@v4
