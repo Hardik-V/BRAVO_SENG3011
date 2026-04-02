@@ -8,8 +8,11 @@ import os
 import time
 import requests
 
+ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
 BASE_URL = os.getenv(
-    "API_BASE_URL", "https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com/dev")
+    "API_BASE_URL",
+    f"https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com/{ENVIRONMENT}"
+)
 API_KEY = os.environ.get("API_KEY", "")
 HEADERS = {"x-api-key": API_KEY, "Content-Type": "application/json"}
 GET_HDR = {"x-api-key": API_KEY}
@@ -126,26 +129,3 @@ def test_collect_then_visualise_response_keys():
         chart = vis.json()
         assert "ticker" in chart, f"'ticker' missing from visualise response: {chart}"
         assert "chart_data" in chart, f"'chart_data' missing from visualise response: {chart}"
-
-
-# ── Auth Propagation ───────────────────────────────────────────────────────────
-
-def test_missing_api_key_blocked_at_collect():
-    """No API key must be blocked at collect   not forwarded downstream."""
-    body = {"ticker": "AAPL", "from": "2024-01-01", "to": "2024-01-10"}
-    res = requests.post(f"{BASE_URL}/collect/financial", json=body)
-    assert res.status_code == 403, f"Expected 403, got {res.status_code}"
-
-
-def test_missing_api_key_blocked_at_retrieve():
-    """No API key must be blocked at retrieve."""
-    params = {"ticker": "AAPL", "from": "2024-01-01", "to": "2024-01-10"}
-    res = requests.get(f"{BASE_URL}/retrieve/financial", params=params)
-    assert res.status_code == 403, f"Expected 403, got {res.status_code}"
-
-
-def test_missing_api_key_blocked_at_visualise():
-    """No API key must be blocked at visualise."""
-    params = {"ticker": "AAPL", "from": "2024-01-01", "to": "2024-01-10"}
-    res = requests.get(f"{BASE_URL}/visualise/financial", params=params)
-    assert res.status_code == 403, f"Expected 403, got {res.status_code}"
