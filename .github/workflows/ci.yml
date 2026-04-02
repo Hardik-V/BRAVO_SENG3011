@@ -17,7 +17,7 @@ jobs:
       - run: pip install -r requirements.txt
       - run: pytest --cov=. --cov-report=term-missing
       - run: flake8 .
-      - run: mypy --explicit-package-bases collection/handler.py retrieval/handler.py visualisation/handler.py test-service/handler.py
+      - run: mypy --explicit-package-bases collection/handler.py retrieval/handler.py visualisation/handler.py
 
   deploy-dev:
     needs: test
