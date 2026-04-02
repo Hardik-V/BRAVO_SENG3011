@@ -8,8 +8,11 @@ import os
 import time
 import requests
 
+ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
 BASE_URL = os.getenv(
-    "API_BASE_URL", "https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com/dev")
+    "API_BASE_URL",
+    f"https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com/{ENVIRONMENT}"
+)
 API_KEY = os.environ.get("API_KEY", "")
 POST_HDR = {"x-api-key": API_KEY, "Content-Type": "application/json"}
 GET_HDR = {"x-api-key": API_KEY}

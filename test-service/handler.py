@@ -32,6 +32,9 @@ PHASE_PATHS = {
     ],
     "integration": [
         os.path.join(TEST_SERVICE_DIR, "tests", "integration"),
+    ],
+    "e2e": [
+        os.path.join(TEST_SERVICE_DIR, "tests", "e2e"),
     ]
 }
 
@@ -49,7 +52,6 @@ def run_phase(phase: str):
     out = f"{REPORTS_DIR}/{phase}_report.json"
     paths = PHASE_PATHS.get(phase, [])
     
-    # Filter to only existing paths
     existing = [p for p in paths if os.path.exists(p)]
     if not existing:
         print(f"[WARN] No test paths found for phase: {phase}")
@@ -78,14 +80,18 @@ def handler(event, context):
 
     unit_json = None
     integration_json = None
+    e2e_json = None
 
-    if phase in ("unit", "both"):
+    if phase in ("unit", "both", "all"):
         unit_json = run_phase("unit")
 
-    if phase in ("integration", "both"):
+    if phase in ("integration", "both", "all"):
         integration_json = run_phase("integration")
 
-    if not unit_json and not integration_json:
+    if phase in ("e2e", "all"):
+        e2e_json = run_phase("e2e")
+
+    if not unit_json and not integration_json and not e2e_json:
         return respond(500, {"error": "All test phases failed to generate reports"})
 
     pdf_path = f"{REPORTS_DIR}/Unit_Integration_Report.pdf"
@@ -99,6 +105,8 @@ def handler(event, context):
             sys.argv += ["--unit", unit_json]
         if integration_json:
             sys.argv += ["--integration", integration_json]
+        if e2e_json:
+            sys.argv += ["--e2e", e2e_json]
 
         generate_report()
     except Exception as e:
@@ -119,6 +127,6 @@ def handler(event, context):
     return respond(200, {
         "message": "Tests complete",
         "report_url": url,
-        "phases_run": [p for p, j in [("unit", unit_json), ("integration", integration_json)] if j],
+        "phases_run": [p for p, j in [("unit", unit_json), ("integration", integration_json), ("e2e", e2e_json)] if j],
         "s3_key": s3_key
     })
