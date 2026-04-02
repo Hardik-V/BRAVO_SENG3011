@@ -39,17 +39,15 @@ jobs:
       - name: Invoke Testing Lambda (async)
         run: |
           FUNCTION="bravo-testing-${{ github.event.inputs.environment }}"
-          PAYLOAD='{"queryStringParameters": {"phase": "${{ github.event.inputs.phase }}"}}'
-          echo "$PAYLOAD" > payload.json
-
+          PAYLOAD=$(echo '{"queryStringParameters": {"phase": "${{ github.event.inputs.phase }}"}}' | base64 -w 0)
           aws lambda invoke \
             --function-name $FUNCTION \
             --invocation-type Event \
-            --payload file://payload.json \
+            --payload "$PAYLOAD" \
             response.json
-
           echo "Lambda invoked asynchronously, waiting for report..."
 
+      
       - name: Poll S3 for report
         run: |
           ENV="${{ github.event.inputs.environment }}"
