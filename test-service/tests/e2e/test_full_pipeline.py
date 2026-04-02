@@ -145,4 +145,3 @@ def test_e2e_malformed_body_does_not_crash_pipeline():
     res = requests.post(f"{BASE_URL}/collect/financial",
                         headers=POST_HDR, data=bad)
     assert res.status_code == 400, f"Expected 400 for malformed body, got {res.status_code}"
-
