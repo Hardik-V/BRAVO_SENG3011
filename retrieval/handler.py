@@ -1,11 +1,22 @@
 import json
 import os
 import boto3
-from datetime import datetime
+import urllib.request
+from datetime import datetime, timedelta
 from botocore.exceptions import ClientError
 
 BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME")
 APP_ENV = os.environ.get("ENVIRONMENT", "")
+API_KEY = os.environ.get("API_KEY", "")
+
+COLLECTION_BASE_URL = (
+    "https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com"
+)
+
+
+def get_collection_url():
+    stage = APP_ENV if APP_ENV else "dev"
+    return f"{COLLECTION_BASE_URL}/{stage}/collect/financial"
 
 
 def get_s3_client():
@@ -28,6 +39,96 @@ def is_valid_date(date_string):
         return True
     except ValueError:
         return False
+
+
+def get_expected_dates(from_date, to_date):
+    """
+    Returns a set of all dates (YYYY-MM-DD) in the requested range,
+    excluding weekends since markets are closed.
+    """
+    expected = set()
+    current = datetime.strptime(from_date, "%Y-%m-%d")
+    end = datetime.strptime(to_date, "%Y-%m-%d")
+    while current <= end:
+        if current.weekday() < 5:  # 0-4 are Monday to Friday
+            expected.add(current.strftime("%Y-%m-%d"))
+        current += timedelta(days=1)
+    return expected
+
+
+def call_collection_service(ticker, from_date, to_date):
+    """
+    Calls the collection service to fetch and store data for the given
+    ticker and date range. Returns True if successful, False otherwise.
+    """
+    url = get_collection_url()
+    payload = json.dumps({
+        "ticker": ticker,
+        "from": from_date,
+        "to": to_date
+    }).encode("utf-8")
+
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "x-api-key": API_KEY
+        },
+        method="POST"
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=60) as response:
+            return response.status == 201
+    except urllib.error.HTTPError as e:
+        # 400 means ticker doesn't exist or no data found
+        if e.code == 400:
+            return False
+        raise
+    except Exception:
+        raise
+
+
+def fetch_from_s3(s3, ticker, from_date, to_date):
+    """
+    Attempts to find and return matching financial data from S3.
+    Returns (overlapping_keys, objects) tuple.
+    """
+    prefix = f"{APP_ENV}/financial/{ticker}_"
+
+    list_response = s3.list_objects_v2(
+        Bucket=BUCKET_NAME,
+        Prefix=prefix
+    )
+    objects = list_response.get("Contents", [])
+
+    if not objects:
+        return None, None
+
+    overlapping_keys = []
+    for obj in objects:
+        key = obj["Key"]
+        filename = key.replace(prefix, "").replace(".json", "")
+        parts = filename.split("_")
+        if len(parts) == 2:
+            file_from, file_to = parts
+            if file_from <= to_date and file_to >= from_date:
+                overlapping_keys.append(key)
+
+    return overlapping_keys, objects
+
+
+def has_complete_data(events, from_date, to_date):
+    """
+    Checks if the events cover all expected trading days in the range.
+    Returns True if complete, False if any dates are missing.
+    """
+    expected_dates = get_expected_dates(from_date, to_date)
+    actual_dates = set(
+        e["event_time_object"]["timestamp"][:10] for e in events
+    )
+    return expected_dates.issubset(actual_dates)
 
 
 def handler(event, context):
@@ -69,41 +170,38 @@ def handler(event, context):
             })
 
         ticker = ticker.upper()
-        prefix = f"{APP_ENV}/financial/{ticker}_"
 
         try:
             s3 = get_s3_client()
 
-            list_response = s3.list_objects_v2(
-                Bucket=BUCKET_NAME,
-                Prefix=prefix
+            overlapping_keys, objects = fetch_from_s3(
+                s3, ticker, from_date, to_date
             )
-            objects = list_response.get("Contents", [])
 
-            if not objects:
-                return build_response(404, {
-                    "error": "No collected data found for this ticker"
-                })
+            # No data in S3 at all, or no overlapping files
+            if not objects or not overlapping_keys:
+                collected = call_collection_service(
+                    ticker, from_date, to_date
+                )
 
-            overlapping_keys = []
-            for obj in objects:
-                key = obj["Key"]
-                filename = key.replace(prefix, "").replace(".json", "")
-                parts = filename.split("_")
-                if len(parts) == 2:
-                    file_from, file_to = parts
+                if not collected:
+                    return build_response(404, {
+                        "error": (
+                            "No data found for this ticker and date range"
+                        )
+                    })
 
-                    if file_from <= to_date and file_to >= from_date:
-                        overlapping_keys.append(key)
+                # Retry S3 fetch after collection
+                overlapping_keys, objects = fetch_from_s3(
+                    s3, ticker, from_date, to_date
+                )
 
-            if not overlapping_keys:
-                return build_response(404, {
-                    "error": (
-                        "No collected data covers the requested date range. "
-                        "Please collect data for this range first."
-                    )
-                })
+                if not overlapping_keys:
+                    return build_response(404, {
+                        "error": "No data found after collection attempt"
+                    })
 
+            # Build events from overlapping keys
             all_events = []
             base_data = None
 
@@ -131,6 +229,51 @@ def handler(event, context):
                 if ts not in seen:
                     seen.add(ts)
                     unique_events.append(e)
+
+            # If data is incomplete, call collection for the full range
+            if not has_complete_data(unique_events, from_date, to_date):
+                collected = call_collection_service(
+                    ticker, from_date, to_date
+                )
+
+                if collected:
+                    # Retry S3 fetch after collection
+                    overlapping_keys, objects = fetch_from_s3(
+                        s3, ticker, from_date, to_date
+                    )
+
+                    if overlapping_keys:
+                        all_events = []
+                        base_data = None
+
+                        for key in overlapping_keys:
+                            s3_response = s3.get_object(
+                                Bucket=BUCKET_NAME, Key=key
+                            )
+                            file_content = (
+                                s3_response["Body"].read().decode("utf-8")
+                            )
+                            data = json.loads(file_content)
+
+                            if base_data is None:
+                                base_data = data
+
+                            all_events.extend(data.get("events", []))
+
+                        filtered_events = [
+                            e for e in all_events
+                            if from_date
+                            <= e["event_time_object"]["timestamp"][:10]
+                            <= to_date
+                        ]
+
+                        seen = set()
+                        unique_events = []
+                        for e in filtered_events:
+                            ts = e["event_time_object"]["timestamp"][:10]
+                            if ts not in seen:
+                                seen.add(ts)
+                                unique_events.append(e)
 
             unique_events.sort(
                 key=lambda e: e["event_time_object"]["timestamp"][:10]
