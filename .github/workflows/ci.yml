@@ -17,7 +17,7 @@ jobs:
       - run: pip install -r requirements.txt
       - run: pytest --cov=. --cov-report=term-missing
       - run: flake8 .
-      - run: mypy --explicit-package-bases collection/handler.py retrieval/handler.py visualisation/handler.py
+      - run: mypy --explicit-package-bases collection/handler.py retrieval/handler.py visualisation/handler.py test-service/handler.py
 
   deploy-dev:
     needs: test
@@ -68,8 +68,12 @@ jobs:
           sys.modules['matplotlib.dates'] = MagicMock()
           EOF
 
-          pip install reportlab pytest-json-report pytest requests pillow \
-            -t deps/ --only-binary=:all:
+          docker run --rm \
+            --entrypoint pip \
+            -v $(pwd):/out \
+            public.ecr.aws/lambda/python:3.11 \
+            install reportlab pytest-json-report pytest requests pillow \
+            -t /out/deps/
 
           zip -r test-service/deployment.zip \
             conftest.py \
@@ -133,8 +137,12 @@ jobs:
           sys.modules['matplotlib.dates'] = MagicMock()
           EOF
 
-          pip install reportlab pytest-json-report pytest requests pillow \
-            -t deps/ --only-binary=:all:
+          docker run --rm \
+            --entrypoint pip \
+            -v $(pwd):/out \
+            public.ecr.aws/lambda/python:3.11 \
+            install reportlab pytest-json-report pytest requests pillow \
+            -t /out/deps/
 
           zip -r test-service/deployment.zip \
             conftest.py \
