@@ -65,6 +65,40 @@ pytest --cov=. --cov-report=term-missing
 Integration Tests:
 API_KEY=your-key pytest test_integration.py -v --timeout=60
 
+A dedicated testing microservice is deployed as an AWS Lambda function that runs automated unit and integration tests against the Bravo API and generates a PDF report.
+
+**Endpoint:** `POST https://dhkeko3mb2.execute-api.ap-southeast-2.amazonaws.com/dev/test/run`
+
+**Authentication:** `x-api-key` header required
+
+**Query Parameters:**
+- `phase` - `unit`, `integration`, or `both` (default: `both`), `all`
+
+**Example:**
+```bash
+curl -X POST \
+  https://dhkeko3mb2.execute-api.ap-southeast-2.amazonaws.com/dev/test/run \
+  -H "x-api-key: YOUR_API_KEY"
+```
+
+**Response:**
+```json
+{
+  "message": "Tests complete",
+  "report_url": "https://s3.amazonaws.com/...",
+  "phases_run": ["unit", "integration"],
+  "s3_key": "dev/reports/Unit_Integration_Report.pdf"
+}
+```
+
+The report is also downloadable as a GitHub Actions artifact via the **Generate Test Report** workflow (Actions tab → Generate Test Report → Run workflow).
+
+### Test Coverage
+- **Unit tests** - fully mocked, no live endpoints (`collection/tests`, `retrieval/tests`, `visualisation/tests`)
+- **Integration tests** - hit live dev/prod endpoints (`test-service/tests/integration`)
+- **E2E tests** - full pipeline validation via dedicated CI workflow (`test-service/tests/e2e`)
+
+
 ## Tech Stack
 
 - **Runtime**: Python 3.11
