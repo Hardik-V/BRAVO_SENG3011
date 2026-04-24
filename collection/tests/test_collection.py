@@ -3,6 +3,7 @@ import importlib.util
 import os
 import sys
 from unittest.mock import patch, MagicMock
+import pandas as pd
 
 
 collection_dir = os.path.join(os.path.dirname(__file__), '..')
@@ -109,3 +110,118 @@ def test_handler_health():
 
     assert response['statusCode'] == 200
     assert json.loads(response['body'])['status'] == "healthy"
+
+# Unit tests for collection.py logic (fetch_and_standardize_finance and generate_s3_key)
+from collection import fetch_and_standardize_finance, generate_s3_key # noqa
+# helpers
+
+
+def make_mock_df():
+    """Build a minimal fake yfinance DataFrame with the shape yf.download returns."""
+    dates = pd.to_datetime(["2024-01-02", "2024-01-03"])
+    return pd.DataFrame({
+        "Open":   [185.0, 186.5],
+        "High":   [187.0, 188.0],
+        "Low":    [184.0, 185.5],
+        "Close":  [186.0, 187.0],
+        "Volume": [50000000, 52000000],
+    }, index=dates)
+
+
+# fetch_and_standardize_finance
+
+@patch('collection.yf.download')
+def test_fetch_returns_correct_structure(mock_download):
+    """Returned dict has all required top-level ADAGE keys."""
+    mock_download.return_value = make_mock_df()
+    result = fetch_and_standardize_finance("AAPL", "2024-01-01", "2024-01-10")
+
+    assert result is not None
+    assert result["data_source"] == "Yahoo Finance"
+    assert result["dataset_type"] == "Financial Records"
+    assert "events" in result
+    assert "dataset_time_object" in result
+
+
+@patch('collection.yf.download')
+def test_fetch_event_count_matches_rows(mock_download):
+    """One event is created per row in the DataFrame."""
+    mock_download.return_value = make_mock_df()
+    result = fetch_and_standardize_finance("AAPL", "2024-01-01", "2024-01-10")
+
+    assert len(result["events"]) == 2
+
+
+@patch('collection.yf.download')
+def test_fetch_event_attributes_correct(mock_download):
+    """Each event has the right OHLCV values and types."""
+    mock_download.return_value = make_mock_df()
+    result = fetch_and_standardize_finance("AAPL", "2024-01-01", "2024-01-10")
+
+    attrs = result["events"][0]["event_attributes"]
+    assert attrs["ticker"] == "AAPL"
+    assert isinstance(attrs["open"], float)
+    assert isinstance(attrs["high"], float)
+    assert isinstance(attrs["low"], float)
+    assert isinstance(attrs["close"], float)
+    assert isinstance(attrs["volume"], int)
+    assert attrs["open"] == 185.0
+    assert attrs["volume"] == 50000000
+
+
+@patch('collection.yf.download')
+def test_fetch_event_time_object_format(mock_download):
+    """Timestamp ends with Z and duration is 86400 seconds (1 day)."""
+    mock_download.return_value = make_mock_df()
+    result = fetch_and_standardize_finance("AAPL", "2024-01-01", "2024-01-10")
+
+    time_obj = result["events"][0]["event_time_object"]
+    assert time_obj["timestamp"].endswith("Z")
+    assert time_obj["duration"] == 86400
+    assert time_obj["unit"] == "seconds"
+    assert time_obj["timezone"] == "UTC"
+
+
+@patch('collection.yf.download')
+def test_fetch_returns_none_on_empty_df(mock_download):
+    """Returns None when yfinance finds no data (e.g. bad ticker or weekend-only range)."""
+    mock_download.return_value = pd.DataFrame()
+    result = fetch_and_standardize_finance("FAKE", "2024-01-01", "2024-01-02")
+
+    assert result is None
+
+
+@patch('collection.yf.download')
+def test_fetch_dataset_id_is_pending(mock_download):
+    """dataset_id starts as PENDING before S3 assigns a real ID."""
+    mock_download.return_value = make_mock_df()
+    result = fetch_and_standardize_finance("AAPL", "2024-01-01", "2024-01-10")
+
+    assert result["dataset_id"] == "PENDING"
+
+
+# generate_s3_key
+
+def test_s3_key_format():
+    """Key follows the expected pattern: stage/financial/TICKER_from_to.json"""
+    key = generate_s3_key("AAPL", "2024-01-01", "2024-01-10")
+    assert key == "dev/financial/AAPL_2024-01-01_2024-01-10.json"
+
+
+def test_s3_key_ticker_in_filename():
+    """Ticker symbol appears in the filename portion of the key."""
+    key = generate_s3_key("MSFT", "2024-01-01", "2024-01-31")
+    assert "MSFT" in key
+
+
+def test_s3_key_dates_in_filename():
+    """Both date bounds appear in the key."""
+    key = generate_s3_key("AAPL", "2024-03-01", "2024-03-31")
+    assert "2024-03-01" in key
+    assert "2024-03-31" in key
+
+
+def test_s3_key_ends_with_json():
+    """Key always ends with .json extension."""
+    key = generate_s3_key("AAPL", "2024-01-01", "2024-01-10")
+    assert key.endswith(".json")
