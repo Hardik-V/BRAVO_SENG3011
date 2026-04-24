@@ -72,7 +72,7 @@ jobs:
             --entrypoint pip \
             -v $(pwd):/out \
             public.ecr.aws/lambda/python:3.11 \
-            install reportlab pytest-json-report pytest requests pillow \
+            install reportlab pytest-json-report pytest requests pillow pandas yfinance\
             -t /out/deps/
 
           zip -r test-service/deployment.zip \
@@ -146,7 +146,7 @@ jobs:
             --entrypoint pip \
             -v $(pwd):/out \
             public.ecr.aws/lambda/python:3.11 \
-            install reportlab pytest-json-report pytest requests pillow \
+            install reportlab pytest-json-report pytest requests pillow pandas yfinance\
             -t /out/deps/
 
           zip -r test-service/deployment.zip \
