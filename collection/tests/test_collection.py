@@ -5,6 +5,7 @@ import sys
 from unittest.mock import patch, MagicMock
 import pandas as pd
 
+
 collection_dir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.insert(0, os.path.abspath(collection_dir))
 
@@ -114,6 +115,7 @@ def test_handler_health():
 # Unit tests for collection.py logic (fetch_and_standardize_finance and generate_s3_key)
 from collection import fetch_and_standardize_finance, generate_s3_key # noqa
 # helpers
+
 
 def make_mock_df():
     """Build a minimal fake yfinance DataFrame with the shape yf.download returns."""
