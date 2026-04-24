@@ -120,15 +120,15 @@ def make_mock_df(rows=2):
     mock_df = MagicMock()
     mock_df.empty = False
     mock_df.iterrows.return_value = iter([
-        (MagicMock(isoformat=lambda: "2024-01-02T00:00:00"), 
+        (MagicMock(isoformat=lambda: "2024-01-02T00:00:00"),
          {"Open": 185.0, "High": 187.0, "Low": 184.0, "Close": 186.0, "Volume": 50000000}),
         (MagicMock(isoformat=lambda: "2024-01-03T00:00:00"),
          {"Open": 186.5, "High": 188.0, "Low": 185.5, "Close": 187.0, "Volume": 52000000}),
     ][:rows])
     return mock_df
 
-
 # fetch_and_standardize_finance
+
 
 @patch('collection.yf.download')
 def test_fetch_returns_correct_structure(mock_download):
@@ -180,7 +180,6 @@ def test_fetch_event_time_object_format(mock_download):
     assert time_obj["duration"] == 86400
     assert time_obj["unit"] == "seconds"
     assert time_obj["timezone"] == "UTC"
-
 
 
 @patch('collection.yf.download')
