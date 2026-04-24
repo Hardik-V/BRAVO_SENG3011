@@ -109,3 +109,5 @@ def test_handler_health():
 
     assert response['statusCode'] == 200
     assert json.loads(response['body'])['status'] == "healthy"
+
+

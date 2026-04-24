@@ -87,6 +87,11 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-testing-dev \
             --zip-file fileb://test-service/deployment.zip
+      - name: Deploy Frontend to S3
+        run: |
+          aws s3 sync frontend/ s3://bravo-constellation-app \
+            --delete \
+            --cache-control "no-cache"
 
   deploy-prod:
     needs: test
@@ -156,3 +161,9 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-testing-prod \
             --zip-file fileb://test-service/deployment.zip
+
+      - name: Deploy Frontend to S3
+        run: |
+          aws s3 sync frontend/ s3://bravo-constellation-app \
+            --delete \
+            --cache-control "no-cache"
