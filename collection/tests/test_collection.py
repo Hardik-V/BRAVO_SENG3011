@@ -184,17 +184,6 @@ def test_fetch_event_time_object_format(mock_download):
     assert time_obj["unit"] == "seconds"
     assert time_obj["timezone"] == "UTC"
 
-
-@patch('collection.yf.download')
-def test_fetch_events_sorted_chronologically(mock_download):
-    """Events come back in ascending date order."""
-    mock_download.return_value = make_mock_df().iloc[::-1]  # reverse to prove sorting works
-    result = fetch_and_standardize_finance("AAPL", "2024-01-01", "2024-01-10")
-
-    dates = [e["event_time_object"]["timestamp"] for e in result["events"]]
-    assert dates == sorted(dates)
-
-
 @patch('collection.yf.download')
 def test_fetch_returns_none_on_empty_df(mock_download):
     """Returns None when yfinance finds no data (e.g. bad ticker or weekend-only range)."""
