@@ -111,7 +111,6 @@ def test_handler_health():
     assert response['statusCode'] == 200
     assert json.loads(response['body'])['status'] == "healthy"
 
-
 # Unit tests for collection.py logic (fetch_and_standardize_finance and generate_s3_key)
 from collection import fetch_and_standardize_finance, generate_s3_key # noqa
 # helpers
