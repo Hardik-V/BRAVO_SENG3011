@@ -15,7 +15,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install -r requirements.txt
-      - run: pytest --cov=. --cov-report=term-missing
+      - run: pytest --cov=collection --cov=retrieval --cov=visualisation --cov-report=term-missing
       - run: flake8 .
       - run: mypy --explicit-package-bases collection/handler.py retrieval/handler.py visualisation/handler.py
 
@@ -87,6 +87,11 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-testing-dev \
             --zip-file fileb://test-service/deployment.zip
+      - name: Deploy Frontend to S3
+        run: |
+          aws s3 sync frontend/ s3://bravo-constellation-app \
+            --delete \
+            --cache-control "no-cache"
 
   deploy-prod:
     needs: test
@@ -156,3 +161,9 @@ jobs:
           aws lambda update-function-code \
             --function-name bravo-testing-prod \
             --zip-file fileb://test-service/deployment.zip
+
+      - name: Deploy Frontend to S3
+        run: |
+          aws s3 sync frontend/ s3://bravo-constellation-app \
+            --delete \
+            --cache-control "no-cache"
