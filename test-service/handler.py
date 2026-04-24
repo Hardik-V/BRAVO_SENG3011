@@ -99,7 +99,11 @@ def handler(event, context):
         sys.argv = [
             "combined_report.py",
             "--output", pdf_path,
-            "--test-dirs", os.path.join(TEST_SERVICE_DIR, "tests"),
+            "--test-dirs",
+            os.path.join(REPO_ROOT, "collection", "tests"),
+            os.path.join(REPO_ROOT, "retrieval", "tests"),
+            os.path.join(REPO_ROOT, "visualisation", "tests"),
+            os.path.join(TEST_SERVICE_DIR, "tests"),
         ]
         if unit_json:
             sys.argv += ["--unit", unit_json]
