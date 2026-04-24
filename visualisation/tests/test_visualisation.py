@@ -3,8 +3,6 @@ import os
 import json
 import importlib.util
 from unittest.mock import patch, MagicMock
-from retrieval_service import get_financial_data
-from graph_service import create_graph
 
 
 visualisation_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))    # noqa
@@ -137,6 +135,10 @@ def test_visualise_route_not_found():
     assert response["statusCode"] == 404
 
 # Unit tests for get_financial_data and create_graph.
+
+from retrieval_service import get_financial_data # noqa
+from graph_service import create_graph # noqa
+
 # helpers
 
 
