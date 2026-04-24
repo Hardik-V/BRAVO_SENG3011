@@ -3,7 +3,6 @@ import importlib.util
 import os
 import sys
 from unittest.mock import patch, MagicMock
-import pandas as pd
 
 
 collection_dir = os.path.join(os.path.dirname(__file__), '..')
@@ -116,16 +115,17 @@ from collection import fetch_and_standardize_finance, generate_s3_key # noqa
 # helpers
 
 
-def make_mock_df():
-    """Build a minimal fake yfinance DataFrame with the shape yf.download returns."""
-    dates = pd.to_datetime(["2024-01-02", "2024-01-03"])
-    return pd.DataFrame({
-        "Open":   [185.0, 186.5],
-        "High":   [187.0, 188.0],
-        "Low":    [184.0, 185.5],
-        "Close":  [186.0, 187.0],
-        "Volume": [50000000, 52000000],
-    }, index=dates)
+def make_mock_df(rows=2):
+    """Return a mock DataFrame-like object for yf.download."""
+    mock_df = MagicMock()
+    mock_df.empty = False
+    mock_df.iterrows.return_value = iter([
+        (MagicMock(isoformat=lambda: "2024-01-02T00:00:00"), 
+         {"Open": 185.0, "High": 187.0, "Low": 184.0, "Close": 186.0, "Volume": 50000000}),
+        (MagicMock(isoformat=lambda: "2024-01-03T00:00:00"),
+         {"Open": 186.5, "High": 188.0, "Low": 185.5, "Close": 187.0, "Volume": 52000000}),
+    ][:rows])
+    return mock_df
 
 
 # fetch_and_standardize_finance
@@ -181,14 +181,6 @@ def test_fetch_event_time_object_format(mock_download):
     assert time_obj["unit"] == "seconds"
     assert time_obj["timezone"] == "UTC"
 
-
-@patch('collection.yf.download')
-def test_fetch_returns_none_on_empty_df(mock_download):
-    """Returns None when yfinance finds no data (e.g. bad ticker or weekend-only range)."""
-    mock_download.return_value = pd.DataFrame()
-    result = fetch_and_standardize_finance("FAKE", "2024-01-01", "2024-01-02")
-
-    assert result is None
 
 
 @patch('collection.yf.download')

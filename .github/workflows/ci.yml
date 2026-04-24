@@ -73,16 +73,7 @@ jobs:
             -v $(pwd):/out \
             public.ecr.aws/lambda/python:3.11 \
             install reportlab pytest-json-report pytest requests pillow \
-            "pandas==2.2.3" "numpy==1.26.4" yfinance \
-            -t /out/layer/python/
-
-          cd layer && zip -r ../deps-layer.zip python/ && cd ..
-
-          LAYER_ARN=$(aws lambda publish-layer-version \
-            --layer-name bravo-test-deps \
-            --zip-file fileb://deps-layer.zip \
-            --compatible-runtimes python3.11 \
-            --query LayerVersionArn --output text)
+            -t /out/deps/
 
           zip -r test-service/deployment.zip \
             conftest.py \
@@ -91,14 +82,11 @@ jobs:
             retrieval/ \
             visualisation/
 
+          cd deps && zip -r ../test-service/deployment.zip . && cd ..
+
           aws lambda update-function-code \
             --function-name bravo-testing-dev \
             --zip-file fileb://test-service/deployment.zip
-
-          aws lambda update-function-configuration \
-            --function-name bravo-testing-dev \
-            --layers "$LAYER_ARN"
-
       - name: Deploy Frontend to S3
         run: |
           aws s3 sync frontend/ s3://bravo-constellation-app \
@@ -159,16 +147,7 @@ jobs:
             -v $(pwd):/out \
             public.ecr.aws/lambda/python:3.11 \
             install reportlab pytest-json-report pytest requests pillow \
-            "pandas==2.2.3" "numpy==1.26.4" yfinance \
-            -t /out/layer/python/
-
-          cd layer && zip -r ../deps-layer.zip python/ && cd ..
-
-          LAYER_ARN=$(aws lambda publish-layer-version \
-            --layer-name bravo-test-deps \
-            --zip-file fileb://deps-layer.zip \
-            --compatible-runtimes python3.11 \
-            --query LayerVersionArn --output text)
+            -t /out/deps/
 
           zip -r test-service/deployment.zip \
             conftest.py \
@@ -177,13 +156,11 @@ jobs:
             retrieval/ \
             visualisation/
 
+          cd deps && zip -r ../test-service/deployment.zip . && cd ..
+
           aws lambda update-function-code \
             --function-name bravo-testing-prod \
             --zip-file fileb://test-service/deployment.zip
-
-          aws lambda update-function-configuration \
-            --function-name bravo-testing-prod \
-            --layers "$LAYER_ARN"
 
       - name: Deploy Frontend to S3
         run: |
