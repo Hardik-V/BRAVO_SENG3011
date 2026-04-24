@@ -3,6 +3,8 @@ import importlib.util
 import os
 import sys
 from unittest.mock import patch, MagicMock
+import pandas as pd
+from collection import fetch_and_standardize_finance, generate_s3_key
 
 
 collection_dir = os.path.join(os.path.dirname(__file__), '..')
@@ -113,10 +115,6 @@ def test_handler_health():
 
 # Unit tests for collection.py logic (fetch_and_standardize_finance and generate_s3_key)
 
-import pandas as pd
-from collection import fetch_and_standardize_finance, generate_s3_key
-
-
 # helpers
 
 def make_mock_df():
@@ -183,6 +181,7 @@ def test_fetch_event_time_object_format(mock_download):
     assert time_obj["duration"] == 86400
     assert time_obj["unit"] == "seconds"
     assert time_obj["timezone"] == "UTC"
+
 
 @patch('collection.yf.download')
 def test_fetch_returns_none_on_empty_df(mock_download):

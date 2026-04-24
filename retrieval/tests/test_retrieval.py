@@ -584,10 +584,10 @@ def test_route_not_found():
     assert response["statusCode"] == 404
 
 # Unit testing retrieval logic (is_valid_date, get_expected_dates, has_complete_data, fetch_from_s3)
-from retrieval_handler import is_valid_date, get_expected_dates, has_complete_data, fetch_from_s3
+from retrieval_handler import is_valid_date, get_expected_dates, has_complete_data, fetch_from_s3 # noqa
 
 
-# is_valid_date 
+# is_valid_date
 
 def test_is_valid_date_correct_format():
     """Standard YYYY-MM-DD returns True."""
@@ -614,7 +614,7 @@ def test_is_valid_date_nonsense():
     assert is_valid_date("not-a-date") is False
 
 
-# get_expected_dates 
+# get_expected_dates
 def test_get_expected_dates_excludes_weekends():
     """Weekends are not included in expected trading dates."""
     # 2024-03-02 is a Saturday, 2024-03-03 is a Sunday
@@ -648,7 +648,7 @@ def test_get_expected_dates_full_week():
     assert len(dates) == 5
 
 
-# has_complete_data 
+# has_complete_data
 
 def make_events(dates):
     """Helper — build minimal event list from a list of YYYY-MM-DD strings."""
@@ -681,7 +681,7 @@ def test_has_complete_data_extra_events_still_passes():
     assert has_complete_data(events, "2024-03-01", "2024-03-01") is True
 
 
-# fetch_from_s3 
+# fetch_from_s3
 
 def make_s3_for_fetch(keys):
     """Helper — mock s3 client that returns a fixed list of keys."""
