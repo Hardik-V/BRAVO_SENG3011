@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BRAVO Constellation</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#00ff88;--r:#ff3d5a;--gold:#f5c518;--purple:#aa66ff;
+  --bg:#04070c;--text:#d8dce8;--muted:rgba(216,220,232,0.32);
+  --border:rgba(255,255,255,0.07);
+  --panel-bg:rgba(4,7,12,0.92);
+  --ff:'Syne',sans-serif;--fm:'JetBrains Mono',monospace;
+}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:var(--fm);overflow:hidden;cursor:crosshair}
+canvas#c{position:fixed;inset:0;z-index:0;display:block}
+
+/* Top navigation bar with logo and phase buttons */
+#topbar{
+  position:fixed;top:0;left:0;right:0;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 28px;pointer-events:none;
+}
+.logo{
+  font-family:var(--ff);font-size:14px;font-weight:800;
+  letter-spacing:0.06em;text-transform:uppercase;pointer-events:none;
+}
+.logo-bravo{color:var(--text)}
+.logo-v{color:var(--g)}
+.logo-sep{color:var(--border);margin:0 8px;font-weight:300}
+.logo-sub{color:var(--muted);font-size:9px;font-weight:400;letter-spacing:0.22em}
+
+#phases{display:flex;gap:2px;pointer-events:all}
+.pb{
+  font-size:7px;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--muted);border:1px solid transparent;
+  padding:5px 13px;background:transparent;
+  transition:all 0.18s;cursor:crosshair;font-family:var(--fm);
+}
+.pb:hover{color:var(--text);border-color:var(--border)}
+.pb.on{
+  color:var(--g);
+  border-color:rgba(0,255,136,0.25);
+  background:rgba(0,255,136,0.04);
+}
+.pb.news-btn.on{
+  color:var(--purple);
+  border-color:rgba(170,102,255,0.25);
+  background:rgba(170,102,255,0.04);
+}
+
+/* Status message display */
+#status{
+  position:fixed;top:22px;left:50%;transform:translateX(-50%);
+  font-size:8px;letter-spacing:0.28em;text-transform:uppercase;
+  color:var(--muted);z-index:30;pointer-events:none;
+  opacity:0;transition:opacity 0.3s;white-space:nowrap;
+}
+#status.on{opacity:1}
+
+/* Left control panel for inputs */
+#panel{
+  position:fixed;left:24px;top:50%;transform:translateY(-50%);
+  z-index:20;display:flex;flex-direction:column;gap:0;
+  pointer-events:all;
+  background:var(--panel-bg);
+  border:1px solid var(--border);
+  backdrop-filter:blur(20px);
+  padding:16px;
+  width:164px;
+}
+.prow{display:flex;flex-direction:column;gap:3px;margin-bottom:10px}
+.prow:last-of-type{margin-bottom:0}
+.plbl{
+  font-size:7px;letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:3px;
+}
+.pin{
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--border);
+  color:var(--text);font-family:var(--ff);
+  font-size:18px;font-weight:800;letter-spacing:1px;
+  text-align:center;width:100%;padding:6px 8px;
+  outline:none;text-transform:uppercase;
+  caret-color:var(--g);transition:border-color 0.18s;
+}
+.pin::placeholder{color:rgba(216,220,232,0.08)}
+.pin:focus{border-color:rgba(0,255,136,0.3)}
+.din{
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--border);
+  color:var(--muted);font-family:var(--fm);
+  font-size:11px;text-align:center;width:100%;
+  padding:5px 8px;outline:none;
+  transition:border-color 0.18s,color 0.18s;
+}
+.din:focus{border-color:rgba(255,255,255,0.15);color:var(--text)}
+.goBtn{
+  width:100%;background:transparent;
+  border:1px solid rgba(0,255,136,0.3);
+  color:var(--g);font-family:var(--ff);
+  font-size:11px;letter-spacing:3px;
+  padding:7px 0;cursor:crosshair;text-transform:uppercase;
+  transition:background 0.18s;margin-top:4px;
+}
+.goBtn:hover{background:rgba(0,255,136,0.05)}
+
+/* Section for keyword inputs within the panel */
+#kwSection{
+  margin-top:14px;padding-top:14px;
+  border-top:1px solid var(--border);
+  display:flex;flex-direction:column;gap:3px;
+}
+.kwhead{
+  font-size:7px;letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:5px;
+}
+.kwrow{display:flex;align-items:center;gap:5px}
+.kwin{
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--border);
+  color:var(--muted);font-family:var(--fm);
+  font-size:10px;flex:1;min-width:0;
+  padding:4px 6px;outline:none;
+  transition:border-color 0.18s,color 0.18s;
+}
+.kwin:focus{border-color:rgba(170,102,255,0.3);color:var(--text)}
+.kwin.loaded{border-color:rgba(170,102,255,0.25);color:rgba(170,102,255,0.8)}
+.kwin.err{border-color:rgba(255,61,90,0.3);color:rgba(255,61,90,0.6)}
+.kwsent{
+  font-family:var(--ff);font-size:8px;font-weight:700;
+  min-width:34px;text-align:right;
+  transition:color 0.3s;line-height:1.2;
+}
+.kwsent-arrow{font-size:9px;display:block;text-align:right}
+.kwsent-lbl{font-size:7px;letter-spacing:0.06em;display:block;text-align:right;opacity:0.7}
+.kwfetch{
+  background:transparent;
+  border:1px solid rgba(170,102,255,0.25);
+  color:rgba(170,102,255,0.6);
+  font-family:var(--fm);font-size:7px;letter-spacing:2px;
+  padding:6px 0;width:100%;cursor:crosshair;
+  transition:background 0.18s,border-color 0.18s;
+  margin-top:4px;text-transform:uppercase;
+}
+.kwfetch:hover{
+  background:rgba(170,102,255,0.05);
+  border-color:rgba(170,102,255,0.4);
+  color:rgba(170,102,255,0.85);
+}
+
+/* Right panel for mode selection */
+#modes{
+  position:fixed;right:24px;top:50%;transform:translateY(-50%);
+  z-index:20;display:flex;flex-direction:column;gap:2px;
+  pointer-events:all;
+}
+.mb{
+  background:var(--panel-bg);
+  border:1px solid var(--border);
+  color:var(--muted);font-family:var(--fm);
+  font-size:7px;letter-spacing:0.2em;text-transform:uppercase;
+  padding:8px 16px;cursor:crosshair;
+  backdrop-filter:blur(20px);
+  transition:all 0.18s;white-space:nowrap;text-align:right;
+  min-width:140px;
+}
+.mb:hover{color:var(--text);border-color:rgba(255,255,255,0.14)}
+.mb.on{
+  color:var(--g);
+  border-color:rgba(0,255,136,0.3);
+  background:rgba(0,255,136,0.04);
+}
+.mb.news-mode.on{
+  color:var(--purple);
+  border-color:rgba(170,102,255,0.3);
+  background:rgba(170,102,255,0.04);
+}
+
+/* Bottom stats bar */
+#stats{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  z-index:20;display:flex;gap:0;
+  opacity:0;transition:opacity 0.6s;pointer-events:none;
+  background:var(--panel-bg);
+  border:1px solid var(--border);
+  backdrop-filter:blur(20px);
+}
+#stats.on{opacity:1}
+.sblock{padding:10px 20px;display:flex;flex-direction:column;align-items:center}
+.sv{font-family:var(--ff);font-size:15px;font-weight:700;text-align:center}
+.sl{font-size:7px;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase;text-align:center;margin-top:2px}
+.sdiv{width:1px;background:var(--border);align-self:stretch}
+
+/* Tooltip styles */
+#tt{
+  position:fixed;z-index:80;pointer-events:none;
+  background:var(--panel-bg);
+  border:1px solid var(--border);
+  padding:12px 14px;backdrop-filter:blur(24px);
+  min-width:168px;opacity:0;transition:opacity 0.12s;
+  font-size:10px;line-height:1.7;
+}
+#tt.on{opacity:1}
+.td{font-size:7px;letter-spacing:0.22em;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+.tr{display:flex;justify-content:space-between;gap:20px;margin-bottom:2px}
+.tl{color:var(--muted);font-size:9px}
+.tsent{margin-top:7px;padding-top:7px;border-top:1px solid var(--border);font-size:9px}
+.tnews{margin-top:5px;padding-top:5px;border-top:1px solid var(--border);font-size:8px;line-height:1.6;color:var(--muted)}
+.anomaly-badge{
+  display:inline-block;margin-top:5px;
+  padding:2px 8px;font-size:7px;letter-spacing:0.16em;text-transform:uppercase;
+  border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);
+}
+
+/* Keyword tooltip */
+#kwtt{
+  position:fixed;z-index:80;pointer-events:none;
+  background:var(--panel-bg);
+  border:1px solid var(--border);
+  padding:14px 16px;backdrop-filter:blur(24px);
+  min-width:230px;max-width:270px;
+  opacity:0;transition:opacity 0.12s;
+  font-size:10px;line-height:1.7;
+}
+#kwtt.on{opacity:1}
+.kwtt-kw-name{
+  font-family:var(--ff);font-size:12px;font-weight:800;
+  letter-spacing:0.06em;text-transform:uppercase;
+}
+.kwtt-node-label{
+  font-size:7px;letter-spacing:0.22em;
+  color:var(--muted);text-transform:uppercase;
+  margin-top:1px;
+}
+.kwtt-tier{
+  font-family:var(--ff);font-size:15px;font-weight:800;
+  letter-spacing:0.02em;margin:8px 0 9px;
+}
+.kwtt-scale-bar{
+  height:3px;
+  background:linear-gradient(to right,var(--r),#ff7755 25%,var(--gold) 50%,#44ffaa 75%,var(--g));
+  border-radius:2px;position:relative;margin-bottom:4px;
+}
+.kwtt-needle{
+  position:absolute;top:-5px;width:1px;height:13px;
+  background:rgba(255,255,255,0.9);border-radius:1px;
+  transform:translateX(-50%);transition:left 0.4s;
+}
+.kwtt-scale-labels{
+  display:flex;justify-content:space-between;
+  font-size:7px;color:rgba(255,255,255,0.2);
+  letter-spacing:0.04em;margin-bottom:12px;
+}
+.kwtt-divider{height:1px;background:var(--border);margin:10px 0}
+.kwtt-row{
+  display:flex;justify-content:space-between;
+  align-items:baseline;gap:12px;margin-bottom:5px;
+}
+.kwtt-row-label{font-size:8px;color:var(--muted)}
+.kwtt-row-val{font-family:var(--ff);font-size:11px;font-weight:700;color:var(--text)}
+.kwtt-body{font-size:8px;color:var(--muted);line-height:1.75}
+.kwtt-footer{
+  margin-top:9px;padding-top:8px;
+  border-top:1px solid rgba(255,255,255,0.04);
+  font-size:7px;color:rgba(255,255,255,0.18);line-height:1.65;
+}
+
+/* Overlay labels for keywords */
+#kwOverlay{position:fixed;inset:0;pointer-events:none;z-index:10}
+.kw-label{
+  position:fixed;pointer-events:none;z-index:15;
+  font-family:var(--ff);font-size:9px;font-weight:700;
+  letter-spacing:0.1em;text-transform:uppercase;
+  padding:4px 8px;
+  border:1px solid rgba(255,255,255,0.07);
+  background:rgba(4,7,12,0.88);
+  backdrop-filter:blur(8px);
+  transition:opacity 0.3s;white-space:nowrap;
+  transform:translate(-50%,-50%);
+}
+.kw-label-tier{
+  font-size:7px;font-weight:400;letter-spacing:0.14em;
+  opacity:0.7;display:block;margin-top:1px;
+}
+.kw-label-art{
+  font-size:7px;color:rgba(255,255,255,0.25);
+  font-weight:400;display:block;
+}
+
+/* Legend for color meanings */
+#legend{
+  position:fixed;bottom:24px;right:24px;z-index:20;
+  opacity:0;transition:opacity 0.6s;pointer-events:none;
+}
+#legend.on{opacity:1}
+.lgrow{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.lgdot{width:4px;height:4px;border-radius:50%;flex-shrink:0}
+.lglbl{font-size:7px;letter-spacing:0.14em;color:var(--muted);text-transform:uppercase}
+
+/* News mode legend */
+#newsLegend{
+  position:fixed;bottom:24px;left:24px;z-index:20;
+  opacity:0;transition:opacity 0.6s;pointer-events:none;
+  display:flex;flex-direction:column;gap:3px;
+}
+#newsLegend.on{opacity:1}
+.nll{font-size:7px;letter-spacing:0.14em;color:var(--muted);text-transform:uppercase}
+
+/* News axis indicator */
+#newsAxis{
+  position:fixed;right:185px;top:50%;transform:translateY(-50%);
+  z-index:5;pointer-events:none;
+  opacity:0;transition:opacity 0.6s;
+  display:flex;flex-direction:column;align-items:flex-end;gap:0;
+}
+#newsAxis.on{opacity:1}
+.nax{font-size:7px;letter-spacing:0.16em;color:rgba(255,255,255,0.1);text-transform:uppercase}
+.nax-line{width:20px;height:1px;background:rgba(255,255,255,0.05);margin:5px 0}
+.nax-mid{font-size:7px;letter-spacing:0.16em;color:rgba(255,255,255,0.15);text-transform:uppercase}
+
+/* Error message display */
+#err{
+  position:fixed;bottom:72px;left:50%;
+  transform:translateX(-50%) translateY(12px);
+  background:rgba(255,61,90,0.08);
+  border:1px solid rgba(255,61,90,0.2);
+  color:var(--r);padding:7px 18px;
+  font-size:9px;letter-spacing:0.1em;
+  z-index:100;transition:transform 0.25s,opacity 0.25s;
+  opacity:0;pointer-events:none;
+}
+#err.on{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="kwOverlay"></div>
+
+<div id="topbar">
+  <div class="logo">
+    <span class="logo-bravo">BRA<span class="logo-v">V</span>O</span><span class="logo-sep">/</span><span class="logo-sub">Constellation</span>
+  </div>
+  <div id="phases">
+    <div class="pb" id="ph0">Scatter</div>
+    <div class="pb" id="ph1">Clusters</div>
+    <div class="pb" id="ph2">Line</div>
+    <div class="pb" id="ph3">OHLC</div>
+    <div class="pb news-btn" id="ph4">⬡ News</div>
+  </div>
+</div>
+
+<div id="status"></div>
+
+<div id="panel">
+  <div class="prow"><div class="plbl">Ticker</div><input class="pin" id="tickIn" placeholder="AAPL" maxlength="6" autocomplete="off" spellcheck="false"/></div>
+  <div class="prow"><div class="plbl">From</div><input class="din" id="fromIn" value="2024-03-01"/></div>
+  <div class="prow"><div class="plbl">To</div><input class="din" id="toIn" value="2024-03-31"/></div>
+  <button class="goBtn" id="goBtn">FETCH</button>
+  <div id="kwSection">
+    <div class="kwhead">News Keywords</div>
+    <div class="kwrow"><input class="kwin" id="kw0" placeholder="keyword"/><span class="kwsent" id="ks0" style="color:var(--muted)"></span></div>
+    <div class="kwrow"><input class="kwin" id="kw1" placeholder="keyword"/><span class="kwsent" id="ks1" style="color:var(--muted)"></span></div>
+    <div class="kwrow"><input class="kwin" id="kw2" placeholder="keyword"/><span class="kwsent" id="ks2" style="color:var(--muted)"></span></div>
+    <div class="kwrow"><input class="kwin" id="kw3" placeholder="keyword"/><span class="kwsent" id="ks3" style="color:var(--muted)"></span></div>
+    <button class="kwfetch" id="kwBtn">PULL NEWS</button>
+  </div>
+</div>
+
+<div id="modes">
+  <button class="mb" id="mb0">Scatter</button>
+  <button class="mb" id="mb1">Form clusters</button>
+  <button class="mb" id="mb2">Resolve to line</button>
+  <button class="mb" id="mb3">Morph OHLC</button>
+  <button class="mb news-mode" id="mb4">News gravity</button>
+</div>
+
+<!-- news axis label guide (shown in news mode) -->
+<div id="newsAxis">
+  <div class="nax">bullish</div>
+  <div class="nax-line"></div>
+  <div class="nax-mid">sentiment</div>
+  <div class="nax-line"></div>
+  <div class="nax">bearish</div>
+</div>
+
+<div id="stats">
+  <div class="sblock"><div class="sv" id="sDays" style="color:var(--text)"></div><div class="sl">Days</div></div>
+  <div class="sdiv"></div>
+  <div class="sblock"><div class="sv" id="sBull" style="color:var(--g)"></div><div class="sl">Bullish</div></div>
+  <div class="sdiv"></div>
+  <div class="sblock"><div class="sv" id="sBear" style="color:var(--r)"></div><div class="sl">Bearish</div></div>
+  <div class="sdiv"></div>
+  <div class="sblock"><div class="sv" id="sRange" style="color:var(--gold)"></div><div class="sl">Range</div></div>
+  <div class="sdiv"></div>
+  <div class="sblock"><div class="sv" id="sVol" style="color:var(--muted)"></div><div class="sl">Avg Vol</div></div>
+  <div class="sdiv"></div>
+  <div class="sblock"><div class="sv" id="sNewsSent" style="color:var(--purple)"></div><div class="sl">News Mood</div></div>
+</div>
+
+<div id="legend">
+  <div class="lgrow"><div class="lgdot" style="background:#00ff88"></div><div class="lglbl">Strong bullish</div></div>
+  <div class="lgrow"><div class="lgdot" style="background:#44ffaa"></div><div class="lglbl">Mild bullish</div></div>
+  <div class="lgrow"><div class="lgdot" style="background:#f5c518"></div><div class="lglbl">Neutral</div></div>
+  <div class="lgrow"><div class="lgdot" style="background:#ff7755"></div><div class="lglbl">Mild bearish</div></div>
+  <div class="lgrow"><div class="lgdot" style="background:#ff3d5a"></div><div class="lglbl">Strong bearish</div></div>
+  <div class="lgrow" style="margin-top:6px"><div class="lgdot" style="background:#ffffff;box-shadow:0 0 6px #fff"></div><div class="lglbl">Price vs news divergence</div></div>
+</div>
+
+<div id="newsLegend">
+  <div class="nll">⬡ node size = article volume</div>
+  <div class="nll" style="color:rgba(170,102,255,0.6)">⬡ height = sentiment direction</div>
+  <div class="nll" style="color:rgba(255,255,255,0.3);margin-top:4px">particles drift toward</div>
+  <div class="nll" style="color:rgba(255,255,255,0.3)">matching sentiment node</div>
+</div>
+
+
+<div id="tt">
+  <div class="td" id="ttDate"></div>
+  <div class="tr"><span class="tl">Open</span><span id="ttO"></span></div>
+  <div class="tr"><span class="tl">Close</span><span id="ttC"></span></div>
+  <div class="tr"><span class="tl">High</span><span id="ttH"></span></div>
+  <div class="tr"><span class="tl">Low</span><span id="ttL"></span></div>
+  <div class="tr"><span class="tl">Volume</span><span id="ttV"></span></div>
+  <div class="tsent" id="ttS"></div>
+  <div class="tnews" id="ttN"></div>
+</div>
+
+<div id="kwtt">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+    <div class="kwtt-kw-name" id="kwttName"></div>
+    <div class="kwtt-node-label">News Node</div>
+  </div>
+  <div class="kwtt-tier" id="kwttTierLabel"></div>
+  <div class="kwtt-scale-bar"><div class="kwtt-needle" id="kwttNeedle"></div></div>
+  <div class="kwtt-scale-labels"><span>Bearish</span><span>Neutral</span><span>Bullish</span></div>
+  <div class="kwtt-row">
+    <span class="kwtt-row-label">Articles (30d)</span>
+    <span class="kwtt-row-val" id="kwttArt"></span>
+  </div>
+  <div class="kwtt-row">
+    <span class="kwtt-row-label">Days pulled here</span>
+    <span class="kwtt-row-val" id="kwttPull"></span>
+  </div>
+  <div class="kwtt-divider"></div>
+  <div class="kwtt-body" id="kwttDesc"></div>
+  <div class="kwtt-footer" id="kwttScale"></div>
+</div>
+<div id="err"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// API configuration - no way to hide these in frontend-only app, but they have strict usage limits and permissions set in AWS console
+const API='https://b5hxtt8xp6.execute-api.ap-southeast-2.amazonaws.com/prod';
+const APIKEY='drzw51m2Sf9dYtQlwD8j8aAoJQ5G8LEX8P29SGbs';
+const SENTIMENT_API='https://i9pdxmupj7.execute-api.ap-southeast-2.amazonaws.com';
+const SENTIMENT_KEY='4e615ad23602a7058ba21907adb43b601703015db7da227a';
+const MAX=500;
+
+// Function to determine sentiment tier based on value
+function sentimentTier(v){
+  if(v>0.55)return{label:'Very Bullish',short:'BULL',arrow:'▲▲',col:'var(--g)',pct:1.0};
+  if(v>0.15)return{label:'Bullish',short:'BULL',arrow:'▲',col:'#44ffaa',pct:0.75};
+  if(v>-0.15)return{label:'Neutral',short:'NEU',arrow:'◆',col:'var(--gold)',pct:0.5};
+  if(v>-0.55)return{label:'Bearish',short:'BEAR',arrow:'▼',col:'#ff7755',pct:0.25};
+  return{label:'Very Bearish',short:'BEAR',arrow:'▼▼',col:'var(--r)',pct:0.0};
+}
+
+// Helper to format numbers with abbreviations
+function abbrevCount(n){
+  if(!n)return'0';
+  if(n>=1000)return(n/1000).toFixed(1)+'k';
+  return String(n);
+}
+
+// Set up Three.js renderer and scene
+const cv=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:false,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+renderer.setClearColor(0x04070c,1);
+const scene=new THREE.Scene();
+scene.fog=new THREE.FogExp2(0x04070c,0.014);
+const camera=new THREE.PerspectiveCamera(52,innerWidth/innerHeight,0.1,600);
+camera.position.set(0,0,38);
+camera.lookAt(0,0,0);
+window.addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderKeywordLabels();});
+renderer.setSize(innerWidth,innerHeight);
+
+scene.add(new THREE.AmbientLight(0xffffff,0.06));
+const gL=new THREE.PointLight(0x00ff88,4,100); gL.position.set(-5,14,10); scene.add(gL);
+const rL=new THREE.PointLight(0xff3d5a,3,80);  rL.position.set(5,-14,8);  scene.add(rL);
+const bL=new THREE.PointLight(0x4488ff,1.5,60);bL.position.set(-18,0,5);  scene.add(bL);
+const wL=new THREE.PointLight(0xffffff,0,80);  wL.position.set(0,0,10);   scene.add(wL);
+const pL=new THREE.PointLight(0xaa66ff,0,60);  pL.position.set(0,0,15);   scene.add(pL);
+
+// Particle system setup
+let N=0, DATA=[];
+const pos    =new Float32Array(MAX*3);
+const col    =new Float32Array(MAX*3);
+const sz     =new Float32Array(MAX);
+const baseCol=new Float32Array(MAX*3);
+const newsCol=new Float32Array(MAX*3);
+const glowA  =new Float32Array(MAX);
+const anomaly=new Uint8Array(MAX);
+const newsS  =new Float32Array(MAX);
+
+const scatterP=new Float32Array(MAX*3);
+const clusterP=new Float32Array(MAX*3);
+const lineP   =new Float32Array(MAX*3);
+const ohlcP   =new Float32Array(MAX*3);
+const newsP   =new Float32Array(MAX*3);
+
+// stable per-particle jitter for news gravity positions
+const newsJitter=new Float32Array(MAX*3);
+
+const pGeo=new THREE.BufferGeometry();
+pGeo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+pGeo.setAttribute('color',   new THREE.BufferAttribute(col,3));
+pGeo.setAttribute('aSize',   new THREE.BufferAttribute(sz,1));
+pGeo.setDrawRange(0,0);
+
+const pMat=new THREE.ShaderMaterial({
+  vertexColors:true,transparent:true,depthWrite:false,
+  blending:THREE.AdditiveBlending,
+  uniforms:{uPR:{value:renderer.getPixelRatio()}},
+  vertexShader:`
+    attribute float aSize;
+    varying vec3 vCol;
+    uniform float uPR;
+    void main(){
+      vCol=color;
+      vec4 mv=modelViewMatrix*vec4(position,1.0);
+      gl_PointSize=aSize*uPR*(300.0/-mv.z);
+      gl_Position=projectionMatrix*mv;
+    }`,
+  fragmentShader:`
+    varying vec3 vCol;
+    void main(){
+      vec2 uv=gl_PointCoord-0.5;
+      float d=length(uv);
+      if(d>0.5)discard;
+      float core=1.0-smoothstep(0.0,0.12,d);
+      float mid=1.0-smoothstep(0.08,0.35,d);
+      float halo=1.0-smoothstep(0.25,0.5,d);
+      float a=core*0.98+mid*0.45+halo*0.18;
+      vec3 c=vCol*(1.0+core*1.5)+vec3(core*0.5);
+      gl_FragColor=vec4(c,a);
+    }`
+});
+const pts=new THREE.Points(pGeo,pMat);
+scene.add(pts);
+
+// line chart
+const lBuf=new Float32Array(MAX*3);
+const lGeo=new THREE.BufferGeometry();
+lGeo.setAttribute('position',new THREE.BufferAttribute(lBuf,3));
+lGeo.setDrawRange(0,0);
+const lMat=new THREE.LineBasicMaterial({color:0x00ff88,transparent:true,opacity:0,blending:THREE.AdditiveBlending});
+scene.add(new THREE.Line(lGeo,lMat));
+
+// sentiment overlay line
+const slBuf=new Float32Array(MAX*3);
+const slGeo=new THREE.BufferGeometry();
+slGeo.setAttribute('position',new THREE.BufferAttribute(slBuf,3));
+slGeo.setDrawRange(0,0);
+const slMat=new THREE.LineBasicMaterial({color:0xaa66ff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,linewidth:1});
+scene.add(new THREE.Line(slGeo,slMat));
+
+// candle group
+const candleGrp=new THREE.Group(); scene.add(candleGrp);
+
+// line hit planes
+const lineHitGrp=new THREE.Group(); scene.add(lineHitGrp);
+const lineHitMat=new THREE.MeshBasicMaterial({visible:false,side:THREE.DoubleSide});
+
+// Keyword nodes and gravity wells
+let KEYWORDS=[];
+const kwGrp=new THREE.Group(); scene.add(kwGrp);
+const kwOverlay=document.getElementById('kwOverlay');
+let kwLabels=[];
+
+function clearKeywordNodes(){
+  while(kwGrp.children.length)kwGrp.remove(kwGrp.children[0]);
+  kwLabels.forEach(l=>l.remove());
+  kwLabels=[];
+}
+
+function buildKeywordNodes(){
+  clearKeywordNodes();
+  if(!KEYWORDS.length)return;
+
+  const maxCount=Math.max(...KEYWORDS.map(k=>k.count||1));
+
+  // Position keyword nodes based on sentiment and article count
+  KEYWORDS.forEach((kw,i)=>{
+    const artNorm=(kw.count||1)/maxCount;       // 0..1 relative coverage
+    const side=(i%2===0?1:-1);                  // alternate left / right
+    const xSpread=6+artNorm*10;                 // 6..16 units from centre
+    kw.x=side*xSpread;
+    kw.y=Math.max(-13,Math.min(13,kw.sentiment*10));
+    kw.z=-1+i*0.9;                              // slight depth variation
+
+    const kwColor=kw.sentiment>0.15?0x00ff88:kw.sentiment<-0.15?0xff3d5a:0xaa66ff;
+    const sphereR=0.22+artNorm*0.7;
+
+    // sphere core
+    const geo=new THREE.SphereGeometry(sphereR,10,10);
+    const mat=new THREE.MeshBasicMaterial({color:kwColor,transparent:true,opacity:0,blending:THREE.AdditiveBlending});
+    const mesh=new THREE.Mesh(geo,mat);
+    mesh.position.set(kw.x,kw.y,kw.z);
+    mesh.userData.kwIdx=i;
+    kwGrp.add(mesh);
+
+    // outer ring
+    const ringGeo=new THREE.RingGeometry(sphereR+0.1,sphereR+0.18,24);
+    const ringMat=new THREE.MeshBasicMaterial({color:kwColor,transparent:true,opacity:0,blending:THREE.AdditiveBlending,side:THREE.DoubleSide});
+    const ring=new THREE.Mesh(ringGeo,ringMat);
+    ring.position.set(kw.x,kw.y,kw.z);
+    ring.userData.isRing=true;
+    kwGrp.add(ring);
+
+    // DOM label
+    const tier=sentimentTier(kw.sentiment);
+    const lbl=document.createElement('div');
+    lbl.className='kw-label';
+    lbl.style.color=tier.col;
+    const bsc=kw.sentiment>0.15?'rgba(0,255,136,0.3)':kw.sentiment<-0.15?'rgba(255,61,90,0.3)':'rgba(170,102,255,0.35)';
+    lbl.style.borderColor=bsc;
+
+    const nameSpan=document.createElement('span');
+    nameSpan.textContent=kw.keyword.toUpperCase();
+    nameSpan.style.display='block';
+
+    const tierSpan=document.createElement('span');
+    tierSpan.className='kw-label-tier';
+    tierSpan.style.color=tier.col;
+    tierSpan.textContent=tier.arrow+' '+tier.label.toUpperCase();
+
+    const artSpan=document.createElement('span');
+    artSpan.className='kw-label-art';
+    artSpan.textContent=kw.count>0?'· '+abbrevCount(kw.count)+' art':'';
+
+    lbl.appendChild(nameSpan);
+    lbl.appendChild(tierSpan);
+    lbl.appendChild(artSpan);
+    lbl.style.opacity='0';
+    kwOverlay.appendChild(lbl);
+    kwLabels.push(lbl);
+  });
+}
+
+function setKeywordOpacity(o){
+  kwGrp.children.forEach(c=>{if(c.material)c.material.opacity=o*(c.userData.isRing?0.35:0.55);});
+  kwLabels.forEach(l=>{l.style.opacity=String(Math.min(o*1.4,1));});
+}
+
+function renderKeywordLabels(){
+  if(!KEYWORDS.length)return;
+  const proj=new THREE.Vector3();
+  KEYWORDS.forEach((kw,i)=>{
+    if(!kwLabels[i])return;
+    proj.set(kw.x,kw.y,kw.z);
+    proj.project(camera);
+    const sx=(proj.x*0.5+0.5)*innerWidth;
+    const sy=(-proj.y*0.5+0.5)*innerHeight;
+    kwLabels[i].style.left=sx+'px';
+    kwLabels[i].style.top=(sy-28)+'px';
+  });
+}
+
+// Sentiment data handling
+let OVERALL_NEWS_SENT=0;
+let NEWS_LOADED=false;
+
+function remapSentiment(v){
+  // API returns a signed float directly (e.g. -0.224, +0.41).
+  return Math.max(-1,Math.min(1,v));
+}
+
+async function fetchKeywordSentiments(){
+  // Fetch sentiment data for entered keywords from the API
+  const inputs=[0,1,2,3].map(i=>document.getElementById('kw'+i).value.trim()).filter(Boolean);
+  if(!inputs.length){showErr('Enter at least one keyword');return;}
+
+  [0,1,2,3].forEach(i=>{
+    const inp=document.getElementById('kw'+i);
+    const sp=document.getElementById('ks'+i);
+    inp.classList.remove('loaded','err');
+    sp.textContent='…';sp.style.color='var(--muted)';
+  });
+
+  NEWS_LOADED=false;
+  KEYWORDS=[];
+  clearKeywordNodes();
+  setStatus('Fetching news…');
+
+  const kwInputs=inputs.slice(0,4);
+  const results=await Promise.allSettled(kwInputs.map(async(kw)=>{
+    const allKws=[0,1,2,3].map(i=>document.getElementById('kw'+i).value.trim());
+    const inputIdx=allKws.indexOf(kw);
+    const inp=document.getElementById('kw'+inputIdx);
+    const sp=document.getElementById('ks'+inputIdx);
+    try{
+      const r=await fetch(`${SENTIMENT_API}/api/sentiment?keyword=${encodeURIComponent(kw)}&timeframe=30d`,{
+        headers:{'X-API-Key':SENTIMENT_KEY}
+      });
+      if(!r.ok)throw new Error(r.status);
+      const j=await r.json();
+      const rawSent=j.averageSentiment??0.5;
+      const mapped=remapSentiment(rawSent);
+      const articles=j.articleCount||0;
+      inp.classList.add('loaded');
+
+      const tier=sentimentTier(mapped);
+      sp.style.color=tier.col;
+      sp.innerHTML=`<span class="kwsent-arrow">${tier.arrow}</span><span class="kwsent-lbl">${tier.short}</span>`;
+
+      return{keyword:kw,sentiment:mapped,count:articles,rawSent};
+    }catch(e){
+      inp.classList.add('err');
+      sp.innerHTML='<span class="kwsent-arrow" style="color:var(--r)">✕</span>';
+      return null;
+    }
+  }));
+
+  KEYWORDS=results.map(r=>r.status==='fulfilled'?r.value:null).filter(Boolean);
+
+  if(!KEYWORDS.length){setStatus('');showErr('No keyword data returned');return;}
+
+  const totalArt=KEYWORDS.reduce((s,k)=>s+(k.count||1),0)||1;
+  OVERALL_NEWS_SENT=KEYWORDS.reduce((s,k)=>s+(k.sentiment*(k.count||1)),0)/totalArt;
+  NEWS_LOADED=true;
+
+  buildKeywordNodes();
+  if(N>0){applyNewsToParticles();computeNewsGravityPositions();}
+  updateNewsSentimentUI();
+  setStatus('');
+}
+
+// Normalize price direction for particle assignment
+function priceDirNormalized(d){
+  // Returns -1..+1 representing how bullish/bearish this day was.
+  // We clamp to ±1 and scale the raw % return so typical moves (1-3%)
+  // map meaningfully to the ±1 scale.
+  const raw=(d.close-d.open)/(d.open||1);
+  // Scale: treat ±2% as a full signal (±1). Clamp to ±1.
+  return Math.max(-1,Math.min(1,raw/0.02));
+}
+
+function applyNewsToParticles(){
+  if(!KEYWORDS.length)return;
+
+  DATA.forEach((d,i)=>{
+    // Normalised price direction: -1 (strong down) to +1 (strong up)
+    const pDir=priceDirNormalized(d);
+
+    // Assign to keyword whose sentiment is DIRECTIONALLY closest to pDir.
+    // Same sign = strong match. We want to minimise |pDir - kwSentiment|.
+    let bestKw=0,bestDist=Infinity;
+    KEYWORDS.forEach((kw,ki)=>{
+      const dist=Math.abs(pDir-kw.sentiment);
+      if(dist<bestDist){bestDist=dist;bestKw=ki;}
+    });
+    particleNode[i]=bestKw;
+
+    // Stable per-particle jitter (seeded, not random each frame)
+    newsJitter[i*3]  =(Math.sin(i*1.7)*0.5+Math.cos(i*2.3)*0.5)*2.4;
+    newsJitter[i*3+1]=(Math.cos(i*1.1)*0.5+Math.sin(i*3.7)*0.5)*1.6;
+    newsJitter[i*3+2]=(Math.sin(i*2.9)*0.5)*1.2;
+
+    // News colour: use assigned keyword's colour
+    const ki=particleNode[i];
+    const kwSent=(ki>=0&&ki<KEYWORDS.length)?KEYWORDS[ki].sentiment:0;
+    newsS[i]=kwSent;
+    const nc=new THREE.Color();
+    if(kwSent>0.3)nc.setHex(0x00ff88);
+    else if(kwSent>0.1)nc.setHex(0x44ffaa);
+    else if(kwSent>-0.1)nc.setHex(0xaa66ff);
+    else if(kwSent>-0.3)nc.setHex(0xff7755);
+    else nc.setHex(0xff3d5a);
+    newsCol[i*3]=nc.r;newsCol[i*3+1]=nc.g;newsCol[i*3+2]=nc.b;
+
+    // Anomaly: price direction contradicts overall news mood
+    const priceBull=d.sentiment>0.003;
+    const priceBear=d.sentiment<-0.003;
+    const newsBull=OVERALL_NEWS_SENT>0.08;
+    const newsBear=OVERALL_NEWS_SENT<-0.08;
+    anomaly[i]=((priceBull&&newsBear)||(priceBear&&newsBull))?1:0;
+  });
+  buildSentimentLine();
+}
+
+function buildSentimentLine(){
+  if(!N)return;
+  const S=spreadScale;
+  DATA.forEach((d,i)=>{
+    const t=i/(N-1||1);
+    const ki=particleNode[i];
+    const kwSent=(ki>=0&&ki<KEYWORDS.length)?KEYWORDS[ki].sentiment:0;
+    slBuf[i*3]  =(t-0.5)*28*S;
+    slBuf[i*3+1]=lineP[i*3+1]+kwSent*3.0+1.2;
+    slBuf[i*3+2]=0.3;
+  });
+  slGeo.attributes.position.needsUpdate=true;
+  slGeo.setDrawRange(0,N);
+}
+
+function computeNewsGravityPositions(){
+  if(!KEYWORDS.length){
+    for(let i=0;i<N;i++){newsP[i*3]=scatterP[i*3];newsP[i*3+1]=scatterP[i*3+1];newsP[i*3+2]=scatterP[i*3+2];}
+    return;
+  }
+  DATA.forEach((d,i)=>{
+    const ki=particleNode[i];
+    if(ki<0||ki>=KEYWORDS.length){
+      newsP[i*3]=scatterP[i*3];newsP[i*3+1]=scatterP[i*3+1];newsP[i*3+2]=scatterP[i*3+2];
+      return;
+    }
+    const kw=KEYWORDS[ki];
+    const bx=scatterP[i*3],by=scatterP[i*3+1],bz=scatterP[i*3+2];
+    const tx=kw.x+newsJitter[i*3];
+    const ty=kw.y+newsJitter[i*3+1];
+    const tz=kw.z+newsJitter[i*3+2];
+    // 60% pull toward node, 40% stays near scatter position
+    const pull=0.60;
+    newsP[i*3]  =bx+(tx-bx)*pull;
+    newsP[i*3+1]=by+(ty-by)*pull;
+    newsP[i*3+2]=bz+(tz-bz)*pull;
+  });
+}
+
+function updateNewsSentimentUI(){
+  const sn=document.getElementById('sNewsSent');
+  if(!NEWS_LOADED||!KEYWORDS.length){sn.textContent='';sn.style.color='var(--purple)';return;}
+  const tier=sentimentTier(OVERALL_NEWS_SENT);
+  sn.style.color=tier.col;
+  sn.innerHTML=`${tier.arrow} ${tier.label.toUpperCase()}`;
+  sn.title=(OVERALL_NEWS_SENT>=0?'+':'')+OVERALL_NEWS_SENT.toFixed(3);
+
+  const fogC=new THREE.Color();
+  if(OVERALL_NEWS_SENT>0.15)fogC.setRGB(0.004,0.025,0.015);
+  else if(OVERALL_NEWS_SENT<-0.15)fogC.setRGB(0.02,0.004,0.008);
+  else fogC.setRGB(0.016,0.028,0.047);
+  scene.fog.color.copy(fogC);
+  renderer.setClearColor(fogC,1);
+}
+
+// Application state management
+let state='idle';
+let mode=-1;
+
+let gatherQueue=[];
+let gatheredCount=0;
+let gatherInterval=null;
+let pendingData=null;
+let applyScheduled=false;
+let gatherDone=false;
+
+let trActive=false,trT=0,trDur=2.0;
+let trFrom=new Float32Array(MAX*3),trTo=new Float32Array(MAX*3);
+let trNextState='scatter',trNextMode=0;
+
+let explodeT=0,exploding=false;
+let explodeScheduled=false;
+
+let lineProgress=0;
+const LINE_SPEED=80;
+
+let newsWellsVisible=false;
+let newsWellsT=0;
+
+let spreadScale=1.0;
+function computeSpread(from,to){
+  const d0=new Date(from),d1=new Date(to);
+  const days=(d1-d0)/(1000*86400);
+  spreadScale=Math.max(0.5,Math.min(2.0,days/365));
+}
+
+// Utility functions
+function ease3(t){return t<0.5?4*t*t*t:(t-1)*(2*t-2)*(2*t-2)+1;}
+function easeOut3(t){return 1-Math.pow(1-t,3);}
+function norm(v,mn,mx){return(v-mn)/(mx-mn||1);}
+
+// Compute particle layouts for different modes
+function computeLayouts(){
+  const closes=DATA.map(d=>d.close);
+  const mn=Math.min(...closes),mx=Math.max(...closes);
+  const maxVol=Math.max(...DATA.map(d=>d.volume))||1;
+  const S=spreadScale;
+
+  DATA.forEach((d,i)=>{
+    const t=i/(N-1||1),volN=d.volume/maxVol;
+    const theta=Math.random()*Math.PI*2,phi=Math.acos(2*Math.random()-1);
+    const r=(14+Math.random()*18)*S;
+    scatterP[i*3]  =r*Math.sin(phi)*Math.cos(theta);
+    scatterP[i*3+1]=r*Math.cos(phi)*0.65;
+    scatterP[i*3+2]=r*Math.sin(phi)*Math.sin(theta)*0.55;
+
+    const sent=d.sentiment;
+    const bandY=sent>0.015?8:sent>0.004?4.5:sent>-0.004?0:sent>-0.015?-4.5:-8;
+    clusterP[i*3]  =(t-0.5)*26*S+(Math.random()-0.5)*4;
+    clusterP[i*3+1]=bandY+(Math.random()-0.5)*2.2;
+    clusterP[i*3+2]=(Math.random()-0.5)*5+Math.abs(sent)*20*S;
+
+    lineP[i*3]  =(t-0.5)*28*S;
+    lineP[i*3+1]=norm(d.close,mn,mx)*11-5.5;
+    lineP[i*3+2]=0;
+
+    ohlcP[i*3]  =lineP[i*3];
+    ohlcP[i*3+1]=lineP[i*3+1];
+    ohlcP[i*3+2]=0;
+
+    const c=new THREE.Color();
+    if(sent>0.015)c.setHex(0x00ff88);
+    else if(sent>0.004)c.setHex(0x44ffaa);
+    else if(sent>-0.004)c.setHex(0xf5c518);
+    else if(sent>-0.015)c.setHex(0xff7755);
+    else c.setHex(0xff3d5a);
+    baseCol[i*3]=c.r; baseCol[i*3+1]=c.g; baseCol[i*3+2]=c.b;
+    newsCol[i*3]=c.r; newsCol[i*3+1]=c.g; newsCol[i*3+2]=c.b;
+    newsS[i]=0; anomaly[i]=0;
+    sz[i]=0.32+volN*0.9; glowA[i]=0.4+Math.random()*0.6;
+  });
+  pGeo.attributes.aSize.needsUpdate=true;
+}
+
+function buildCandles(){
+  while(candleGrp.children.length)candleGrp.remove(candleGrp.children[0]);
+  const closes=DATA.map(d=>d.close);
+  const mn=Math.min(...closes),mx=Math.max(...closes);
+  const gap=28*spreadScale/Math.max(N-1,1);
+  const bw=Math.max(gap*0.65,0.04);
+  const S=spreadScale;
+  DATA.forEach((d,i)=>{
+    const t=i/(N-1||1),x=(t-0.5)*28*S;
+    const bull=d.close>=d.open;
+    const cc=bull?0x00ff88:0xff3d5a;
+    const yO=norm(d.open,mn,mx)*11-5.5,yC=norm(d.close,mn,mx)*11-5.5;
+    const yH=norm(d.high,mn,mx)*11-5.5,yL=norm(d.low,mn,mx)*11-5.5;
+    const bh=Math.abs(yC-yO)||0.05,bm=(yO+yC)/2;
+    const bMesh=new THREE.Mesh(
+      new THREE.PlaneGeometry(Math.max(bw,0.15),bh),
+      new THREE.MeshBasicMaterial({color:cc,transparent:true,opacity:0,blending:THREE.AdditiveBlending,side:THREE.DoubleSide})
+    );
+    bMesh.position.set(x,bm,0); candleGrp.add(bMesh);
+    const wick=new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x,yL,0),new THREE.Vector3(x,yH,0)]),
+      new THREE.LineBasicMaterial({color:cc,transparent:true,opacity:0,blending:THREE.AdditiveBlending})
+    );
+    candleGrp.add(wick);
+  });
+}
+
+function setCandleOpacity(o){candleGrp.children.forEach(c=>{if(c.material)c.material.opacity=o*0.88;});}
+function setParticleVisibility(v){pts.visible=v;}
+
+function buildLineHitPlanes(){
+  while(lineHitGrp.children.length)lineHitGrp.remove(lineHitGrp.children[0]);
+  const gap=28*spreadScale/Math.max(N-1,1);
+  const hw=gap*0.9,hh=0.6;
+  const hitGeo=new THREE.PlaneGeometry(hw,hh);
+  DATA.forEach((d,i)=>{
+    const mesh=new THREE.Mesh(hitGeo,lineHitMat);
+    mesh.position.set(lineP[i*3],lineP[i*3+1],0);
+    mesh.userData.dataIdx=i;
+    lineHitGrp.add(mesh);
+  });
+}
+
+// Gather particles at center before explosion
+function startGather(){
+  if(gatherInterval){clearInterval(gatherInterval);gatherInterval=null;}
+  gatheredCount=0;gatherDone=false;
+  gatherQueue=Array.from({length:N},(_,i)=>i).sort(()=>Math.random()-0.5);
+  state='gathering';updateUI();
+  const perTick=Math.max(1,Math.round(N/150));
+  gatherInterval=setInterval(()=>{
+    if(gatherQueue.length===0){clearInterval(gatherInterval);gatherInterval=null;onAllGathered();return;}
+    for(let k=0;k<perTick;k++){
+      if(gatherQueue.length===0)break;
+      const i=gatherQueue.shift(); gatheredCount++;
+      scatterP[i*3]=(Math.random()-0.5)*0.15;
+      scatterP[i*3+1]=(Math.random()-0.5)*0.15;
+      scatterP[i*3+2]=(Math.random()-0.5)*0.15;
+    }
+    if(pendingData!==null&&!applyScheduled){applyScheduled=true;rushGather();}
+  },100);
+}
+
+function rushGather(){
+  if(gatherInterval){clearInterval(gatherInterval);gatherInterval=null;}
+  if(gatherQueue.length===0){onAllGathered();return;}
+  const remaining=gatherQueue.length;
+  const rushPerTick=Math.max(1,Math.round(remaining/(2000/80)));
+  gatherInterval=setInterval(()=>{
+    for(let k=0;k<rushPerTick;k++){
+      if(gatherQueue.length===0)break;
+      const i=gatherQueue.shift();
+      scatterP[i*3]=(Math.random()-0.5)*0.1;
+      scatterP[i*3+1]=(Math.random()-0.5)*0.1;
+      scatterP[i*3+2]=(Math.random()-0.5)*0.1;
+    }
+    if(gatherQueue.length===0){clearInterval(gatherInterval);gatherInterval=null;onAllGathered();}
+  },80);
+}
+
+function onAllGathered(){
+  if(state==='dot')return;
+  if(gatherInterval){clearInterval(gatherInterval);gatherInterval=null;}
+  gatherDone=true;
+  for(let i=0;i<N;i++){pos[i*3]=0;pos[i*3+1]=0;pos[i*3+2]=0;sz[i]=0;}
+  pGeo.attributes.position.needsUpdate=true;pGeo.attributes.aSize.needsUpdate=true;
+  state='dot';applyScheduled=false;
+  if(pendingData!==null){applyScheduled=true;setTimeout(()=>applyPendingData(),500);}
+}
+
+function applyPendingData(){
+  if(pendingData===null)return;
+  if(explodeScheduled)return;
+  applyScheduled=false;
+  const d=pendingData; pendingData=null;
+  DATA=d; N=DATA.length;
+  computeLayouts();buildCandles();buildLineHitPlanes();updateStats();
+  for(let i=0;i<N;i++){pos[i*3]=0;pos[i*3+1]=0;pos[i*3+2]=0;sz[i]=0;col[i*3]=baseCol[i*3];col[i*3+1]=baseCol[i*3+1];col[i*3+2]=baseCol[i*3+2];}
+  pGeo.setDrawRange(0,N);
+  pGeo.attributes.position.needsUpdate=true;pGeo.attributes.color.needsUpdate=true;pGeo.attributes.aSize.needsUpdate=true;
+  setTimeout(()=>startExplode(),300);
+}
+
+function startExplode(){
+  if(explodeScheduled)return;
+  explodeScheduled=true;
+  for(let i=0;i<N;i++){pos[i*3]=0;pos[i*3+1]=0;pos[i*3+2]=0;sz[i]=0;}
+  pGeo.attributes.position.needsUpdate=true;pGeo.attributes.aSize.needsUpdate=true;
+  state='exploding';exploding=true;explodeT=0;updateUI();
+}
+
+// Handle transitions between visualization modes
+function goMode(newMode){
+  if(state==='gathering'||state==='dot'||state==='exploding')return;
+  if(state==='transitioning'&&trActive)return;
+  const stateNames=['scatter','cluster','linedraw','ohlc','news'];
+
+  if(newMode===4){
+    computeNewsGravityPositions();
+    trFrom.set(pos.slice(0,N*3),0);
+    trTo.set(newsP.slice(0,N*3),0);
+    trActive=true;trT=0;trDur=2.2;
+    trNextState='news';trNextMode=4;
+    state='transitioning';mode=4;
+    lMat.opacity=0;lGeo.setDrawRange(0,0);
+    slMat.opacity=0;slGeo.setDrawRange(0,0);
+    setCandleOpacity(0);setParticleVisibility(true);
+    updateUI();return;
+  }
+
+  if(newMode===2){
+    lMat.opacity=0;lGeo.setDrawRange(0,0);
+    slMat.opacity=0;slGeo.setDrawRange(0,0);
+    setCandleOpacity(0);setParticleVisibility(true);
+    setKeywordOpacity(0);newsWellsVisible=false;
+    lineProgress=0;state='linedraw';mode=2;updateUI();return;
+  }
+
+  if(newMode===3){
+    setCandleOpacity(0);
+    trFrom.set(pos.slice(0,N*3),0);trTo.set(ohlcP.slice(0,N*3),0);
+    trActive=true;trT=0;trDur=1.8;trNextState='ohlc';trNextMode=3;
+    state='transitioning';mode=3;
+    lMat.opacity=0;lGeo.setDrawRange(0,0);
+    slMat.opacity=0;slGeo.setDrawRange(0,0);
+    setKeywordOpacity(0);newsWellsVisible=false;updateUI();return;
+  }
+
+  const destArr=newMode===0?scatterP:clusterP;
+  trFrom.set(pos.slice(0,N*3),0);trTo.set(destArr.slice(0,N*3),0);
+  trActive=true;trT=0;trDur=newMode===0?1.8:2.4;
+  trNextState=stateNames[newMode]||'scatter';trNextMode=newMode;
+  state='transitioning';mode=newMode;
+  lMat.opacity=0;lGeo.setDrawRange(0,0);
+  slMat.opacity=0;slGeo.setDrawRange(0,0);
+  setCandleOpacity(0);setParticleVisibility(true);
+  setKeywordOpacity(0);newsWellsVisible=false;updateUI();
+}
+
+// Main animation loop
+const clock=new THREE.Clock();
+let anomalyPhase=0;
+const particleNode=new Int8Array(MAX).fill(-1);
+
+function animate(){
+  requestAnimationFrame(animate);
+  const dt=Math.min(clock.getDelta(),0.05);
+  const t=clock.elapsedTime;
+  pMat.uniforms.uPR.value=renderer.getPixelRatio();
+  anomalyPhase+=dt*4;
+
+  if(state==='gathering'||state==='dot'){
+    for(let i=0;i<N;i++){
+      pos[i*3]  +=(scatterP[i*3]  -pos[i*3]  )*dt*3.5;
+      pos[i*3+1]+=(scatterP[i*3+1]-pos[i*3+1])*dt*3.5;
+      pos[i*3+2]+=(scatterP[i*3+2]-pos[i*3+2])*dt*3.5;
+      const d2=Math.sqrt(pos[i*3]*pos[i*3]+pos[i*3+1]*pos[i*3+1]+pos[i*3+2]*pos[i*3+2]);
+      const maxR=20*spreadScale;
+      sz[i]=Math.max(0.01,(0.32+glowA[i]*0.5)*(d2/maxR));
+    }
+    pGeo.attributes.position.needsUpdate=true;pGeo.attributes.aSize.needsUpdate=true;
+
+  }else if(state==='exploding'){
+    explodeT=Math.min(explodeT+dt*0.8,1);
+    wL.intensity=0;
+    for(let i=0;i<N;i++){
+      const delay=(i/N)*0.3;
+      const pf=Math.max(0,Math.min((explodeT-delay)/(1-delay),1));
+      const pe=easeOut3(pf);
+      pos[i*3]  =scatterP[i*3]  *pe;
+      pos[i*3+1]=scatterP[i*3+1]*pe;
+      pos[i*3+2]=scatterP[i*3+2]*pe;
+      sz[i]=(0.32+glowA[i]*0.85)*(0.2+pe*0.8);
+      col[i*3]=baseCol[i*3];col[i*3+1]=baseCol[i*3+1];col[i*3+2]=baseCol[i*3+2];
+    }
+    pGeo.attributes.position.needsUpdate=true;pGeo.attributes.color.needsUpdate=true;pGeo.attributes.aSize.needsUpdate=true;
+    if(explodeT>=1){wL.intensity=0;exploding=false;state='scatter';mode=0;updateUI();document.getElementById('stats').classList.add('on');document.getElementById('legend').classList.add('on');}
+
+  }else if(state==='scatter'){
+    for(let i=0;i<N;i++){
+      const sx=scatterP[i*3],sy=scatterP[i*3+1],sz2=scatterP[i*3+2];
+      const nx=Math.sin(sx*0.4+t*0.3)*Math.cos(sy*0.3+t*0.2)*0.8;
+      const ny=Math.sin(sy*0.35+t*0.25)*0.55;
+      pos[i*3]  +=(sx+nx-pos[i*3])*dt*1.2;
+      pos[i*3+1]+=(sy+ny-pos[i*3+1])*dt*1.2;
+      pos[i*3+2]+=(sz2-pos[i*3+2])*dt*1.0;
+    }
+    pGeo.attributes.position.needsUpdate=true;
+
+  }else if(state==='cluster'){
+    for(let i=0;i<N;i++){
+      const cx=clusterP[i*3],cy=clusterP[i*3+1],cz=clusterP[i*3+2];
+      const nx=Math.sin(cx*0.5+t*0.4)*0.4,ny=Math.cos(cy*0.45+t*0.35)*0.28;
+      pos[i*3]  +=(cx+nx-pos[i*3])*dt*2.5;
+      pos[i*3+1]+=(cy+ny-pos[i*3+1])*dt*2.5;
+      pos[i*3+2]+=(cz-pos[i*3+2])*dt*2.0;
+    }
+    pGeo.attributes.position.needsUpdate=true;
+
+  }else if(state==='linedraw'){
+    lineProgress=Math.min(lineProgress+LINE_SPEED*dt,N);
+    const snapped=Math.floor(lineProgress);
+    for(let i=0;i<=snapped&&i<N;i++){
+      const shimY=Math.sin(t*1.4+i*0.18)*0.02;
+      pos[i*3]  +=(lineP[i*3]  -pos[i*3]  )*dt*(i===snapped?12:18);
+      pos[i*3+1]+=(lineP[i*3+1]+shimY-pos[i*3+1])*dt*(i===snapped?12:18);
+      pos[i*3+2]+=(0-pos[i*3+2])*dt*16;
+    }
+    for(let i=0;i<snapped;i++){lBuf[i*3]=pos[i*3];lBuf[i*3+1]=pos[i*3+1];lBuf[i*3+2]=pos[i*3+2];}
+    lMat.opacity=Math.min(lineProgress/N*2,0.55);
+    lGeo.attributes.position.needsUpdate=true;lGeo.setDrawRange(0,snapped);
+    pGeo.attributes.position.needsUpdate=true;
+    if(lineProgress>=N){
+      state='line';
+      if(NEWS_LOADED){buildSentimentLine();slGeo.setDrawRange(0,N);}
+    }
+
+  }else if(state==='line'){
+    for(let i=0;i<N;i++){
+      const shimY=Math.sin(t*1.3+i*0.16)*0.022;
+      pos[i*3]  +=(lineP[i*3]  -pos[i*3]  )*dt*10;
+      pos[i*3+1]+=(lineP[i*3+1]+shimY-pos[i*3+1])*dt*10;
+      pos[i*3+2]+=(0-pos[i*3+2])*dt*10;
+    }
+    for(let i=0;i<N;i++){lBuf[i*3]=pos[i*3];lBuf[i*3+1]=pos[i*3+1];lBuf[i*3+2]=pos[i*3+2];}
+    lGeo.attributes.position.needsUpdate=true;pGeo.attributes.position.needsUpdate=true;
+    if(NEWS_LOADED){
+      slMat.opacity=Math.min(slMat.opacity+dt*0.4,0.65);
+      DATA.forEach((d,i)=>{
+        const ki=particleNode[i];
+        const kwSent=(ki>=0&&ki<KEYWORDS.length)?KEYWORDS[ki].sentiment:0;
+        const S=spreadScale,tm=i/(N-1||1);
+        slBuf[i*3]=(tm-0.5)*28*S;
+        slBuf[i*3+1]=lineP[i*3+1]+kwSent*3.0+1.2+Math.sin(t*1.5+i*0.2)*0.04;
+        slBuf[i*3+2]=0.3;
+      });
+      slGeo.attributes.position.needsUpdate=true;
+    }
+
+  }else if(state==='ohlc'){
+    pGeo.attributes.position.needsUpdate=true;
+
+  }else if(state==='news'){
+    for(let i=0;i<N;i++){
+      const nx2=Math.sin(t*0.6+i*0.22)*0.35;
+      const ny2=Math.cos(t*0.5+i*0.18)*0.22;
+      pos[i*3]  +=(newsP[i*3]  +nx2-pos[i*3])*dt*1.8;
+      pos[i*3+1]+=(newsP[i*3+1]+ny2-pos[i*3+1])*dt*1.8;
+      pos[i*3+2]+=(newsP[i*3+2]-pos[i*3+2])*dt*1.5;
+    }
+    pGeo.attributes.position.needsUpdate=true;
+
+  }else if(state==='transitioning'){
+    trT+=dt/trDur;
+    if(trT>=1){
+      trT=1;trActive=false;state=trNextState;mode=trNextMode;updateUI();
+      if(trNextMode===4){
+        newsWellsVisible=true;
+        document.getElementById('newsLegend').classList.add('on');
+        document.getElementById('newsAxis').classList.add('on');
+      }else{
+        document.getElementById('newsLegend').classList.remove('on');
+        document.getElementById('newsAxis').classList.remove('on');
+      }
+    }
+    const e=ease3(Math.min(trT,1));
+    for(let i=0;i<N;i++){
+      const turb=trT>0.05&&trT<0.7?Math.sin(Math.PI*trT)*0.5:0;
+      for(let ax=0;ax<3;ax++){
+        const ix=i*3+ax;let noise=0;
+        if(turb>0){const px=trFrom[i*3],py=trFrom[i*3+1];noise=Math.sin(px*0.6+t*2+ax)*Math.cos(py*0.5+t*1.5+ax)*turb*1.2;}
+        pos[ix]=trFrom[ix]+(trTo[ix]-trFrom[ix])*e+noise*(1-e);
+      }
+    }
+    if(trNextMode===3)setCandleOpacity(trT);
+    if(trNextMode===4){setKeywordOpacity(trT*0.9);pL.intensity=trT*2.5;}
+    pGeo.attributes.position.needsUpdate=true;
+  }
+
+  // keyword node pulsing
+  if(newsWellsVisible&&KEYWORDS.length){
+    newsWellsT=Math.min(newsWellsT+dt*0.8,1);
+    setKeywordOpacity(newsWellsT*0.9);
+    pL.intensity=newsWellsT*2.5+Math.sin(t*1.8)*0.5;
+    const maxC=Math.max(...KEYWORDS.map(k=>k.count))||1;
+    kwGrp.children.forEach((c)=>{
+      if(!c.userData.isRing&&c.isMesh){
+        const ki=c.userData.kwIdx;if(ki===undefined)return;
+        const kw=KEYWORDS[ki];
+        const pulse=0.7+Math.sin(t*(1.2+ki*0.3)+ki)*0.3*(kw.count/maxC);
+        if(c.material)c.material.opacity=pulse*0.55*newsWellsT;
+      }
+    });
+    renderKeywordLabels();
+  }else if(!newsWellsVisible&&newsWellsT>0){
+    newsWellsT=Math.max(newsWellsT-dt*2,0);
+    setKeywordOpacity(newsWellsT);pL.intensity=newsWellsT*2;
+    if(newsWellsT<=0)pL.intensity=0;
+  }
+
+  setParticleVisibility(state!=='ohlc');
+
+  // color pulse
+  if(state!=='exploding'&&state!=='gathering'&&state!=='dot'){
+    const newsBlend=(state==='news')?0.85:0.0;
+    for(let i=0;i<N;i++){
+      if(i===hovI){col[i*3]=1;col[i*3+1]=1;col[i*3+2]=1;continue;}
+      if(anomaly[i]&&NEWS_LOADED){
+        const af=0.5+Math.sin(anomalyPhase+i*1.3)*0.5;
+        if(af>0.7){
+          const wt=(af-0.7)/0.3;
+          const p=0.75+Math.sin(t*2.6+i*0.33)*0.25*glowA[i];
+          const bc=baseCol[i*3]*p,bg=baseCol[i*3+1]*p,bb=baseCol[i*3+2]*p;
+          col[i*3]=bc+(1-bc)*wt*0.8;col[i*3+1]=bg+(1-bg)*wt*0.8;col[i*3+2]=bb+(1-bb)*wt*0.8;
+          continue;
+        }
+      }
+      const p=0.75+Math.sin(t*2.6+i*0.33)*0.25*glowA[i];
+      const nb=newsBlend*(NEWS_LOADED?1:0);
+      col[i*3]  =(baseCol[i*3]*(1-nb)+newsCol[i*3]*nb)*p;
+      col[i*3+1]=(baseCol[i*3+1]*(1-nb)+newsCol[i*3+1]*nb)*p;
+      col[i*3+2]=(baseCol[i*3+2]*(1-nb)+newsCol[i*3+2]*nb)*p;
+    }
+    pGeo.attributes.color.needsUpdate=true;
+  }
+
+  gL.intensity=4+Math.sin(t*1.1)*1.2;
+  rL.intensity=3+Math.cos(t*0.82)*0.9;
+  checkHover();
+  renderer.render(scene,camera);
+}
+animate();
+
+// Camera controls
+let camZ=38,tCamZ=38;
+let panX=0,panY=0,tPanX=0,tPanY=0;
+let isDrag=false,lastMX=0,lastMY=0;
+window.addEventListener('wheel',e=>{
+  const nx=((e.clientX/innerWidth)*2-1);
+  const ny=-((e.clientY/innerHeight)*2-1);
+  const zDir=e.deltaY>0?1:-1;
+  const zAmt=Math.abs(e.deltaY)*0.02;
+  const newZ=Math.max(8,Math.min(60,tCamZ+zDir*zAmt));
+  const dz=tCamZ-newZ;
+  tPanX+=nx*dz*0.5;tPanY+=ny*dz*0.5;tCamZ=newZ;
+},{passive:true});
+window.addEventListener('mousedown',e=>{if(e.button===2||e.button===1){isDrag=true;lastMX=e.clientX;lastMY=e.clientY;}});
+window.addEventListener('mouseup',e=>{if(e.button===2||e.button===1)isDrag=false;});
+window.addEventListener('contextmenu',e=>e.preventDefault());
+window.addEventListener('mousemove',e=>{
+  if(!isDrag)return;
+  tPanX+=(e.clientX-lastMX)*0.012;tPanY-=(e.clientY-lastMY)*0.012;
+  lastMX=e.clientX;lastMY=e.clientY;
+});
+(function camLoop(){
+  requestAnimationFrame(camLoop);
+  camZ+=(tCamZ-camZ)*0.08;panX+=(tPanX-panX)*0.09;panY+=(tPanY-panY)*0.09;
+  camera.position.set(panX,panY,camZ);camera.lookAt(panX,panY,0);
+})();
+
+// Hover detection for tooltips
+const ray=new THREE.Raycaster();
+ray.params.Points.threshold=0.65;
+const mVec=new THREE.Vector2(-9,-9);
+let hovI=-1;let hovKw=-1;
+const ttEl=document.getElementById('tt');
+const kwttEl=document.getElementById('kwtt');
+
+window.addEventListener('mousemove',e=>{
+  mVec.x=(e.clientX/innerWidth)*2-1;
+  mVec.y=-(e.clientY/innerHeight)*2+1;
+  const tx=e.clientX+14+260>innerWidth?e.clientX-270:e.clientX+14;
+  const ty=Math.min(e.clientY-6,innerHeight-220);
+  ttEl.style.left=tx+'px';ttEl.style.top=ty+'px';
+  kwttEl.style.left=tx+'px';kwttEl.style.top=ty+'px';
+});
+
+function checkHover(){
+  if(N===0||state==='gathering'||state==='dot'||state==='exploding')return;
+  ray.setFromCamera(mVec,camera);
+
+  if((state==='news'||(state==='transitioning'&&trNextMode===4))&&KEYWORDS.length){
+    const nodeMeshes=kwGrp.children.filter(c=>c.isMesh&&!c.userData.isRing&&c.userData.kwIdx!==undefined);
+    const nhits=ray.intersectObjects(nodeMeshes,false);
+    if(nhits.length){
+      const ki=nhits[0].object.userData.kwIdx;
+      if(ki!==hovKw){hovKw=ki;ttEl.classList.remove('on');hovI=-1;showKwTT(ki);}
+      return;
+    }else{if(hovKw!==-1){kwttEl.classList.remove('on');hovKw=-1;}}
+  }
+
+  if(state!=='line'&&state!=='linedraw'&&state!=='ohlc'&&state!=='transitioning')return;
+  if(state==='ohlc'){
+    const meshes=candleGrp.children.filter(c=>c.isMesh);
+    const hits=ray.intersectObjects(meshes);
+    if(hits.length){
+      const mi=candleGrp.children.indexOf(hits[0].object);
+      const i=Math.floor(mi/2);
+      if(i!==hovI){hovI=i;showTT(i);}
+    }else{if(hovI!==-1)ttEl.classList.remove('on');hovI=-1;}
+    return;
+  }
+  lineHitGrp.children.forEach((m,i)=>{if(i<N){m.position.x=pos[i*3];m.position.y=pos[i*3+1];m.visible=true;}});
+  const hits=ray.intersectObjects(lineHitGrp.children);
+  if(hits.length){
+    const i=hits[0].object.userData.dataIdx;
+    if(i!==hovI){hovI=i;showTT(i);}
+  }else{if(hovI!==-1)ttEl.classList.remove('on');hovI=-1;}
+}
+
+function sentLabel(v){
+  const t=sentimentTier(v);return t.label;
+}
+
+function showKwTT(ki){
+  const kw=KEYWORDS[ki];if(!kw)return;
+  const tier=sentimentTier(kw.sentiment);
+  const bsc=kw.sentiment>0.15?'rgba(0,255,136,0.22)':kw.sentiment<-0.15?'rgba(255,61,90,0.22)':'rgba(170,102,255,0.22)';
+  kwttEl.style.borderColor=bsc;
+
+  // header
+  document.getElementById('kwttName').textContent=kw.keyword.toUpperCase();
+  document.getElementById('kwttName').style.color=tier.col;
+
+  // tier label
+  document.getElementById('kwttTierLabel').innerHTML=
+    `<span style="color:${tier.col}">${tier.arrow} ${tier.label}</span>`;
+
+  // scale needle — map sentiment -1..+1 to 0..100%
+  // clamp to ±1 for display since scale bar is ±1
+  const clamped=Math.max(-1,Math.min(1,kw.sentiment));
+  const needlePct=((clamped+1)/2)*100;
+  document.getElementById('kwttNeedle').style.left=needlePct+'%';
+
+  // stats
+  document.getElementById('kwttArt').textContent=kw.count>0?kw.count.toLocaleString():'0';
+
+  let pulled=0;for(let i=0;i<N;i++){if(particleNode[i]===ki)pulled++;}
+  const pct=N>0?Math.round(pulled/N*100):0;
+  document.getElementById('kwttPull').innerHTML=
+    `<span style="color:var(--text)">${pulled}</span><span style="color:var(--muted)"> / ${N} (${pct}%)</span>`;
+
+  // plain english explanation — this is the main thing we want to communicate clearly
+  const artStr=kw.count>0?` in ${kw.count.toLocaleString()} articles`:'';
+  const rawDisp=kw.rawSent!=null?kw.rawSent.toFixed(3):kw.sentiment.toFixed(3);
+  const dirWord=kw.sentiment>0.15?'positive (bullish)':kw.sentiment<-0.15?'negative (bearish)':'mixed (neutral)';
+  document.getElementById('kwttDesc').innerHTML=
+    `Over the past 30 days, news coverage of <b style="color:${tier.col}">${kw.keyword}</b> has been `+
+    `<b style="color:${tier.col}">${dirWord}</b>${artStr}.<br><br>`+
+    `In News Gravity mode, <b style="color:var(--text)">${pct}%</b> of trading days are pulled to this node. `+
+    `These are days where the stock moved in the same direction as this keyword's news tone.`;
+
+  // scale explainer
+  document.getElementById('kwttScale').innerHTML=
+    `Scale: the sentiment API returns a signed score where 0 = neutral, positive = bullish coverage, negative = bearish. `+
+    `Raw score: <b>${rawDisp}</b>, clamped to <b style="color:${tier.col}">${kw.sentiment>=0?'+':''}${kw.sentiment.toFixed(2)}</b> on a -1 to +1 scale.`;
+
+  kwttEl.classList.add('on');
+}
+
+function showTT(i){
+  if(!DATA[i])return;
+  const d=DATA[i];
+  const sent=d.sentiment*100;
+  const sc=sent>0?'var(--g)':sent<0?'var(--r)':'var(--gold)';
+  document.getElementById('ttDate').textContent=d.date;
+  document.getElementById('ttO').textContent='$'+d.open.toFixed(2);
+  document.getElementById('ttC').textContent='$'+d.close.toFixed(2);
+  document.getElementById('ttH').textContent='$'+d.high.toFixed(2);
+  document.getElementById('ttL').textContent='$'+d.low.toFixed(2);
+  const v=d.volume;
+  document.getElementById('ttV').textContent=v>1e6?(v/1e6).toFixed(1)+'M':(v/1e3).toFixed(0)+'K';
+  document.getElementById('ttS').innerHTML=`<span style="color:${sc}">${sent>0?'+':''}${sent.toFixed(2)}% price move  ${sentLabel(d.sentiment)}</span>`;
+  const ttN=document.getElementById('ttN');
+  if(NEWS_LOADED&&KEYWORDS.length){
+    const assignedKw=particleNode[i]>=0?KEYWORDS[particleNode[i]]:null;
+    const tier=assignedKw?sentimentTier(assignedKw.sentiment):null;
+    const pDir=priceDirNormalized(d);
+    const domStr=assignedKw&&tier
+      ?`<span style="color:var(--muted);font-size:8px">PULLED BY </span><span style="color:${tier.col}">${assignedKw.keyword.toUpperCase()}  ${tier.label.toUpperCase()}</span><br><span style="color:rgba(255,255,255,0.2);font-size:8px">Price: ${pDir>=0?'+':''}${pDir.toFixed(2)}  Keyword: ${assignedKw.sentiment>=0?'+':''}${assignedKw.sentiment.toFixed(2)}</span><br>`
+      :'';
+    const anom=anomaly[i];
+    ttN.innerHTML=`${domStr}${anom?'<span class="anomaly-badge">PRICE vs NEWS DIVERGENCE</span>':''}`;
+    ttN.style.display='';
+  }else{ttN.style.display='none';}
+  ttEl.classList.add('on');
+}
+
+// Parse financial data from API response
+function parseADAGE(adage){
+  if(!adage.events||!adage.events.length)return null;
+  return adage.events.map(ev=>{
+    const a=ev.event_attributes;
+    const op=parseFloat(a.open),cl=parseFloat(a.close);
+    return{date:ev.event_time_object.timestamp.slice(0,10),open:op,close:cl,high:parseFloat(a.high),low:parseFloat(a.low),volume:parseFloat(a.volume),sentiment:(cl-op)/(op||1)};
+  }).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,MAX);
+}
+
+async function loadTicker(ticker,from,to){
+  // Load stock data for the given ticker and date range
+  computeSpread(from,to);
+  setStatus('Fetching '+ticker+'…');
+  explodeScheduled=false;
+  if(N>0){
+    if(gatherInterval){clearInterval(gatherInterval);gatherInterval=null;}
+    lMat.opacity=0;lGeo.setDrawRange(0,0);
+    slMat.opacity=0;slGeo.setDrawRange(0,0);
+    setCandleOpacity(0);setKeywordOpacity(0);newsWellsVisible=false;newsWellsT=0;pL.intensity=0;
+    pendingData=null;applyScheduled=false;
+    startGather();
+  }
+  try{
+    let res=await fetch(`${API}/retrieve/financial?ticker=${encodeURIComponent(ticker)}&from=${from}&to=${to}`,{headers:{'x-api-key':APIKEY}});
+    if(!res.ok||!(await res.clone().json()).events?.length){
+      setStatus('Collecting '+ticker+'…');
+      await fetch(`${API}/collect/financial`,{method:'POST',headers:{'x-api-key':APIKEY,'Content-Type':'application/json'},body:JSON.stringify({ticker,from,to})});
+      res=await fetch(`${API}/retrieve/financial?ticker=${encodeURIComponent(ticker)}&from=${from}&to=${to}`,{headers:{'x-api-key':APIKEY}});
+    }
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const json=await res.json();
+    const parsed=parseADAGE(json);
+    if(!parsed||parsed.length<3)throw new Error('No data for '+ticker);
+    setStatus('');
+
+    if(state==='gathering'){pendingData=parsed;}
+    else if(state==='dot'){pendingData=parsed;if(!applyScheduled){applyScheduled=true;setTimeout(()=>applyPendingData(),500);}}
+    else{
+      DATA=parsed;N=DATA.length;computeLayouts();buildCandles();buildLineHitPlanes();updateStats();
+      for(let i=0;i<N;i++){pos[i*3]=0;pos[i*3+1]=0;pos[i*3+2]=0;sz[i]=0;col[i*3]=baseCol[i*3];col[i*3+1]=baseCol[i*3+1];col[i*3+2]=baseCol[i*3+2];}
+      pGeo.setDrawRange(0,N);
+      pGeo.attributes.position.needsUpdate=true;pGeo.attributes.color.needsUpdate=true;pGeo.attributes.aSize.needsUpdate=true;
+      setTimeout(()=>startExplode(),200);
+    }
+  }catch(err){
+    setStatus('');
+    showErr(err.message.includes('No data')?'No data for '+ticker:err.message);
+    if(state==='gathering'||state==='dot'){if(N>0&&DATA.length>0){state='scatter';mode=0;updateUI();}}
+  }
+}
+
+function updateStats(){
+  const closes=DATA.map(d=>d.close);
+  const bull=DATA.filter(d=>d.close>=d.open).length;
+  const avgVol=DATA.reduce((s,d)=>s+d.volume,0)/N;
+  document.getElementById('sDays').textContent=N;
+  document.getElementById('sBull').textContent=bull;
+  document.getElementById('sBear').textContent=N-bull;
+  document.getElementById('sRange').textContent='$'+Math.min(...closes).toFixed(0)+'–$'+Math.max(...closes).toFixed(0);
+  document.getElementById('sVol').textContent=avgVol>1e6?(avgVol/1e6).toFixed(1)+'M':(avgVol/1e3).toFixed(0)+'K';
+}
+
+// Update UI elements based on current mode
+function updateUI(){
+  [0,1,2,3,4].forEach(i=>{
+    const ph=document.getElementById('ph'+i);
+    const mb=document.getElementById('mb'+i);
+    if(ph)ph.classList.toggle('on',i===mode);
+    if(mb)mb.classList.toggle('on',i===mode);
+  });
+}
+
+const statusEl=document.getElementById('status');
+function setStatus(msg){statusEl.textContent=msg;statusEl.classList.toggle('on',msg.length>0);}
+
+const errEl=document.getElementById('err');let errT;
+function showErr(msg){errEl.textContent=msg;errEl.classList.add('on');clearTimeout(errT);errT=setTimeout(()=>errEl.classList.remove('on'),4500);}
+
+// Event handlers for user controls
+function go(){
+  // Get user input and load the ticker data
+  const ticker=document.getElementById('tickIn').value.trim().toUpperCase()||'AAPL';
+  const from=document.getElementById('fromIn').value.trim()||'2024-03-01';
+  const to=document.getElementById('toIn').value.trim()||'2024-03-31';
+  loadTicker(ticker,from,to);
+}
+document.getElementById('goBtn').addEventListener('click',go);
+['tickIn','fromIn','toIn'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')go();}));
+document.getElementById('kwBtn').addEventListener('click',fetchKeywordSentiments);
+[0,1,2,3].forEach(i=>document.getElementById('kw'+i).addEventListener('keydown',e=>{if(e.key==='Enter')fetchKeywordSentiments();}));
+
+document.getElementById('mb0').addEventListener('click',()=>goMode(0));
+document.getElementById('mb1').addEventListener('click',()=>goMode(1));
+document.getElementById('mb2').addEventListener('click',()=>goMode(2));
+document.getElementById('mb3').addEventListener('click',()=>goMode(3));
+document.getElementById('mb4').addEventListener('click',()=>goMode(4));
+document.getElementById('ph4').addEventListener('click',()=>goMode(4));
+
+// Initialize the app with default data
+setTimeout(()=>loadTicker('AAPL','2024-03-01','2024-03-31'),400);
+</script>
+</body>
+</html>
