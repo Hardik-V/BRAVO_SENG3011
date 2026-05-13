@@ -366,6 +366,18 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
 .bt-stat-v{font-family:var(--fm);font-size:13px;font-weight:700}
 .bt-divider{height:1px;background:var(--border);margin:6px 0}
 .bt-verdict{font-family:var(--fd);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;text-align:center;padding:5px 0;margin-top:7px;border-top:1px solid var(--border)}
+/* backtest date range */
+.bt-date-block{display:flex;flex-direction:column;gap:7px;padding:7px 0 2px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:2px}
+.bt-date-lbl{font-family:var(--fd);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(245,197,24,0.55);margin-bottom:2px}
+.bt-pick-hint{font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.2);letter-spacing:0.06em;line-height:1.5;min-height:12px;text-align:center}
+.bt-pick-btn{
+  background:transparent;border:1px solid rgba(245,197,24,0.18);color:rgba(245,197,24,0.5);
+  font-family:var(--fd);font-size:9px;letter-spacing:0.16em;padding:5px 0;width:100%;cursor:crosshair;
+  text-transform:uppercase;transition:all .18s;
+}
+.bt-pick-btn:hover{border-color:rgba(245,197,24,0.45);color:rgba(245,197,24,0.85);background:rgba(245,197,24,0.04)}
+.bt-pick-btn.picking{border-color:var(--gold);color:var(--gold);background:rgba(245,197,24,0.06);animation:btpickglow 0.7s ease-in-out infinite alternate}
+@keyframes btpickglow{from{box-shadow:none}to{box-shadow:0 0 12px rgba(245,197,24,0.2)}}
 
 /* ── SIGNAL FILTER ── */
 .nf-block{padding:13px 20px 15px;border-bottom:1px solid var(--border)}
@@ -467,7 +479,7 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
     <div class="logo-mark">BRA<span class="v">V</span>O</div>
     <div class="logo-slash"></div>
     <div class="logo-sub-block">
-      <div class="logo-ver">SENG3011 · H18A</div>
+      <div class="logo-ver">Constellation</div>
     </div>
   </div>
   <div id="topbar-legend">
@@ -591,6 +603,19 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
       <span class="bt-toggle-icon" id="btIcon">▸</span>
     </div>
     <div class="bt-body" id="btBody">
+      <div class="bt-date-block">
+        <div class="bt-date-lbl">Date Range</div>
+        <div class="bt-row">
+          <div class="bt-lbl">Entry</div>
+          <input class="bt-input" id="btFrom" type="date"/>
+        </div>
+        <div class="bt-row">
+          <div class="bt-lbl">Exit</div>
+          <input class="bt-input" id="btTo" type="date"/>
+        </div>
+        <button class="bt-pick-btn" id="btPickBtn">◎ Click chart to pick dates</button>
+        <div class="bt-pick-hint" id="btPickHint"></div>
+      </div>
       <div class="bt-row">
         <div class="bt-lbl">Capital</div>
         <input class="bt-input" id="btCapital" type="number" value="10000" min="1" step="100"/>
@@ -1257,6 +1282,53 @@ const EXILE_SPEED=0.45;
 
 function isExiled(i){return particleFiltered[i]||windowFiltered[i];}
 
+// ── BACKTEST RANGE HIGHLIGHT — must be declared before animate() ──
+const btHighlightMesh=new THREE.Mesh(
+  new THREE.PlaneGeometry(1,1),
+  new THREE.MeshBasicMaterial({color:0xf5c518,transparent:true,opacity:0,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,depthWrite:false})
+);
+scene.add(btHighlightMesh);
+let btHighlightT=0,btHighlightActive=false;
+let btHighlightFrom=-1,btHighlightTo=-1;
+const btScanMesh=new THREE.Mesh(
+  new THREE.PlaneGeometry(0.06,12),
+  new THREE.MeshBasicMaterial({color:0xf5c518,transparent:true,opacity:0,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,depthWrite:false})
+);
+scene.add(btScanMesh);
+let btScanT=0;
+
+function flashBtHighlight(fromIdx,toIdx){
+  btHighlightFrom=fromIdx;btHighlightTo=toIdx;
+  btHighlightActive=true;btHighlightT=0;btScanT=0;
+  updateBtHighlightGeom();
+}
+function updateBtHighlightGeom(){
+  if(btHighlightFrom<0||btHighlightTo<0||!N)return;
+  const S=spreadScale;
+  const xFrom=(btHighlightFrom/(N-1||1)-0.5)*28*S;
+  const xTo=(btHighlightTo/(N-1||1)-0.5)*28*S;
+  const cx=(xFrom+xTo)/2,cw=Math.max(Math.abs(xTo-xFrom),0.15);
+  btHighlightMesh.scale.set(cw,11,1);
+  btHighlightMesh.position.set(cx,0,0.5);
+  btScanMesh.position.set(xFrom,0,0.6);
+  btScanMesh._xFrom=xFrom;btScanMesh._xTo=xTo;
+}
+function tickBtHighlight(dt){
+  if(!btHighlightActive){
+    btHighlightMesh.material.opacity=0;btScanMesh.material.opacity=0;return;
+  }
+  btHighlightT=Math.min(btHighlightT+dt,3.5);
+  const fadeIn=Math.min(btHighlightT/0.25,1);
+  const fadeOut=btHighlightT>2.8?Math.max(0,1-(btHighlightT-2.8)/0.7):1;
+  const alpha=fadeIn*fadeOut;
+  btHighlightMesh.material.opacity=0.065*alpha;
+  btScanT=Math.min(btScanT+dt*0.55,1);
+  const xf=btScanMesh._xFrom||0,xt=btScanMesh._xTo||0;
+  btScanMesh.position.x=xf+(xt-xf)*btScanT;
+  btScanMesh.material.opacity=0.55*alpha*(1-Math.abs(btScanT-0.5)*1.8);
+  if(btHighlightT>=3.5){btHighlightActive=false;btHighlightMesh.material.opacity=0;btScanMesh.material.opacity=0;}
+}
+
 function animate(){
   requestAnimationFrame(animate);
   const dt=Math.min(clock.getDelta(),0.05);
@@ -1457,9 +1529,16 @@ function animate(){
   }
 
   gL.intensity=4+Math.sin(t*1.1)*1.2;rL.intensity=3+Math.cos(t*0.82)*0.9;
+  tickBtHighlight(dt);
   checkHover();renderer.render(scene,camera);
 }
 animate();
+
+// ── PANEL SCROLL ISOLATION ──
+// Prevent wheel events inside the left panel from zooming the 3D scene
+document.getElementById('panel').addEventListener('wheel', e=>{
+  e.stopPropagation();
+}, {passive:true});
 
 // ── CAMERA ──
 let camZ=38,tCamZ=38,panX=0,panY=0,tPanX=0,tPanY=0;
@@ -1472,6 +1551,13 @@ window.addEventListener('wheel',e=>{
 },{passive:true});
 window.addEventListener('mousedown',e=>{if(e.button===2||e.button===1){isDrag=true;lastMX=e.clientX;lastMY=e.clientY;}});
 window.addEventListener('mouseup',e=>{if(e.button===2||e.button===1)isDrag=false;});
+window.addEventListener('click',e=>{
+  // Only handle left clicks on canvas (not panel buttons)
+  if(e.target.closest('#panel,#modes,#stats,#err,#tt,#kwtt,#kwOverlay'))return;
+  if(btPickMode===0)return;
+  // Find hovered particle/candle index and pass to pick handler
+  if(hovI>=0)btPickClick(hovI);
+});
 window.addEventListener('contextmenu',e=>e.preventDefault());
 window.addEventListener('mousemove',e=>{
   if(!isDrag)return;tPanX+=(e.clientX-lastMX)*0.012;tPanY-=(e.clientY-lastMY)*0.012;lastMX=e.clientX;lastMY=e.clientY;
@@ -1596,6 +1682,15 @@ function parseADAGE(adage){
 
 async function loadTicker(ticker,from,to){
   computeSpread(from,to);setStatus('Fetching '+ticker+'…');explodeScheduled=false;
+  // Reset keyword state so oracle and news gravity don't bleed across tickers
+  KEYWORDS=[];NEWS_LOADED=false;OVERALL_NEWS_SENT=0;
+  clearKeywordNodes();updateNewsSentimentUI();
+  // Reset keyword input indicators
+  [0,1,2,3].forEach(i=>{
+    const inp=document.getElementById('kw'+i);const sp=document.getElementById('ks'+i);
+    if(inp)inp.classList.remove('loaded','err');
+    if(sp){sp.textContent='';sp.style.color='var(--muted)';}
+  });
   if(N>0){
     if(gatherInterval){clearInterval(gatherInterval);gatherInterval=null;}
     lMat.opacity=0;lGeo.setDrawRange(0,0);slMat.opacity=0;slGeo.setDrawRange(0,0);
@@ -1603,14 +1698,24 @@ async function loadTicker(ticker,from,to){
     pendingData=null;applyScheduled=false;startGather();
   }
   try{
+    // Kick off collect immediately (fire-and-forget) to warm the pipeline
+    // in case data isn't cached yet — retrieve will find it on the second attempt
+    const collectPromise=fetch(`${API}/collect/financial`,{
+      method:'POST',
+      headers:{'x-api-key':APIKEY,'Content-Type':'application/json'},
+      body:JSON.stringify({ticker,from,to})
+    }).catch(()=>{});
+
     let res=await fetch(`${API}/retrieve/financial?ticker=${encodeURIComponent(ticker)}&from=${from}&to=${to}`,{headers:{'x-api-key':APIKEY}});
-    if(!res.ok||!(await res.clone().json()).events?.length){
+    let json=await res.json();
+    // If retrieve came back empty, wait for collect to finish then retry once
+    if(!res.ok||!json.events?.length){
       setStatus('Collecting '+ticker+'…');
-      await fetch(`${API}/collect/financial`,{method:'POST',headers:{'x-api-key':APIKEY,'Content-Type':'application/json'},body:JSON.stringify({ticker,from,to})});
+      await collectPromise;
       res=await fetch(`${API}/retrieve/financial?ticker=${encodeURIComponent(ticker)}&from=${from}&to=${to}`,{headers:{'x-api-key':APIKEY}});
+      json=await res.json();
     }
     if(!res.ok)throw new Error('HTTP '+res.status);
-    const json=await res.json();
     const parsed=parseADAGE(json);
     if(!parsed||parsed.length<3)throw new Error('No data for '+ticker);
     setStatus('');
@@ -1626,6 +1731,11 @@ async function loadTicker(ticker,from,to){
     }
     // Show date window controls after successful data load
     showWindowControls();
+    // Seed backtest date inputs with loaded range
+    const _btF=document.getElementById('btFrom'),_btT=document.getElementById('btTo');
+    if(_btF&&DATA.length){_btF.min=DATA[0].date;_btF.max=DATA[N-1].date;_btF.value=DATA[0].date;}
+    if(_btT&&DATA.length){_btT.min=DATA[0].date;_btT.max=DATA[N-1].date;_btT.value=DATA[N-1].date;}
+    const _hint=document.getElementById('btPickHint');if(_hint)_hint.textContent='';
   }catch(err){
     setStatus('');
     showErr(err.message.includes('No data')?'No data for '+ticker:err.message);
@@ -1685,7 +1795,29 @@ document.getElementById('mb2').addEventListener('click',()=>goMode(2));
 document.getElementById('mb3').addEventListener('click',()=>goMode(3));
 document.getElementById('mb4').addEventListener('click',()=>goMode(4));
 
-setTimeout(()=>loadTicker('AAPL','2024-03-01','2024-03-31'),400);
+// ── AUTO LOAD + WARMUP ──
+// Compute today's date and 1W ago
+(function(){
+  const now=new Date();
+  const fmt=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const from=new Date(now);from.setDate(now.getDate()-7);
+  const fromStr=fmt(from),toStr=fmt(now);
+  // Pre-fill the inputs so the UI reflects what will load
+  document.getElementById('fromIn').value=fromStr;
+  document.getElementById('toIn').value=toStr;
+  document.getElementById('tickIn').value='AAPL';
+
+  // Fire a silent collect POST immediately — warms the pipeline so the
+  // actual retrieve call lands fast instead of waiting for cold-start
+  fetch(`${API}/collect/financial`,{
+    method:'POST',
+    headers:{'x-api-key':APIKEY,'Content-Type':'application/json'},
+    body:JSON.stringify({ticker:'AAPL',from:fromStr,to:toStr})
+  }).catch(()=>{});
+
+  // Load after a short delay — by then the collect has had a head start
+  setTimeout(()=>loadTicker('AAPL',fromStr,toStr),600);
+})();
 
 // ── DATE PRESETS ──
 function setPreset(p){
@@ -1755,29 +1887,96 @@ document.getElementById('btLeverage').addEventListener('input',function(){
 
 document.getElementById('btRun').addEventListener('click',runBacktest);
 
+// ── BACKTEST DATE PICK MODE ──
+// 0=off, 1=waiting for entry click, 2=waiting for exit click
+let btPickMode=0;
+const btPickBtn=document.getElementById('btPickBtn');
+const btPickHint=document.getElementById('btPickHint');
+
+btPickBtn.addEventListener('click',()=>{
+  if(btPickMode!==0){btPickMode=0;btPickBtn.classList.remove('picking');btPickHint.textContent='';return;}
+  if(!N||!DATA.length){showErr('Load data first');return;}
+  if(state!=='line'&&state!=='linedraw'&&state!=='ohlc'){showErr('Switch to Line or OHLC mode first');return;}
+  btPickMode=1;
+  btPickBtn.classList.add('picking');
+  btPickHint.textContent='Click a node for ENTRY date…';
+});
+
+// Called from checkHover click path — returns true if it consumed the click
+function btPickClick(dataIdx){
+  if(btPickMode===0)return false;
+  const d=DATA[dataIdx];if(!d)return false;
+  if(btPickMode===1){
+    document.getElementById('btFrom').value=d.date;
+    btPickMode=2;
+    btPickHint.textContent='Now click EXIT date node…';
+    flashBtHighlight(dataIdx,dataIdx);
+    return true;
+  }
+  if(btPickMode===2){
+    const fromVal=document.getElementById('btFrom').value;
+    const fromIdx=DATA.findIndex(x=>x.date===fromVal);
+    // Ensure exit is after entry
+    const entryIdx=Math.min(fromIdx,dataIdx);
+    const exitIdx=Math.max(fromIdx,dataIdx);
+    document.getElementById('btFrom').value=DATA[entryIdx].date;
+    document.getElementById('btTo').value=DATA[exitIdx].date;
+    btPickMode=0;
+    btPickBtn.classList.remove('picking');
+    btPickHint.textContent='✓ '+DATA[entryIdx].date+' → '+DATA[exitIdx].date;
+    flashBtHighlight(entryIdx,exitIdx);
+    return true;
+  }
+  return false;
+}
+
 function runBacktest(){
   if(!N||!DATA.length){showErr('Load data first');return;}
   const capital=parseFloat(document.getElementById('btCapital').value)||10000;
   const lev=Math.max(1,parseFloat(document.getElementById('btLeverage').value)||1);
-  const entry=DATA[0].open;const exit=DATA[N-1].close;
+
+  // Determine date range — use inputs if set, else full data range
+  const fromVal=document.getElementById('btFrom').value;
+  const toVal=document.getElementById('btTo').value;
+  let startIdx=0,endIdx=N-1;
+  if(fromVal){
+    const fi=DATA.findIndex(d=>d.date>=fromVal);
+    if(fi!==-1)startIdx=fi;
+  }
+  if(toVal){
+    // last index whose date <= toVal
+    let li=-1;for(let i=N-1;i>=0;i--){if(DATA[i].date<=toVal){li=i;break;}}
+    if(li!==-1)endIdx=li;
+  }
+  if(startIdx>endIdx){showErr('Entry date must be before exit date');return;}
+  const slice=DATA.slice(startIdx,endIdx+1);
+  const holdDays=slice.length;
+
+  const entry=slice[0].open;
+  const exit=slice[slice.length-1].close;
   const rawReturn=(exit-entry)/entry;
   const levReturn=rawReturn*lev;
   const levReturnCapped=Math.max(-1,levReturn);
   const pnl=capital*levReturnCapped;
   const finalVal=capital+pnl;
-  // Liquidation: happens when price drops by 1/lev from entry (full equity wipeout)
   const liqPrice=lev>1?entry*(1-1/lev):null;
   let liqHit=false;
-  if(liqPrice!==null){for(let i=0;i<N;i++){if(DATA[i].low<=liqPrice){liqHit=true;break;}}}
+  if(liqPrice!==null){for(let i=0;i<slice.length;i++){if(slice[i].low<=liqPrice){liqHit=true;break;}}}
   const pnlCol=pnl>=0?'var(--g)':'var(--r)';
   const retStr=(levReturn*100>=0?'+':'')+(levReturn*100).toFixed(2)+'%';
   const liqStr=liqPrice?'$'+liqPrice.toFixed(2):'None';
   const liqHitStr=liqPrice?(liqHit?'<span style="color:var(--r)">YES — LIQUIDATED</span>':'<span style="color:var(--g)">No</span>'):'—';
+
+  // Trigger chart highlight if in line/ohlc mode
+  if(state==='line'||state==='linedraw'||state==='ohlc'){
+    flashBtHighlight(startIdx,endIdx);
+  }
+
   const el=document.getElementById('btResult');
   el.innerHTML=`
-    <div class="bt-stat"><span class="bt-stat-l">Entry</span><span class="bt-stat-v" style="color:var(--muted)">$${entry.toFixed(2)}</span></div>
-    <div class="bt-stat"><span class="bt-stat-l">Exit</span><span class="bt-stat-v" style="color:var(--muted)">$${exit.toFixed(2)}</span></div>
-    <div class="bt-stat"><span class="bt-stat-l">Hold</span><span class="bt-stat-v" style="color:var(--muted)">${N}d</span></div>
+    <div class="bt-stat"><span class="bt-stat-l">Entry</span><span class="bt-stat-v" style="color:var(--muted)">$${entry.toFixed(2)} <span style="font-size:9px;color:rgba(255,255,255,0.2)">${DATA[startIdx].date}</span></span></div>
+    <div class="bt-stat"><span class="bt-stat-l">Exit</span><span class="bt-stat-v" style="color:var(--muted)">$${exit.toFixed(2)} <span style="font-size:9px;color:rgba(255,255,255,0.2)">${DATA[endIdx].date}</span></span></div>
+    <div class="bt-stat"><span class="bt-stat-l">Hold</span><span class="bt-stat-v" style="color:var(--muted)">${holdDays}d</span></div>
     <div class="bt-divider"></div>
     <div class="bt-stat"><span class="bt-stat-l">Return ${lev}×</span><span class="bt-stat-v" style="color:${pnlCol}">${retStr}</span></div>
     <div class="bt-stat"><span class="bt-stat-l">P&amp;L</span><span class="bt-stat-v" style="color:${pnlCol}">${pnl>=0?'+':''}$${pnl.toFixed(0)}</span></div>
@@ -1785,7 +1984,7 @@ function runBacktest(){
     <div class="bt-divider"></div>
     <div class="bt-stat"><span class="bt-stat-l">Liq. Price</span><span class="bt-stat-v" style="color:var(--gold)">${liqStr}</span></div>
     <div class="bt-stat"><span class="bt-stat-l">Liq. Hit?</span><span class="bt-stat-v">${liqHitStr}</span></div>
-    <div class="bt-verdict" style="color:${pnl>=0?'var(--g)':'var(--r)'}">${pnl>=0?'▲ PROFIT':'▼ LOSS'}  ${retStr}</div>
+    <div class="bt-verdict" style="color:${pnlCol}">${pnl>=0?'▲ PROFIT':'▼ LOSS'}  ${retStr}</div>
   `;
   el.classList.add('on');
 }
@@ -1866,77 +2065,114 @@ function runTargetOracle(){
   if(isNaN(targetPrice)||targetPrice<=0){showErr('Enter a valid target price');return;}
   if(!targetDateStr){showErr('Enter a target date');return;}
 
-  const targetDate=new Date(targetDateStr);
-  const lastDate=new Date(DATA[N-1].date);
-  const firstDate=new Date(DATA[0].date);
-
-  if(targetDate<=lastDate){showErr('Target date must be after current data range');return;}
-
-  // Current metrics from loaded (non-exiled) data
-  const visibleData=DATA.filter((_,i)=>!isExiled(i));
-  if(visibleData.length<2){showErr('Not enough visible data');return;}
+  const targetDate=new Date(targetDateStr+'T00:00:00');
+  const lastDate=new Date(DATA[N-1].date+'T00:00:00');
+  if(targetDate<=lastDate){showErr('Target date must be after the last loaded date');return;}
 
   const currentPrice=DATA[N-1].close;
-  const requiredReturn=(targetPrice-currentPrice)/currentPrice;
-  const requiredPct=requiredReturn*100;
+  const requiredMove=(targetPrice-currentPrice)/currentPrice; // e.g. +0.12 = needs 12% gain
 
-  // Days remaining to target
   const daysRemaining=Math.round((targetDate-lastDate)/(1000*86400));
-  const tradingDaysEst=Math.round(daysRemaining*5/7);
+  const tradingDaysEst=Math.max(1,Math.round(daysRemaining*5/7));
 
-  // Average daily sentiment (intraday open→close) from visible data
-  const avgSentiment=visibleData.reduce((s,d)=>s+d.sentiment,0)/visibleData.length;
+  // Required daily return to reach target (compounded)
+  const reqDailyReturn=Math.pow(targetPrice/currentPrice,1/tradingDaysEst)-1;
 
-  // Average daily return from visible data (close-to-close)
-  const avgDailyReturn=visibleData.reduce((s,d)=>s+d.dailyReturn,0)/visibleData.length;
+  // ── SENTIMENT MODEL ──
+  // "Avg Sentiment Now" = average of loaded keyword sentiments (−1 to +1 scale)
+  // "Required Sentiment" = what keyword sentiment would need to be to drive that daily return
+  // We build an OLS regression: dailyReturn_i = k * kwSentiment_i + c
+  // Using particle→keyword assignments from NEWS gravity
 
-  // Annualised sentiment vs return correlation coefficient (simple linear estimate)
-  // We model: price change = sentiment * k, so k = avg daily return / avg sentiment
-  // Then required daily sentiment to hit target: reqSent = requiredReturn / (tradingDays * k)
-  const k=Math.abs(avgSentiment)>0.0001?(avgDailyReturn/avgSentiment):1;
-  const requiredDailySentiment=tradingDaysEst>0?(requiredReturn/(tradingDaysEst*Math.max(Math.abs(k),0.001))*Math.sign(k)):0;
-  const sentimentDelta=requiredDailySentiment-avgSentiment;
+  let avgKwSentNow=0;
+  let hasKeywords=NEWS_LOADED&&KEYWORDS.length>0;
 
-  // Classify the required shift
-  const absDelta=Math.abs(sentimentDelta);
+  if(hasKeywords){
+    // Weighted average of keyword sentiments (weighted by article count)
+    const totalArt=KEYWORDS.reduce((s,k)=>s+(k.count||1),0)||1;
+    avgKwSentNow=KEYWORDS.reduce((s,k)=>s+(k.sentiment*(k.count||1)),0)/totalArt;
+  }
+
+  // Build regression only if we have keyword↔particle mappings
+  let k_slope=null,c_intercept=0;
+  if(hasKeywords&&N>3){
+    // For each particle, get its assigned keyword sentiment and daily return
+    let sumX=0,sumY=0,sumXX=0,sumXY=0,cnt=0;
+    DATA.forEach((d,i)=>{
+      if(isExiled(i))return;
+      const ki=particleNode[i];
+      if(ki<0||ki>=KEYWORDS.length)return;
+      const x=KEYWORDS[ki].sentiment; // keyword sent [−1,1]
+      const y=d.dailyReturn;          // close-to-close return
+      sumX+=x;sumY+=y;sumXX+=x*x;sumXY+=x*y;cnt++;
+    });
+    if(cnt>2){
+      const denom=cnt*sumXX-sumX*sumX;
+      if(Math.abs(denom)>1e-10){
+        k_slope=(cnt*sumXY-sumX*sumY)/denom;
+        c_intercept=(sumY-k_slope*sumX)/cnt;
+      }
+    }
+  }
+
+  // Required keyword sentiment to produce reqDailyReturn
+  // reqDailyReturn = k_slope * reqSent + c_intercept → reqSent = (reqDailyReturn - c) / k
+  let reqKwSent=null,sentDelta=null;
+  if(k_slope!==null&&Math.abs(k_slope)>1e-6){
+    reqKwSent=(reqDailyReturn-c_intercept)/k_slope;
+    reqKwSent=Math.max(-1,Math.min(1,reqKwSent)); // clamp to valid sentiment range
+    sentDelta=reqKwSent-avgKwSentNow;
+  }
+
+  // Classify difficulty
+  const absDelta=sentDelta!==null?Math.abs(sentDelta):null;
   let difficultyLabel,difficultyCol;
-  if(absDelta<0.002){difficultyLabel='Marginal shift';difficultyCol='var(--gold)';}
-  else if(absDelta<0.006){difficultyLabel='Moderate shift';difficultyCol='#44ffaa';}
-  else if(absDelta<0.015){difficultyLabel='Significant shift';difficultyCol='var(--gold)';}
-  else if(absDelta<0.04){difficultyLabel='Major shift';difficultyCol='#ff7755';}
+  if(absDelta===null){difficultyLabel='Load keywords for delta';difficultyCol='var(--muted)';}
+  else if(absDelta<0.05){difficultyLabel='Marginal shift';difficultyCol='#44ffaa';}
+  else if(absDelta<0.15){difficultyLabel='Moderate shift';difficultyCol='var(--gold)';}
+  else if(absDelta<0.35){difficultyLabel='Significant shift';difficultyCol='#ff7755';}
+  else if(absDelta<0.6){difficultyLabel='Major shift';difficultyCol='var(--r)';}
   else{difficultyLabel='Extreme / unlikely';difficultyCol='var(--r)';}
 
-  const dir=sentimentDelta>=0?'more bullish':'more bearish';
-  const dirCol=sentimentDelta>=0?'var(--g)':'var(--r)';
-  const arrow=sentimentDelta>=0?'▲':'▼';
+  const moveCol=requiredMove>=0?'var(--g)':'var(--r)';
+  const movStr=(requiredMove*100>=0?'+':'')+(requiredMove*100).toFixed(2)+'%';
 
-  // Sentiment bar needle positions (0–100%)
-  const currentNeedlePct=Math.max(0,Math.min(100,(avgSentiment+0.03)/0.06*100));
-  const requiredNeedlePct=Math.max(0,Math.min(100,(requiredDailySentiment+0.03)/0.06*100));
+  // Needle positions: map [−1,+1] → [0%,100%]
+  const toNeedle=v=>Math.max(0,Math.min(100,(v+1)/2*100));
+  const nowNeedlePct=toNeedle(avgKwSentNow);
+  const reqNeedlePct=reqKwSent!==null?toNeedle(reqKwSent):50;
+  const dirCol=sentDelta!==null?(sentDelta>=0?'var(--g)':'var(--r)'):'var(--muted)';
+  const arrow=sentDelta!==null?(sentDelta>=0?'▲':'▼'):'◆';
+
+  // Sentiment rows — only show if keywords are loaded
+  const sentRows=hasKeywords?`
+    <div class="tp-divider"></div>
+    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">News Sent Now</span><span class="bt-stat-v" style="color:var(--muted);font-size:12px">${avgKwSentNow>=0?'+':''}${avgKwSentNow.toFixed(3)}</span></div>
+    ${reqKwSent!==null?`<div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">Required Sent</span><span class="bt-stat-v" style="color:${dirCol};font-size:12px">${reqKwSent>=0?'+':''}${reqKwSent.toFixed(3)}</span></div>
+    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">Delta Needed</span><span class="bt-stat-v" style="color:${dirCol};font-size:12px">${sentDelta>=0?'+':''}${sentDelta.toFixed(3)}</span></div>
+    <div class="tp-divider"></div>
+    <div style="font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.22);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:5px">Keyword Sentiment Scale</div>
+    <div class="tp-sent-bar">
+      <div class="tp-sent-needle" style="left:${nowNeedlePct}%;background:var(--text)"></div>
+      <div class="tp-sent-needle" style="left:${reqNeedlePct}%;background:${dirCol}"></div>
+    </div>
+    <div class="tp-sent-labels"><span>−1 Bear</span><span>0</span><span>+1 Bull</span></div>
+    <div class="tp-verdict">
+      News keyword sentiment must shift <b style="color:${dirCol}">${arrow} ${sentDelta>=0?'+':''}${sentDelta.toFixed(3)}</b> (from <b style="color:var(--muted)">${avgKwSentNow>=0?'+':''}${avgKwSentNow.toFixed(3)}</b> to <b style="color:${dirCol}">${reqKwSent>=0?'+':''}${reqKwSent.toFixed(3)}</b>) to reach <b style="color:var(--gold)">$${targetPrice.toFixed(2)}</b> by <b style="color:var(--text)">${targetDateStr}</b>.<br><br>
+      Difficulty: <b style="color:${difficultyCol}">${difficultyLabel}</b>
+    </div>`:'<div class="tp-verdict" style="color:rgba(255,255,255,0.25)">Delta requires keywords — pull News Gravity first.</div>'}
+  `:`<div class="tp-divider"></div><div class="tp-verdict" style="color:rgba(255,255,255,0.25)">Pull News Gravity keywords to see sentiment delta.</div>`;
 
   const el=document.getElementById('tpResult');
   el.innerHTML=`
-    <div class="tp-stat"><span class="tp-stat-l">Current Price</span><span class="tp-stat-v" style="color:var(--muted)">$${currentPrice.toFixed(2)}</span></div>
-    <div class="tp-stat"><span class="tp-stat-l">Target Price</span><span class="tp-stat-v" style="color:var(--gold)">$${targetPrice.toFixed(2)}</span></div>
-    <div class="tp-stat"><span class="tp-stat-l">Required Move</span><span class="tp-stat-v" style="color:${requiredReturn>=0?'var(--g)':'var(--r)'}">${requiredReturn>=0?'+':''}${requiredPct.toFixed(2)}%</span></div>
+    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">Current</span><span class="bt-stat-v" style="color:var(--muted);font-size:12px">$${currentPrice.toFixed(2)}</span></div>
+    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">Target</span><span class="bt-stat-v" style="color:var(--gold);font-size:12px">$${targetPrice.toFixed(2)}</span></div>
+    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">Move Needed</span><span class="bt-stat-v" style="color:${moveCol};font-size:12px">${movStr}</span></div>
     <div class="tp-divider"></div>
-    <div class="tp-stat"><span class="tp-stat-l">Calendar Days</span><span class="tp-stat-v" style="color:var(--muted)">${daysRemaining}d</span></div>
-    <div class="tp-stat"><span class="tp-stat-l">Trading Days ~</span><span class="tp-stat-v" style="color:var(--muted)">${tradingDaysEst}d</span></div>
-    <div class="tp-divider"></div>
-    <div class="tp-stat"><span class="tp-stat-l">Avg Sentiment Now</span><span class="tp-stat-v" style="color:var(--muted)">${avgSentiment>=0?'+':''}${avgSentiment.toFixed(4)}</span></div>
-    <div class="tp-stat"><span class="tp-stat-l">Required Sentiment</span><span class="tp-stat-v" style="color:${dirCol}">${requiredDailySentiment>=0?'+':''}${requiredDailySentiment.toFixed(4)}</span></div>
-    <div class="tp-stat"><span class="tp-stat-l">Delta Needed</span><span class="tp-stat-v" style="color:${dirCol}">${sentimentDelta>=0?'+':''}${sentimentDelta.toFixed(4)}</span></div>
-    <div class="tp-divider"></div>
-    <div style="font-family:var(--fd);font-size:6px;color:rgba(255,255,255,0.25);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:4px">Sentiment Range</div>
-    <div class="tp-sent-bar">
-      <div class="tp-sent-needle" id="tpCurrentNeedle" style="left:${currentNeedlePct}%;background:var(--text)"></div>
-      <div class="tp-sent-needle" id="tpTargetNeedle" style="left:${requiredNeedlePct}%;background:${dirCol}"></div>
-    </div>
-    <div class="tp-sent-labels"><span>Bear</span><span>Neutral</span><span>Bull</span></div>
-    <div class="tp-verdict">
-      Sentiment must shift <b style="color:${dirCol}">${arrow} ${sentimentDelta>=0?'+':''}${sentimentDelta.toFixed(4)}</b> per day to be <b style="color:${dirCol}">${dir}</b> — reaching <b style="color:var(--gold)">$${targetPrice.toFixed(2)}</b> by <b style="color:var(--text)">${targetDateStr}</b>.<br><br>
-      Difficulty: <b style="color:${difficultyCol}">${difficultyLabel}</b>
-    </div>
+    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">Cal. Days</span><span class="bt-stat-v" style="color:var(--muted);font-size:12px">${daysRemaining}d</span></div>
+    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">~Trading Days</span><span class="bt-stat-v" style="color:var(--muted);font-size:12px">${tradingDaysEst}d</span></div>
+    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">Daily Req.</span><span class="bt-stat-v" style="color:${moveCol};font-size:12px">${reqDailyReturn>=0?'+':''}${(reqDailyReturn*100).toFixed(3)}%/d</span></div>
+    ${sentRows}
   `;
   el.classList.add('on');
 }
