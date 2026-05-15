@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>BRAVO / Constellation — Financial Intelligence Platform</title>
+<title>BRAVO / Constellation</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -16,10 +16,10 @@
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:var(--fm);cursor:crosshair;overflow-x:hidden}
 
-/* ── CANVAS STAR FIELD ── */
+/* -- CANVAS STAR FIELD -- */
 #starfield{position:fixed;inset:0;z-index:0;pointer-events:none}
 
-/* ── NAV ── */
+/* -- NAV -- */
 nav{
   position:fixed;top:0;left:0;right:0;z-index:100;
   display:flex;align-items:center;justify-content:space-between;
@@ -42,10 +42,10 @@ nav{
 }
 .nav-cta:hover{background:rgba(0,255,136,0.06)}
 
-/* ── SECTIONS ── */
+/* -- SECTIONS -- */
 section{position:relative;z-index:1}
 
-/* ── HERO ── */
+/* -- HERO -- */
 #hero{
   min-height:100vh;display:flex;flex-direction:column;
   align-items:center;justify-content:center;
@@ -99,7 +99,7 @@ section{position:relative;z-index:1}
 .up{color:var(--g)}.down{color:var(--r)}.neu{color:var(--gold)}
 @keyframes tape{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
-/* ── STATS BAR ── */
+/* -- STATS BAR -- */
 #stats-bar{
   padding:32px 48px;
   display:grid;grid-template-columns:repeat(4,1fr);gap:0;
@@ -114,7 +114,7 @@ section{position:relative;z-index:1}
 .stat-num span{color:var(--g)}
 .stat-label{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
 
-/* ── FEATURES ── */
+/* -- FEATURES -- */
 #features{padding:100px 48px}
 .section-header{margin-bottom:64px}
 .section-tag{font-size:8px;letter-spacing:.28em;text-transform:uppercase;color:var(--g);margin-bottom:12px}
@@ -172,7 +172,7 @@ section{position:relative;z-index:1}
   font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);
 }
 
-/* ── API SECTION ── */
+/* -- API SECTION -- */
 #api{padding:100px 48px;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start}
 .api-text .section-title{margin-bottom:20px}
 .api-text p{font-size:12px;line-height:1.85;color:var(--muted);margin-bottom:24px}
@@ -198,7 +198,7 @@ section{position:relative;z-index:1}
 .c-kw{color:var(--purple)}.c-str{color:var(--g)}.c-val{color:var(--gold)}.c-cm{color:rgba(255,255,255,0.2)}
 .c-key{color:var(--blue)}
 
-/* ── INTEGRATION ── */
+/* -- INTEGRATION -- */
 #integrations{padding:80px 48px;border-top:1px solid var(--border)}
 .int-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:48px}
 .int-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border)}
@@ -213,7 +213,7 @@ section{position:relative;z-index:1}
 .status-dot{width:5px;height:5px;border-radius:50%;animation:pulse 2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-/* ── USE CASES ── */
+/* -- USE CASES -- */
 #usecases{padding:100px 48px;border-top:1px solid var(--border)}
 .cases-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--border);margin-top:56px}
 .case-card{
@@ -230,7 +230,7 @@ section{position:relative;z-index:1}
 .case-tags{display:flex;flex-wrap:wrap;gap:6px}
 .case-tag{font-size:8px;letter-spacing:.14em;padding:3px 10px;border:1px solid var(--border);color:var(--faint);text-transform:uppercase}
 
-/* ── CTA ── */
+/* -- CTA -- */
 #cta{
   padding:120px 48px;text-align:center;
   border-top:1px solid var(--border);
@@ -251,7 +251,7 @@ section{position:relative;z-index:1}
 .cta-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:48px}
 .cta-note{font-size:9px;letter-spacing:.14em;color:var(--faint);text-transform:uppercase}
 
-/* ── FOOTER ── */
+/* -- FOOTER -- */
 footer{
   padding:32px 48px;border-top:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;
@@ -263,7 +263,7 @@ footer{
 .footer-links a{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .18s}
 .footer-links a:hover{color:var(--text)}
 
-/* ── ANIMATIONS ── */
+/* -- ANIMATIONS -- */
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
 .reveal.visible{opacity:1;transform:translateY(0)}
 
@@ -286,7 +286,7 @@ footer{
 }
 .glitch{animation:glitch 6s ease-in-out infinite}
 
-/* ── PRICING ── */
+/* -- PRICING -- */
 #pricing{padding:100px 48px;border-top:1px solid var(--border)}
 .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-top:56px;position:relative}
 .price-card{
@@ -380,7 +380,7 @@ footer{
     <li><a href="#usecases">Use Cases</a></li>
     <li><a href="#pricing">Pricing</a></li>
   </ul>
-  <a href="http://bravo-constellation-app.s3-website-ap-southeast-2.amazonaws.com/" target="_blank" class="nav-cta">Launch App →</a>
+  <a href="http://bravo-constellation-app.s3-website-ap-southeast-2.amazonaws.com/app" target="_blank" class="nav-cta">Launch App →</a>
 </nav>
 
 <!-- HERO -->
@@ -395,7 +395,7 @@ footer{
     Bravo Constellation fuses historical OHLC market data with real-time news sentiment — rendered as an interactive 3D particle system that reveals the hidden signal between price and narrative.
   </p>
   <div class="hero-actions">
-    <a href="http://bravo-constellation-app.s3-website-ap-southeast-2.amazonaws.com/" target="_blank" class="btn-primary">Launch Constellation</a>
+    <a href="http://bravo-constellation-app.s3-website-ap-southeast-2.amazonaws.com/app" target="_blank" class="btn-primary">Launch Constellation</a>
     <a href="#api" class="btn-ghost">View API Docs</a>
   </div>
 
@@ -680,7 +680,7 @@ footer{
         <li style="opacity:.4;text-decoration:line-through">API key access</li>
         <li style="opacity:.4;text-decoration:line-through">PDF report generation</li>
       </ul>
-      <a href="http://bravo-constellation-app.s3-website-ap-southeast-2.amazonaws.com/" target="_blank" class="price-cta">Launch Free →</a>
+      <a href="http://bravo-constellation-app.s3-website-ap-southeast-2.amazonaws.com/app" target="_blank" class="price-cta">Launch Free →</a>
     </div>
 
     <!-- PRO -->
@@ -738,7 +738,7 @@ footer{
   </div>
   <p class="cta-sub reveal">Launch the live app, explore any stock, add news keywords, and watch the market tell its own story.</p>
   <div class="cta-actions reveal">
-    <a href="http://bravo-constellation-app.s3-website-ap-southeast-2.amazonaws.com/" target="_blank" class="btn-primary">Launch Constellation →</a>
+    <a href="http://bravo-constellation-app.s3-website-ap-southeast-2.amazonaws.com/app" target="_blank" class="btn-primary">Launch Constellation →</a>
     <a href="mailto:z5590330@ad.unsw.edu.au" class="btn-ghost">Request API Key</a>
   </div>
   <div class="cta-note reveal">Serverless · ADAGE 3.0 · AWS Lambda · Open Ecosystem</div>
@@ -751,12 +751,12 @@ footer{
   <div class="footer-links">
     <a href="https://app.swaggerhub.com/apis-docs/unsw-f67/Bravo_api/1.0.0" target="_blank">API Docs</a>
     <a href="https://github.com/Hardik-V/BRAVO_SENG3011" target="_blank">GitHub</a>
-    <a href="http://bravo-constellation-app.s3-website-ap-southeast-2.amazonaws.com/" target="_blank">Launch App</a>
+    <a href="http://bravo-constellation-app.s3-website-ap-southeast-2.amazonaws.com/app" target="_blank">Launch App</a>
   </div>
 </footer>
 
 <script>
-// ── STARFIELD ──
+// -- STARFIELD --
 const cv=document.getElementById('starfield');
 const ctx=cv.getContext('2d');
 let stars=[];
@@ -794,7 +794,7 @@ let t=0;
   ctx.globalAlpha=1;
 })();
 
-// ── TICKER ──
+// -- TICKER --
 const tickers=[
   {sym:'AAPL',price:'185.20',chg:'+1.68%',dir:'up'},
   {sym:'MSFT',price:'378.40',chg:'+0.92%',dir:'up'},
@@ -816,7 +816,7 @@ all.forEach(t=>{
   tickerEl.appendChild(d);
 });
 
-// ── REVEAL ON SCROLL ──
+// -- REVEAL ON SCROLL --
 const revEls=document.querySelectorAll('.reveal');
 const obs=new IntersectionObserver(entries=>{
   entries.forEach((e,i)=>{
@@ -827,7 +827,7 @@ const obs=new IntersectionObserver(entries=>{
 },{threshold:0.12});
 revEls.forEach(el=>obs.observe(el));
 
-// ── VIZ MODE SWITCHER + CANVAS RENDERING ──
+// -- VIZ MODE SWITCHER + CANVAS RENDERING --
 const pc = document.getElementById('previewCanvas');
 const pCtx = pc.getContext('2d');
 const vizOverlay = document.querySelector('.viz-overlay');
