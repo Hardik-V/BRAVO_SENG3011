@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>BRAVO / Constellation</title>
+<title>BRAVO / Constellation — Financial Intelligence Platform</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -316,7 +316,7 @@ footer{
   font-size:10px;line-height:1.6;color:var(--muted);
   display:flex;align-items:flex-start;gap:10px;
 }
-.price-features li::before{content:'-';color:rgba(255,255,255,0.15);flex-shrink:0}
+.price-features li::before{content:'—';color:rgba(255,255,255,0.15);flex-shrink:0}
 .price-features li.highlight{color:var(--text)}
 .price-features li.highlight::before{content:'✦';color:var(--g);font-size:8px;margin-top:2px}
 .price-cta{
@@ -380,7 +380,7 @@ footer{
     <li><a href="#usecases">Use Cases</a></li>
     <li><a href="#pricing">Pricing</a></li>
   </ul>
-  <a href="/app" target="_blank" class="nav-cta">Launch App →</a>
+  <a href="http://bravo-constellation-app.s3-website-ap-southeast-2.amazonaws.com/" target="_blank" class="nav-cta">Launch App →</a>
 </nav>
 
 <!-- HERO -->
@@ -392,10 +392,10 @@ footer{
     <span class="line3">Instant Constellation Intelligence</span>
   </h1>
   <p class="hero-sub">
-    Bravo Constellation fuses historical OHLC market data with real-time news sentiment.
+    Bravo Constellation fuses historical OHLC market data with real-time news sentiment — rendered as an interactive 3D particle system that reveals the hidden signal between price and narrative.
   </p>
   <div class="hero-actions">
-    <a href="/app" target="_blank" class="btn-primary">Launch Constellation</a>
+    <a href="http://bravo-constellation-app.s3-website-ap-southeast-2.amazonaws.com/" target="_blank" class="btn-primary">Launch Constellation</a>
     <a href="#api" class="btn-ghost">View API Docs</a>
   </div>
 
@@ -426,7 +426,7 @@ footer{
     <div class="stat-label">Visualisation Modes</div>
   </div>
   <div class="stat-cell reveal">
-    <div class="stat-num">147<span>/147</span></div>
+    <div class="stat-num">47<span>/47</span></div>
     <div class="stat-label">Tests Passing</div>
   </div>
 </div>
@@ -447,19 +447,19 @@ footer{
     <div class="feature-card reveal" style="--accent:var(--gold)">
       <div class="feat-icon"><div class="feat-dot" style="background:var(--gold)"></div><span style="color:var(--gold)">Retrieval</span></div>
       <div class="feat-title">Smart Cache Layer</div>
-      <div class="feat-desc">Intelligent S3-backed retrieval with auto-trigger collection on cache miss. Merges overlapping date-range files, deduplicates events, and returns clean ADAGE 3.0 JSON - all within a single API call.</div>
+      <div class="feat-desc">Intelligent S3-backed retrieval with auto-trigger collection on cache miss. Merges overlapping date-range files, deduplicates events, and returns clean ADAGE 3.0 JSON — all within a single API call.</div>
       <div class="feat-tag" style="color:var(--gold);border-color:rgba(245,197,24,0.25)">Zero 404s for valid tickers.</div>
     </div>
     <div class="feature-card reveal" style="--accent:var(--purple)">
-      <div class="feat-icon"><div class="feat-dot" style="background:var(--purple)"></div><span style="color:var(--purple)">Sentiment</span></div>
-      <div class="feat-title">News Gravity Engine</div>
-      <div class="feat-desc">Integrates MediaPulse's 30-day sentiment API across 20+ news sources. Maps each keyword's sentiment (−1 bearish → +1 bullish) to particle positions, revealing which narratives drove which trading days.</div>
-      <div class="feat-tag" style="color:var(--purple);border-color:rgba(170,102,255,0.25)">Price meets narrative.</div>
+      <div class="feat-icon"><div class="feat-dot" style="background:var(--purple)"></div><span style="color:var(--purple)">Intelligence</span></div>
+      <div class="feat-title">Regime Engine</div>
+      <div class="feat-desc">Pulls current keyword sentiment from MediaPulse's 30-day API, then scans your historical price data for periods with matching market behaviour — momentum, volatility, max drawdown. Surfaces the top analogues and their forward returns.</div>
+      <div class="feat-tag" style="color:var(--purple);border-color:rgba(170,102,255,0.25)">Markets have memory.</div>
     </div>
     <div class="feature-card reveal" style="--accent:var(--blue)">
       <div class="feat-icon"><div class="feat-dot" style="background:var(--blue)"></div><span style="color:var(--blue)">Visualisation</span></div>
       <div class="feat-title">Constellation View</div>
-      <div class="feat-desc">Five morphing modes: Scatter, Cluster, Line Chart, OHLC Candlestick, and News Gravity - all rendered in a Three.js WebGL particle system with additive blending, animated transitions, and hover tooltips.</div>
+      <div class="feat-desc">Five morphing modes: Scatter, Cluster, Line Chart, OHLC Candlestick, and Regime Engine — all rendered in a Three.js WebGL particle system with additive blending, animated transitions, and hover tooltips. Each historical analogue becomes its own constellation of stars.</div>
       <div class="feat-tag" style="color:var(--blue);border-color:rgba(68,136,255,0.25)">WebGL. Real-time. Interactive.</div>
     </div>
     <div class="feature-card reveal" style="--accent:var(--g)">
@@ -482,14 +482,14 @@ footer{
   <div class="viz-text reveal">
     <div class="section-tag">The Constellation</div>
     <div class="section-title" style="margin-bottom:20px">Data that<br><em>moves.</em></div>
-    <p>Every particle is a trading day. Its colour tells you whether it was bullish or bearish. Its position maps price movement. When you add keywords, particles drift toward the news nodes that match their sentiment - revealing the gravity of narrative on market movement.</p>
-    <p>No static dashboard. No generic bar charts. Bravo Constellation is the only financial analytics tool that shows you <em style="color:var(--text)">why</em> stocks move, not just that they moved.</p>
+    <p>Every particle is a trading day. Its colour tells you whether it was bullish or bearish. Its position maps price movement. In Regime Engine mode, particles form constellations — each cluster is a historical period that matched today's market behaviour, with its own forward return story.</p>
+    <p>No static dashboard. No generic bar charts. Bravo Constellation is the only financial analytics tool that asks <em style="color:var(--text)">when has the market felt like this before</em> — and shows you what happened next.</p>
     <div class="viz-modes">
-      <div class="viz-mode active"><div class="viz-mode-dot"></div>Scatter - all trading days</div>
-      <div class="viz-mode"><div class="viz-mode-dot"></div>Clusters - grouped by sentiment</div>
-      <div class="viz-mode"><div class="viz-mode-dot"></div>Line - price over time</div>
-      <div class="viz-mode"><div class="viz-mode-dot"></div>OHLC - candlestick view</div>
-      <div class="viz-mode"><div class="viz-mode-dot"></div>News gravity - sentiment pull</div>
+      <div class="viz-mode active"><div class="viz-mode-dot"></div>Scatter — all trading days</div>
+      <div class="viz-mode"><div class="viz-mode-dot"></div>Clusters — grouped by sentiment</div>
+      <div class="viz-mode"><div class="viz-mode-dot"></div>Line — price over time</div>
+      <div class="viz-mode"><div class="viz-mode-dot"></div>OHLC — candlestick view</div>
+      <div class="viz-mode"><div class="viz-mode-dot"></div>Regime Engine — analogue constellations</div>
     </div>
   </div>
   <div class="viz-canvas reveal">
@@ -503,7 +503,7 @@ footer{
   <div class="api-text reveal">
     <div class="section-tag">Developer API</div>
     <div class="section-title" style="margin-bottom:20px">Clean data.<br><em>Zero friction.</em></div>
-    <p>Three REST endpoints. One API key. Any stock. ADAGE 3.0 JSON out of the box - skip the Yahoo Finance integration, call Bravo and get clean structured data instantly.</p>
+    <p>Three REST endpoints. One API key. Any stock. ADAGE 3.0 JSON out of the box — skip the Yahoo Finance integration, call Bravo and get clean structured data instantly.</p>
     <p>Used by multiple teams in the SENG3011 ecosystem. Built to be consumed.</p>
     <div class="api-endpoints" style="margin-top:28px">
       <div class="endpoint">
@@ -560,7 +560,7 @@ footer{
     </div>
     <div style="margin-top:16px;padding:16px;border:1px solid var(--border);display:flex;align-items:center;gap:12px">
       <div style="width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 8px var(--g);animation:pulse 2s infinite"></div>
-      <span style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)">API live - contact team for key</span>
+      <span style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)">API live — contact team for key</span>
       <span style="font-size:9px;color:var(--muted);margin-left:auto">z5590330@ad.unsw.edu.au</span>
     </div>
   </div>
@@ -583,14 +583,14 @@ footer{
     </div>
     <div class="int-card reveal">
       <div class="int-name" style="color:var(--purple)">MediaPulse</div>
-      <div class="int-type">Sentiment API - F13A Delta</div>
+      <div class="int-type">Sentiment API — F13A Delta</div>
       <div class="int-desc">Real-time news sentiment across 20+ sources. Powers the News Gravity visualisation mode with keyword-level sentiment scores.</div>
       <div class="int-status"><div class="status-dot" style="background:var(--purple)"></div><span style="font-size:8px;letter-spacing:.12em;color:var(--purple)">Active</span></div>
     </div>
     <div class="int-card reveal">
       <div class="int-name" style="color:var(--gold)">AWS Lambda</div>
       <div class="int-type">Compute</div>
-      <div class="int-desc">Three independently deployed microservices - Collection, Retrieval, Visualisation - with auto-scaling and dev/prod isolation.</div>
+      <div class="int-desc">Three independently deployed microservices — Collection, Retrieval, Visualisation — with auto-scaling and dev/prod isolation.</div>
       <div class="int-status"><div class="status-dot" style="background:var(--gold)"></div><span style="font-size:8px;letter-spacing:.12em;color:var(--gold)">Active</span></div>
     </div>
     <div class="int-card reveal">
@@ -613,7 +613,7 @@ footer{
       <div class="case-num">01</div>
       <div class="case-role">Financial Analyst</div>
       <div class="case-title">Spot the narrative before the market does</div>
-      <div class="case-desc">Query any ticker, any date range. Switch to News Gravity mode and immediately see which news keywords drove price movement - and which days had price-sentiment divergence (potential reversals).</div>
+      <div class="case-desc">Query any ticker, any date range. Switch to News Gravity mode and immediately see which news keywords drove price movement — and which days had price-sentiment divergence (potential reversals).</div>
       <div class="case-tags">
         <span class="case-tag">OHLC data</span>
         <span class="case-tag">Sentiment overlay</span>
@@ -671,8 +671,8 @@ footer{
       <div class="price-tagline">For students &amp; explorers</div>
       <div class="price-divider"></div>
       <ul class="price-features">
-        <li class="highlight">30 stocks analysed daily</li>
-        <li class="highlight">15 keywords tracked daily</li>
+        <li class="highlight">3 stocks analysed simultaneously</li>
+        <li class="highlight">5 keywords tracked at once</li>
         <li>30-day rolling history</li>
         <li>All 5 visualisation modes</li>
         <li>ADAGE 3.0 JSON export</li>
@@ -680,7 +680,7 @@ footer{
         <li style="opacity:.4;text-decoration:line-through">API key access</li>
         <li style="opacity:.4;text-decoration:line-through">PDF report generation</li>
       </ul>
-      <a href="/app" target="_blank" class="price-cta">Launch Free →</a>
+      <a href="http://bravo-constellation-app.s3-website-ap-southeast-2.amazonaws.com/" target="_blank" class="price-cta">Launch Free →</a>
     </div>
 
     <!-- PRO -->
@@ -691,13 +691,14 @@ footer{
       <div class="price-tagline">For analysts &amp; traders</div>
       <div class="price-divider"></div>
       <ul class="price-features">
-        <li class="highlight">250 stocks analysed daily</li>
-        <li class="highlight">300 keywords tracked daily</li>
-        <li>Full historical data</li>
+        <li class="highlight">25 stocks analysed simultaneously</li>
+        <li class="highlight">30 keywords tracked at once</li>
+        <li>Full historical data (10 years)</li>
         <li>All 5 visualisation modes</li>
         <li>Real-time news gravity feed</li>
         <li>API key access (10k calls/mo)</li>
         <li>ADAGE 3.0 JSON + CSV export</li>
+        <li style="opacity:.4;text-decoration:line-through">PDF report generation</li>
         <li style="opacity:.4;text-decoration:line-through">Dedicated support SLA</li>
       </ul>
       <a href="mailto:z5590330@ad.unsw.edu.au" class="price-cta featured-cta">Get Pro Access →</a>
@@ -712,11 +713,12 @@ footer{
       <ul class="price-features">
         <li class="highlight">Unlimited stocks</li>
         <li class="highlight">Unlimited keywords</li>
-        <li>Full historical data</li>
+        <li>Full historical data (20 years)</li>
         <li>All 5 visualisation modes</li>
         <li>Real-time news gravity feed</li>
         <li>API key access (unlimited calls)</li>
-        <li>ADAGE 3.0 JSON + CSV</li>
+        <li>ADAGE 3.0 JSON + CSV + Parquet</li>
+        <li class="highlight">PDF report generation</li>
         <li class="highlight">Dedicated support SLA &lt; 4h</li>
         <li class="highlight">ML-ready bulk data export</li>
       </ul>
@@ -736,7 +738,7 @@ footer{
   </div>
   <p class="cta-sub reveal">Launch the live app, explore any stock, add news keywords, and watch the market tell its own story.</p>
   <div class="cta-actions reveal">
-    <a href="/app" target="_blank" class="btn-primary">Launch Constellation →</a>
+    <a href="http://bravo-constellation-app.s3-website-ap-southeast-2.amazonaws.com/" target="_blank" class="btn-primary">Launch Constellation →</a>
     <a href="mailto:z5590330@ad.unsw.edu.au" class="btn-ghost">Request API Key</a>
   </div>
   <div class="cta-note reveal">Serverless · ADAGE 3.0 · AWS Lambda · Open Ecosystem</div>
@@ -749,7 +751,7 @@ footer{
   <div class="footer-links">
     <a href="https://app.swaggerhub.com/apis-docs/unsw-f67/Bravo_api/1.0.0" target="_blank">API Docs</a>
     <a href="https://github.com/Hardik-V/BRAVO_SENG3011" target="_blank">GitHub</a>
-    <a href="/app" target="_blank">Launch App</a>
+    <a href="http://bravo-constellation-app.s3-website-ap-southeast-2.amazonaws.com/" target="_blank">Launch App</a>
   </div>
 </footer>
 
@@ -877,7 +879,7 @@ let transitionProgress = 1;
 
 const modeConfigs = {
   scatter: {
-    label: 'Scatter - all trading days',
+    label: 'Scatter — all trading days',
     compute(p, i, w, h) {
       // scatter by return vs prev-day return
       const xNorm = (p.day / DAYS);
@@ -895,7 +897,7 @@ const modeConfigs = {
     }
   },
   clusters: {
-    label: 'Clusters - grouped by sentiment',
+    label: 'Clusters — grouped by sentiment',
     compute(p, i, w, h) {
       const bull = p.close >= p.open;
       const cx = bull ? w * 0.65 : w * 0.3;
@@ -923,7 +925,7 @@ const modeConfigs = {
     }
   },
   line: {
-    label: 'Line - price over time',
+    label: 'Line — price over time',
     compute(p, i, w, h) {
       const minP = Math.min(...mockData.map(d => d.low));
       const maxP = Math.max(...mockData.map(d => d.high));
@@ -953,7 +955,7 @@ const modeConfigs = {
     }
   },
   ohlc: {
-    label: 'OHLC - candlestick view',
+    label: 'OHLC — candlestick view',
     compute(p, i, w, h) {
       // align to candlestick body center
       const minP = Math.min(...mockData.map(d => d.low));
@@ -990,39 +992,151 @@ const modeConfigs = {
       drawParticles(t, 0.0); // faint particles overlay
     }
   },
-  gravity: {
-    label: 'News gravity - sentiment pull',
+  regime: {
+    label: 'Regime Engine — analogue constellations',
+    _built: false,
+    _constellations: [],
+    _bgStars: [],
+    _rotAngle: 0,
+    _buildConstellations(w, h) {
+      // 6 mock analogue windows — each a mini price chart arc
+      const regimeTypes = [
+        { name: 'BULLISH OPTIMISM', col: '0,255,136',    sentiment: +0.72 },
+        { name: 'SIDEWAYS',         col: '245,197,24',   sentiment: -0.08 },
+        { name: 'PANIC / CRASH',    col: '255,61,90',    sentiment: -0.81 },
+        { name: 'HYPE / SPEC',      col: '170,102,255',  sentiment: +0.55 },
+        { name: 'MACRO FOG',        col: '255,120,60',   sentiment: -0.34 },
+        { name: 'MILD BULL',        col: '68,255,160',   sentiment: +0.28 },
+      ];
+      // Seeded galaxy scatter — same algorithm as bravo-v19
+      const centres = [];
+      const placed = [];
+      const MIN_SEP = 0.18;
+      regimeTypes.forEach((rt, ai) => {
+        let best = { cx: 0.5, cy: 0.5 }, bestD = -1;
+        for (let t = 0; t < 40; t++) {
+          const s = ai * 17 + 6 * 3;
+          const rng = n => { let x = Math.sin(s * 9301 + n * 49297 + t * 233720923) * 43758.5453; return x - Math.floor(x); };
+          const angle = rng(t) * Math.PI * 2;
+          const r = 0.15 + rng(t + 1) * 0.32;
+          const cx = 0.5 + Math.cos(angle) * r;
+          const cy = 0.5 + Math.sin(angle) * r * 0.65;
+          if (cx < 0.05 || cx > 0.95 || cy < 0.08 || cy > 0.92) continue;
+          const minD = placed.length ? Math.min(...placed.map(p => Math.hypot(p.cx - cx, p.cy - cy))) : 999;
+          if (minD > bestD) { bestD = minD; best = { cx, cy }; }
+          if (minD >= MIN_SEP) break;
+        }
+        centres.push(best);
+        placed.push(best);
+      });
+
+      this._constellations = regimeTypes.map((rt, ai) => {
+        const { cx, cy } = centres[ai];
+        const nPoints = 7 + Math.floor(Math.random() * 8); // 7–14 stars
+        // Generate a mock normalised price curve for this constellation
+        let price = 0;
+        const prices = Array.from({ length: nPoints }, () => {
+          price += (Math.random() - (rt.sentiment < 0 ? 0.55 : 0.45)) * 0.18;
+          return price;
+        });
+        const lo = Math.min(...prices), hi = Math.max(...prices), span = hi - lo || 1;
+        const normPrices = prices.map(p => (p - lo) / span - 0.5); // -0.5..+0.5
+        const spreadX = 0.06 + nPoints * 0.006;
+        const stars = normPrices.map((ny, si) => ({
+          x: (cx + (si / (nPoints - 1) - 0.5) * spreadX) * w,
+          y: (cy + ny * 0.08) * h,
+        }));
+        // Forward return label (mock)
+        const fwdSign = rt.sentiment > 0.1 ? '+' : rt.sentiment < -0.1 ? '-' : '±';
+        const fwdVal = (2 + Math.random() * 14).toFixed(1);
+        return { ...rt, stars, cx: cx * w, cy: cy * h, fwdSign, fwdVal, ai };
+      });
+
+      // Background galaxy stars
+      this._bgStars = Array.from({ length: 55 }, (_, i) => {
+        const theta = (i * 2.399963) % (Math.PI * 2);
+        const arm = (i % 3) * (Math.PI * 2 / 3);
+        const r = 0.38 + (i % 9) * 0.028;
+        return {
+          x: (0.5 + Math.cos(theta + arm) * r) * w,
+          y: (0.5 + Math.sin(theta + arm) * r * 0.42) * h,
+          r: 0.6 + Math.random() * 0.8,
+          phase: Math.random() * Math.PI * 2,
+        };
+      });
+      this._built = true;
+    },
     compute(p, i, w, h) {
-      // particles drift toward matching news node
-      const closest = newsNodes.reduce((best, n) => {
-        const dist = Math.abs(n.sentiment - p.sentiment);
-        return dist < Math.abs(best.sentiment - p.sentiment) ? n : best;
-      }, newsNodes[0]);
-      const nx = closest.x * w;
-      const ny = closest.y * h;
-      const angle = Math.random() * Math.PI * 2;
-      const rad = 8 + Math.random() * 45;
-      p.tx = nx + Math.cos(angle) * rad;
-      p.ty = ny + Math.sin(angle) * rad;
+      if (!this._built) this._buildConstellations(w, h);
+      // Non-analogue particles go to background
+      const bgIdx = i % this._bgStars.length;
+      p.tx = this._bgStars[bgIdx].x;
+      p.ty = this._bgStars[bgIdx].y;
     },
     draw(w, h, t) {
-      // draw news node halos
-      newsNodes.forEach(n => {
-        const nx = n.x * w, ny = n.y * h;
-        const col = n.sentiment > 0 ? '0,255,136' : '255,61,90';
-        const grad = pCtx.createRadialGradient(nx, ny, 0, nx, ny, 55);
-        grad.addColorStop(0, `rgba(${col},0.12)`);
-        grad.addColorStop(1, 'transparent');
-        pCtx.fillStyle = grad;
-        pCtx.beginPath(); pCtx.arc(nx, ny, 55, 0, Math.PI * 2); pCtx.fill();
-        pCtx.strokeStyle = `rgba(${col},0.25)`;
-        pCtx.lineWidth = 1;
-        pCtx.beginPath(); pCtx.arc(nx, ny, 10, 0, Math.PI * 2); pCtx.stroke();
-        pCtx.fillStyle = `rgba(${col},0.7)`;
-        pCtx.font = '8px JetBrains Mono, monospace';
-        pCtx.fillText(n.label.toUpperCase(), nx - n.label.length * 2.8, ny + 22);
+      if (!this._built) this._buildConstellations(w, h);
+
+      // Slowly rotate background star positions
+      this._rotAngle += 0.0004;
+      const cos = Math.cos(this._rotAngle), sin = Math.sin(this._rotAngle);
+
+      // Draw background stars — dim white
+      this._bgStars.forEach(s => {
+        const dx = s.x - w / 2, dy = s.y - h / 2;
+        const rx = dx * cos - dy * sin + w / 2;
+        const ry = dx * sin + dy * cos + h / 2;
+        const a = 0.12 + 0.06 * Math.sin(t * 0.9 + s.phase);
+        pCtx.globalAlpha = a;
+        pCtx.globalCompositeOperation = 'lighter';
+        pCtx.fillStyle = '#aabbdd';
+        pCtx.beginPath(); pCtx.arc(rx, ry, s.r, 0, Math.PI * 2); pCtx.fill();
       });
-      drawParticles(t);
+
+      // Draw each constellation
+      this._constellations.forEach((c, ci) => {
+        const col = c.col;
+        const baseAlpha = 0.55 + 0.22 * Math.sin(t * 0.6 + ci * 1.1);
+
+        // Green connecting lines between stars
+        if (c.stars.length > 1) {
+          pCtx.globalAlpha = baseAlpha * 0.45;
+          pCtx.globalCompositeOperation = 'lighter';
+          pCtx.strokeStyle = `rgba(${col},1)`;
+          pCtx.lineWidth = 0.8;
+          pCtx.beginPath();
+          c.stars.forEach((s, si) => si === 0 ? pCtx.moveTo(s.x, s.y) : pCtx.lineTo(s.x, s.y));
+          pCtx.stroke();
+        }
+
+        // Stars
+        c.stars.forEach((s, si) => {
+          const starAlpha = baseAlpha * (0.7 + 0.3 * Math.sin(t * 1.4 + si * 0.7 + ci));
+          pCtx.globalAlpha = starAlpha;
+          pCtx.globalCompositeOperation = 'lighter';
+          pCtx.fillStyle = `rgba(${col},1)`;
+          pCtx.beginPath(); pCtx.arc(s.x, s.y, 1.8, 0, Math.PI * 2); pCtx.fill();
+          // soft glow
+          pCtx.globalAlpha = starAlpha * 0.15;
+          pCtx.beginPath(); pCtx.arc(s.x, s.y, 7, 0, Math.PI * 2); pCtx.fill();
+        });
+
+        // Constellation label + fwd return
+        const labelX = c.cx;
+        const labelY = c.cy - (c.stars.length > 0 ? Math.min(...c.stars.map(s => s.y - c.cy)) : 0) - 14;
+        pCtx.globalAlpha = 0.55 + 0.15 * Math.sin(t * 0.5 + ci);
+        pCtx.globalCompositeOperation = 'source-over';
+        pCtx.font = '7px JetBrains Mono, monospace';
+        pCtx.fillStyle = `rgba(${col},0.8)`;
+        pCtx.textAlign = 'center';
+        pCtx.fillText(c.name, labelX, labelY);
+        pCtx.font = '8px JetBrains Mono, monospace';
+        pCtx.fillStyle = c.sentiment >= 0 ? 'rgba(0,255,136,0.7)' : 'rgba(255,61,90,0.7)';
+        pCtx.fillText(`${c.fwdSign}${c.fwdVal}%`, labelX, labelY + 11);
+        pCtx.textAlign = 'left';
+      });
+
+      pCtx.globalAlpha = 1;
+      pCtx.globalCompositeOperation = 'source-over';
     }
   }
 };
@@ -1049,7 +1163,7 @@ function setMode(mode) {
   const w = pc.width / devicePixelRatio;
   const h = pc.height / devicePixelRatio;
   particles.forEach((p, i) => modeConfigs[mode].compute(p, i, w, h));
-  const labels = { scatter: 'Scatter view', clusters: 'Cluster analysis', line: 'Price timeline', ohlc: 'OHLC candlesticks', gravity: 'News gravity field' };
+  const labels = { scatter: 'Scatter view', clusters: 'Cluster analysis', line: 'Price timeline', ohlc: 'OHLC candlesticks', regime: 'Regime Engine — analogue constellations' };
   if (vizOverlay) vizOverlay.textContent = labels[mode] || mode;
 }
 
@@ -1083,7 +1197,7 @@ let pt = 0;
 
 // Wire up buttons
 const modes = document.querySelectorAll('.viz-mode');
-const modeKeys = ['scatter', 'clusters', 'line', 'ohlc', 'gravity'];
+const modeKeys = ['scatter', 'clusters', 'line', 'ohlc', 'regime'];
 modes.forEach((m, i) => {
   m.addEventListener('click', () => {
     modes.forEach(mm => mm.classList.remove('active'));

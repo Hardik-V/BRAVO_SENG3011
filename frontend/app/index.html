@@ -20,6 +20,7 @@
   --topbar-h:52px;
   --rail-w:120px;
   --stats-h:56px;
+  --timeline-h:44px;
 }
 html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:var(--fd);overflow:hidden;cursor:crosshair}
 canvas#c{position:fixed;inset:0;z-index:0;display:block}
@@ -43,6 +44,15 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
 }
 .logo-mark{font-family:var(--ff);font-size:20px;font-weight:800;letter-spacing:0.1em;line-height:1;color:var(--text)}
 .logo-mark .v{color:var(--g)}
+@keyframes glitch{
+  0%,94%,100%{text-shadow:none;transform:none}
+  95%{text-shadow:-2px 0 var(--r),2px 0 var(--g);transform:skewX(-1deg)}
+  96%{text-shadow:2px 0 var(--r),-2px 0 var(--g);transform:skewX(1deg)}
+  97%{text-shadow:none;transform:none}
+  98%{text-shadow:-1px 0 var(--purple);transform:skewX(-0.5deg)}
+  99%{text-shadow:none;transform:none}
+}
+.logo-glitch{animation:glitch 7s ease-in-out infinite}
 .logo-slash{width:1px;height:20px;background:var(--border);margin:0 14px;transform:rotate(15deg);flex-shrink:0}
 .logo-sub-block{display:flex;flex-direction:column;justify-content:center;gap:2px}
 .logo-ver{font-family:var(--fd);font-size:9px;font-weight:300;letter-spacing:0.16em;text-transform:uppercase;color:rgba(0,255,136,0.45)}
@@ -155,7 +165,7 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
 
 /* keyword section */
 #kwSection{padding:14px 20px 16px;display:flex;flex-direction:column;gap:0;border-bottom:1px solid var(--border)}
-.kw-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.kw-header{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:0;padding-bottom:10px}
 .kw-header-label{font-family:var(--fd);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(170,102,255,0.75)}
 .kw-header-count{font-family:var(--fd);font-size:9px;color:rgba(255,255,255,0.22);letter-spacing:0.08em}
 .kwrow{display:flex;align-items:center;gap:0;margin-bottom:8px;border:1px solid transparent;transition:border-color 0.18s}
@@ -177,6 +187,14 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
 }
 .kwfetch:hover{background:rgba(170,102,255,0.06);border-color:rgba(170,102,255,0.45);color:rgba(170,102,255,0.95)}
 .kwfetch-icon{font-size:12px}
+.regime-tf-btn{
+  flex:1;background:transparent;border:1px solid var(--border);color:var(--muted);
+  font-family:var(--fd);font-size:9px;letter-spacing:0.14em;padding:6px 0;
+  cursor:crosshair;text-transform:uppercase;transition:all 0.15s;
+}
+.regime-tf-btn:first-child{border-right:none;}
+.regime-tf-btn:hover:not(.regime-tf-on){color:var(--text);background:rgba(255,255,255,0.02)}
+.regime-tf-btn.regime-tf-on{background:rgba(170,102,255,0.1);border-color:rgba(170,102,255,0.45);color:rgba(170,102,255,0.9)}
 
 .panel-footer{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)}
 .pf-label{font-family:var(--fd);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.15)}
@@ -249,16 +267,161 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
 .lgbar{width:18px;height:2px;border-radius:1px;flex-shrink:0}
 .lglbl{font-family:var(--fd);font-size:10px;letter-spacing:0.08em;color:var(--muted);text-transform:uppercase}
 
-/* ── NEWS LEGENDS ── */
-#newsLegend{
-  position:fixed;bottom:calc(var(--stats-h) + 8px);left:calc(var(--panel-w) + 10px);z-index:20;
+/* ── REGIME OVERLAY ── */
+#regimeOverlay{
+  position:fixed;right:calc(var(--rail-w) + 10px);top:calc(var(--topbar-h) + 10px);z-index:20;
   opacity:0;transition:opacity 0.6s;pointer-events:none;
-  display:flex;flex-direction:column;gap:4px;
-  background:var(--panel-bg);border:1px solid rgba(170,102,255,0.18);
-  padding:12px 16px;backdrop-filter:blur(20px);background-image:var(--scan);
+  background:var(--panel-bg);border:1px solid rgba(170,102,255,0.22);
+  padding:14px 18px 10px;backdrop-filter:blur(20px);background-image:var(--scan);
+  width:280px;
+  max-height:calc(100vh - var(--topbar-h) - var(--stats-h) - 30px);
+  display:flex;flex-direction:column;overflow:hidden;
 }
-#newsLegend.on{opacity:1}
-.nll{font-family:var(--fd);font-size:10px;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase}
+#regimeOverlay::-webkit-scrollbar{width:3px}
+#regimeOverlay::-webkit-scrollbar-track{background:transparent}
+#regimeOverlay::-webkit-scrollbar-thumb{background:rgba(170,102,255,0.3);border-radius:2px}
+#regimeOverlay.on{opacity:1;pointer-events:all}
+.ro-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ro-icon{font-size:12px;color:var(--purple)}
+.ro-title{font-family:var(--fd);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.4)}
+.ro-regime-score{font-family:var(--fm);font-size:17px;font-weight:700;letter-spacing:0.04em;margin-bottom:8px;min-height:22px}
+.ro-divider{height:1px;background:var(--border);margin:8px 0}
+.ro-analogues-label{font-family:var(--fd);font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:8px}
+.ro-analogue{
+  display:flex;align-items:center;gap:0;margin-bottom:6px;
+  border:1px solid rgba(255,255,255,0.05);padding:7px 10px;
+  background:rgba(0,0,0,0.2);position:relative;overflow:hidden;
+}
+.ro-analogue.top{border-color:rgba(245,197,24,0.3);background:rgba(245,197,24,0.03)}
+.ro-analogue-bar{position:absolute;left:0;top:0;bottom:0;background:rgba(170,102,255,0.08);transition:width 0.8s}
+.ro-analogue.top .ro-analogue-bar{background:rgba(245,197,24,0.07)}
+.ro-analogue-date{font-family:var(--fd);font-size:10px;color:var(--text);letter-spacing:0.06em;flex:1;position:relative;z-index:1}
+.ro-analogue-score{font-family:var(--fd);font-size:9px;color:rgba(255,255,255,0.3);margin-right:12px;position:relative;z-index:1}
+.ro-analogue-ret{font-family:var(--fm);font-size:12px;font-weight:700;position:relative;z-index:1;min-width:58px;text-align:right}
+.ro-summary{font-family:var(--fd);font-size:10px;line-height:1.65;color:var(--muted);letter-spacing:0.04em}
+.ro-summary b{font-weight:700}
+.ro-footer{font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.18);letter-spacing:0.06em;margin-top:8px;line-height:1.5}
+
+/* override old newsLegend CSS */
+#newsLegend{display:none!important}
+#regimeTimeline{display:none!important}
+
+/* ── NARRATIVE REGIME ENGINE — new visuals ── */
+#regimeOverlay{width:310px}
+#roPanelBody{display:flex;flex-direction:column;overflow:hidden}
+#roAnalogues{overflow-y:auto;overflow-x:hidden;max-height:200px}
+#roAnalogues::-webkit-scrollbar{width:3px}
+#roAnalogues::-webkit-scrollbar-track{background:transparent}
+#roAnalogues::-webkit-scrollbar-thumb{background:rgba(170,102,255,0.3);border-radius:2px}
+.ro-regime-type{
+  display:inline-block;font-family:var(--fd);font-size:8px;letter-spacing:0.18em;text-transform:uppercase;
+  padding:3px 9px;margin-bottom:10px;border:1px solid currentColor;opacity:0.85;
+}
+.ro-divider-label{font-family:var(--fd);font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.22);margin:10px 0 8px}
+.ro-analogue-meta{display:flex;flex-direction:column;gap:3px;flex:1;position:relative;z-index:1}
+.ro-analogue-date{font-family:var(--fd);font-size:11px;color:var(--text);letter-spacing:0.06em;font-weight:500}
+.ro-analogue-regime{font-family:var(--fd);font-size:8px;letter-spacing:0.12em;text-transform:uppercase;opacity:0.7}
+.ro-analogue-keywords{font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:0.06em;margin-top:1px}
+.ro-analogue-metrics{display:flex;flex-direction:column;gap:2px;align-items:flex-end;flex-shrink:0;position:relative;z-index:1;min-width:70px}
+.ro-analogue-ret{font-family:var(--fm);font-size:14px;font-weight:700}
+.ro-analogue-vol{font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.3);text-align:right}
+.ro-analogue-conf{font-family:var(--fd);font-size:8px;text-align:right}
+.ro-outcomes-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;margin:8px 0;border:1px solid var(--border)}
+.ro-outcome-cell{padding:7px 8px;background:rgba(0,0,0,0.2);display:flex;flex-direction:column;gap:2px}
+.ro-outcome-lbl{font-family:var(--fd);font-size:7px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.28)}
+.ro-outcome-val{font-family:var(--fm);font-size:12px;font-weight:700}
+.ro-prob-bar{display:flex;height:3px;border-radius:1px;overflow:hidden;margin:6px 0 4px;gap:1px}
+.ro-prob-bull{background:var(--g);border-radius:1px 0 0 1px}
+.ro-prob-bear{background:var(--r);border-radius:0 1px 1px 0}
+.ro-prob-labels{display:flex;justify-content:space-between;font-family:var(--fd);font-size:8px;letter-spacing:0.1em;text-transform:uppercase}
+
+/* regime cluster atmosphere colors */
+.regime-tag{font-family:var(--fd);font-size:8px;letter-spacing:0.12em;text-transform:uppercase;padding:1px 6px;border-radius:1px}
+
+/* similarity threshold slider */
+.sim-thresh-block{padding:12px 20px 14px;border-bottom:1px solid var(--border)}
+.sim-thresh-header{font-family:var(--fd);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(170,102,255,0.75);margin-bottom:10px}
+.sim-thresh-row{display:flex;align-items:center;gap:8px}
+.sim-thresh-slider{flex:1;accent-color:var(--purple);height:2px;cursor:crosshair}
+.sim-thresh-val{font-family:var(--fm);font-size:11px;font-weight:700;color:var(--purple);min-width:32px;text-align:right}
+
+/* Cinematic overlay — bottom timeline scrubber */
+#regimeTimeline{
+  position:fixed;bottom:var(--stats-h);left:var(--panel-w);right:var(--rail-w);z-index:19;
+  height:44px;background:rgba(4,7,12,0.92);border-top:1px solid var(--border);
+  backdrop-filter:blur(16px);display:flex;align-items:center;padding:0 20px;gap:12px;
+  opacity:0;transition:opacity 0.5s;pointer-events:none;
+  background-image:var(--scan);
+}
+#regimeTimeline.on{opacity:1;pointer-events:all}
+.rt-label{font-family:var(--fd);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.25);flex-shrink:0}
+.rt-track{flex:1;position:relative;height:100%;display:flex;align-items:center}
+#rtSlider{width:100%;accent-color:var(--purple);height:2px;cursor:crosshair}
+.rt-epoch{font-family:var(--fd);font-size:9px;letter-spacing:0.08em;color:rgba(170,102,255,0.55);flex-shrink:0;min-width:80px;text-align:right}
+
+/* Current state pulse ring (canvas-drawn — just CSS indicator) */
+#currentStateBadge{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
+  pointer-events:none;z-index:8;
+  width:14px;height:14px;border-radius:50%;
+  background:rgba(255,255,255,0.95);
+  box-shadow:0 0 20px rgba(255,255,255,0.4),0 0 40px rgba(255,255,255,0.15);
+  opacity:0;transition:opacity 0.8s;
+}
+#currentStateBadge.on{opacity:1}
+#currentStateBadge::after{
+  content:'';position:absolute;inset:-8px;border-radius:50%;
+  border:1px solid rgba(255,255,255,0.15);
+  animation:csRipple 2.8s ease-out infinite;
+}
+#currentStateBadge::before{
+  content:'';position:absolute;inset:-16px;border-radius:50%;
+  border:1px solid rgba(255,255,255,0.07);
+  animation:csRipple 2.8s ease-out infinite 0.7s;
+}
+@keyframes csRipple{
+  0%{transform:scale(1);opacity:0.5}
+  100%{transform:scale(3.5);opacity:0}
+}
+
+/* Regime constellation key */
+/* regime key wrapper — contains toggle btn + collapsible body */
+#regimeKeyWrap{
+  position:fixed;left:calc(var(--panel-w) + 12px);top:calc(var(--topbar-h) + 10px);z-index:20;
+  opacity:0;transition:opacity 0.5s;pointer-events:none;
+}
+#regimeKeyWrap.on{opacity:1;pointer-events:all}
+#rkToggleBtn{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(4,7,12,0.7);border:1px solid rgba(255,255,255,0.1);
+  padding:4px 10px 4px 8px;cursor:crosshair;margin-bottom:0;
+  font-family:var(--fd);font-size:8px;letter-spacing:0.14em;text-transform:uppercase;
+  color:rgba(255,255,255,0.35);transition:border-color 0.15s,color 0.15s;
+  backdrop-filter:blur(12px);
+}
+#rkToggleBtn:hover{border-color:rgba(255,255,255,0.22);color:rgba(255,255,255,0.6)}
+#rkToggleBtn .rk-toggle-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.3);flex-shrink:0}
+#regimeKey{
+  display:flex;flex-direction:column;gap:5px;
+  background:rgba(4,7,12,0.82);border:1px solid rgba(255,255,255,0.08);border-top:none;
+  padding:10px 14px 12px;backdrop-filter:blur(16px);
+  max-height:0;overflow:hidden;transition:max-height 0.35s ease,padding 0.35s ease,opacity 0.25s;
+  opacity:0;pointer-events:none;
+}
+#regimeKey.open{max-height:400px;opacity:1;pointer-events:all}
+.rk-item{display:flex;align-items:flex-start;gap:7px;margin-bottom:6px}
+.rk-item:last-child{margin-bottom:0}
+.rk-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:2px}
+.rk-lbl{font-family:var(--fd);font-size:9px;letter-spacing:0.12em;color:rgba(255,255,255,0.55);text-transform:uppercase}
+.rk-desc{font-family:var(--fd);font-size:8px;letter-spacing:0.04em;color:rgba(255,255,255,0.28);margin-top:2px;line-height:1.4}
+/* focused analogue card in regime overlay */
+.ro-analogue.focused{
+  border-color:rgba(255,255,255,0.35)!important;
+  background:rgba(255,255,255,0.04)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.12);
+}
+
+
 
 #newsAxis{
   position:fixed;right:calc(var(--rail-w) + 12px);top:50%;transform:translateY(-50%);
@@ -298,10 +461,24 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
 .tnews{margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-family:var(--fd);font-size:9px;line-height:1.6;color:var(--muted)}
 .anomaly-badge{display:inline-block;margin-top:5px;padding:3px 9px;font-family:var(--fd);font-size:8px;letter-spacing:0.16em;text-transform:uppercase;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.45)}
 
-/* ── KEYWORD TOOLTIP ── */
+/* ── NARRATIVE STREAK BANNER ── */
+#narrativeStreak{
+  position:fixed;bottom:calc(var(--stats-h) + 8px);left:calc(var(--panel-w) + 10px);z-index:20;
+  opacity:0;transition:opacity 0.5s;pointer-events:none;
+  background:var(--panel-bg);border:1px solid var(--border);
+  padding:10px 16px;backdrop-filter:blur(20px);background-image:var(--scan);
+  min-width:220px;
+}
+#narrativeStreak.on{opacity:1}
+.ns-title{font-family:var(--fd);font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:7px}
+.ns-kw{font-family:var(--ff);font-size:15px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase}
+.ns-streak{font-family:var(--fd);font-size:10px;letter-spacing:0.1em;margin-top:4px}
+.ns-return{font-family:var(--fm);font-size:12px;font-weight:700;margin-top:3px}
+.ns-note{font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.28);letter-spacing:0.06em;margin-top:6px;line-height:1.5}
+
 #kwtt{
   position:fixed;z-index:80;pointer-events:none;background:var(--panel-bg);border:1px solid var(--border);
-  padding:18px 20px;backdrop-filter:blur(24px);min-width:260px;max-width:300px;opacity:0;
+  padding:18px 20px;backdrop-filter:blur(24px);min-width:280px;max-width:320px;opacity:0;
   transition:opacity 0.12s;background-image:var(--scan);
 }
 #kwtt.on{opacity:1}
@@ -318,6 +495,24 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
 .kwtt-body{font-family:var(--fd);font-size:10px;color:var(--muted);line-height:1.75}
 .kwtt-footer{margin-top:9px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.04);font-family:var(--fd);font-size:6px;color:rgba(255,255,255,0.18);line-height:1.65}
 
+
+/* simulated sentiment toggle */
+.sim-sent-wrap{padding:8px 20px 10px;border-bottom:1px solid var(--border);background:rgba(68,136,255,0.02)}
+.sim-sent-btn{
+  width:100%;padding:7px 12px;border-radius:4px;cursor:crosshair;
+  font-family:var(--fd);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;
+  border:1px solid rgba(68,136,255,0.25);color:rgba(68,136,255,0.6);background:transparent;
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  transition:all 0.18s;
+}
+.sim-sent-btn:hover{border-color:rgba(68,136,255,0.55);color:var(--blue);background:rgba(68,136,255,0.06)}
+.sim-sent-btn.on{border-color:rgba(68,136,255,0.7);color:var(--blue);background:rgba(68,136,255,0.08)}
+.sim-sent-btn .sim-lhs{display:flex;align-items:center;gap:7px}
+.sim-sent-btn .sim-dot{width:5px;height:5px;border-radius:50%;background:rgba(68,136,255,0.4);transition:background 0.18s,box-shadow 0.18s}
+.sim-sent-btn.on .sim-dot{background:var(--blue);box-shadow:0 0 6px var(--blue)}
+.sim-sent-btn .sim-path{font-size:7.5px;letter-spacing:0.06em;opacity:0.55;font-family:var(--fm)}
+.sim-sent-note{font-family:var(--fd);font-size:7.5px;color:rgba(68,136,255,0.35);letter-spacing:0.07em;margin-top:5px;text-align:center;line-height:1.5}
+
 /* ── DATE PRESETS ── */
 .presets-block{padding:9px 20px 12px;border-bottom:1px solid var(--border);display:flex;gap:5px;flex-wrap:wrap}
 .pre-btn{
@@ -327,7 +522,7 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
 }
 .pre-btn:hover{color:var(--g);border-color:rgba(0,255,136,0.38);background:rgba(0,255,136,0.04)}
 
-/* ── DATE WINDOW ── */
+.win-sz-btn.on{border-color:var(--g);color:var(--g);background:rgba(0,255,136,0.06)}
 .win-block{padding:12px 20px 14px;border-bottom:1px solid var(--border)}
 .win-header{font-family:var(--fd);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(0,255,136,0.7);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
 .win-label{font-size:9px;color:rgba(255,255,255,0.25);letter-spacing:0.08em}
@@ -379,9 +574,17 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
 .bt-pick-btn.picking{border-color:var(--gold);color:var(--gold);background:rgba(245,197,24,0.06);animation:btpickglow 0.7s ease-in-out infinite alternate}
 @keyframes btpickglow{from{box-shadow:none}to{box-shadow:0 0 12px rgba(245,197,24,0.2)}}
 
+/* ── COLLAPSIBLE SECTION BODIES ── */
+.kw-body{display:none;flex-direction:column}
+.kw-body.open{display:flex}
+.nf-body{display:none;flex-direction:column;padding-top:10px}
+.nf-body.open{display:flex}
+.tp-body{display:none;flex-direction:column;padding-top:12px;gap:9px}
+.tp-body.open{display:flex}
+
 /* ── SIGNAL FILTER ── */
 .nf-block{padding:13px 20px 15px;border-bottom:1px solid var(--border)}
-.nf-header{font-family:var(--fd);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(68,136,255,0.75);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.nf-header{font-family:var(--fd);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(68,136,255,0.75);display:flex;align-items:center;justify-content:space-between;gap:6px}
 .nf-count{font-size:9px;color:rgba(255,255,255,0.22);letter-spacing:0.08em}
 .nf-tabs{display:flex;gap:0;margin-bottom:10px}
 .nf-tab{
@@ -427,7 +630,7 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
 
 /* ── TARGET PRICE ORACLE ── */
 .tp-block{padding:14px 20px 16px;border-bottom:1px solid var(--border)}
-.tp-header{font-family:var(--fd);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(245,197,24,0.75);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.tp-header{font-family:var(--fd);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(245,197,24,0.75);display:flex;align-items:center;justify-content:space-between;gap:6px}
 .tp-header-icon{font-size:12px;animation:tpglow 2.8s ease-in-out infinite}
 @keyframes tpglow{0%,100%{opacity:0.5}50%{opacity:1}}
 .tp-row{display:flex;align-items:center;gap:0;margin-bottom:9px}
@@ -457,6 +660,17 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
 .tp-sent-needle{position:absolute;top:-4px;width:2px;height:11px;border-radius:1px;transform:translateX(-50%);transition:left 0.5s}
 .tp-sent-labels{display:flex;justify-content:space-between;font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.22);letter-spacing:0.06em;text-transform:uppercase}
 
+.tp-sent-slider-row{display:flex;align-items:center;gap:8px;margin:8px 0 4px}
+.tp-sent-slider{flex:1;accent-color:var(--gold);height:2px;cursor:crosshair}
+.tp-sent-slider-val{font-family:var(--fm);font-size:11px;font-weight:700;color:var(--gold);min-width:42px;text-align:right}
+.tp-hypo-note{font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.22);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px}
+.tp-oracle-desc{font-family:var(--fd);font-size:9px;color:rgba(255,255,255,0.28);letter-spacing:0.06em;line-height:1.55;padding:0 0 10px;border-bottom:1px solid var(--border);margin-bottom:10px}
+
+/* Narrative correlation rows in kwtt */
+.narr-row{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.narr-lbl{font-family:var(--fd);font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:0.1em;min-width:72px}
+.narr-val{font-family:var(--fd);font-size:10px;font-weight:500;text-align:right}
+
 #kwOverlay{position:fixed;inset:0;pointer-events:none;z-index:10}
 .kw-label{
   position:fixed;pointer-events:none;z-index:15;font-family:var(--fd);font-size:10px;font-weight:400;
@@ -467,16 +681,48 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
 .kw-label-tier{font-size:8px;font-weight:400;letter-spacing:0.14em;opacity:0.8;display:block;margin-top:2px}
 .kw-label-art{font-size:8px;color:rgba(255,255,255,0.28);font-weight:300;display:block}
 .kwtt-footer{margin-top:10px;padding-top:9px;border-top:1px solid rgba(255,255,255,0.04);font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.22);line-height:1.65}
+/* ── AXIS GUIDE (line / OHLC mode) ── */
+#axisGuide{
+  position:fixed;inset:0;pointer-events:none;z-index:8;
+  opacity:0;transition:opacity 0.5s;
+}
+#axisGuide.on{opacity:1}
+.ax-month-label{
+  position:absolute;
+  font-family:var(--fd);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;
+  color:rgba(255,255,255,0.28);
+  transform:translateX(-50%);
+  white-space:nowrap;
+}
+.ax-month-tick{
+  position:absolute;
+  width:1px;background:rgba(255,255,255,0.08);
+  transform:translateX(-50%);
+}
+.ax-price-label{
+  position:absolute;
+  font-family:var(--fm);font-size:9px;font-weight:500;letter-spacing:0.04em;
+  color:rgba(255,255,255,0.32);
+  transform:translateY(-50%);
+  white-space:nowrap;
+}
+.ax-price-line{
+  position:absolute;left:var(--panel-w);right:var(--rail-w);
+  height:1px;background:rgba(255,255,255,0.05);
+}
+
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
+<div id="axisGuide"></div>
+
 <div id="kwOverlay"></div>
 
 <!-- TOP BAR -->
 <div id="topbar">
   <div class="topbar-logo">
-    <div class="logo-mark">BRA<span class="v">V</span>O</div>
+    <div class="logo-mark logo-glitch">BRA<span class="v">V</span>O</div>
     <div class="logo-slash"></div>
     <div class="logo-sub-block">
       <div class="logo-ver">Constellation</div>
@@ -510,7 +756,7 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
   <div class="ticker-block">
     <div class="ticker-label">
       <span>Symbol</span>
-      <span class="ticker-label-hint">NYSE · NASDAQ · ASX</span>
+      <span class="ticker-label-hint">NYSE  NASDAQ  ASX</span>
     </div>
     <input class="pin" id="tickIn" placeholder="AAPL" maxlength="6" autocomplete="off" spellcheck="false"/>
   </div>
@@ -545,31 +791,71 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
     </button>
   </div>
 
-  <!-- DATE WINDOW FILTER — shown after data loads -->
-  <div class="win-block" id="winBlock" style="display:none">
-    <div class="win-header">
+
+  <div class="win-block" id="winBlock">
+    <div class="win-header" id="winBlockToggle" style="cursor:crosshair" onclick="toggleWinBlock()">
       <span>Date Window</span>
-      <span class="win-label" id="winLabel"></span>
+      <span style="display:flex;gap:8px;align-items:center">
+        <span class="win-label" id="winLabel"></span>
+        <span class="bt-toggle-icon open" id="winBlockIcon">▾</span>
+      </span>
     </div>
-    <select class="nf-select" id="winSize" style="margin-bottom:0">
-      <option value="0">All</option>
-      <option value="7">7 days</option>
-      <option value="14">14 days</option>
-      <option value="30">30 days</option>
-      <option value="60">60 days</option>
-      <option value="90">90 days</option>
-    </select>
-    <div class="win-scrub-row" id="winScrubRow" style="display:none">
-      <input type="range" class="nf-slider" id="winScrub" min="0" max="100" value="0" style="accent-color:var(--g)"/>
+    <div id="winBlockBody">
+    <!-- Size presets -->
+    <div style="display:flex;gap:4px;margin-bottom:8px">
+      <button class="pre-btn win-sz-btn on" id="wbAll"  onclick="setWinSize(0)"  style="flex:1">All</button>
+      <button class="pre-btn win-sz-btn"    id="wb7"    onclick="setWinSize(7)"  style="flex:1">7d</button>
+      <button class="pre-btn win-sz-btn"    id="wb14"   onclick="setWinSize(14)" style="flex:1">14d</button>
+      <button class="pre-btn win-sz-btn"    id="wb30"   onclick="setWinSize(30)" style="flex:1">30d</button>
+      <button class="pre-btn win-sz-btn"    id="wb60"   onclick="setWinSize(60)" style="flex:1">60d</button>
+      <button class="pre-btn win-sz-btn"    id="wb90"   onclick="setWinSize(90)" style="flex:1">90d</button>
+    </div>
+    <!-- Slider 1: window size (days) — hidden when All -->
+    <div id="winSizeSliderRow" style="display:none;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.25);letter-spacing:0.1em;text-transform:uppercase">Size</span>
+        <span style="font-family:var(--fm);font-size:10px;font-weight:700;color:var(--g)" id="winSizeVal">30d</span>
+      </div>
+      <input type="range" class="nf-slider" id="winSizeSlider" min="3" max="252" value="30" step="1" style="accent-color:var(--g);width:100%"/>
+    </div>
+    <!-- Slider 2: position (scrub through history) — hidden when All -->
+    <div id="winScrubRow" style="display:none;margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.25);letter-spacing:0.1em;text-transform:uppercase">Position</span>
+        <span style="font-family:var(--fm);font-size:10px;font-weight:700;color:var(--gold)" id="winScrubVal">Latest</span>
+      </div>
+      <input type="range" class="nf-slider" id="winScrub" min="0" max="100" value="100" step="1" style="accent-color:var(--gold);width:100%"/>
     </div>
     <div class="win-date-range" id="winRange"></div>
+    <!-- Hidden date inputs kept for internal use -->
+    <input type="hidden" id="winFrom"/><input type="hidden" id="winTo"/>
+    <!-- LOOKBACK — regime engine analogue window size -->
+    <div style="height:1px;background:var(--border);margin:10px 0 8px"></div>
+    <div class="win-header" id="lookbackToggle" style="cursor:crosshair" onclick="toggleLookback()">
+      <span>Lookback</span>
+      <span style="display:flex;gap:8px;align-items:center">
+        <span class="win-label" title="Trading days per analogue window">Regime window</span>
+        <span class="bt-toggle-icon open" id="lookbackIcon">▾</span>
+      </span>
+    </div>
+    <div id="lookbackBody">
+    <div class="date-row">
+      <div class="date-lbl">DAYS</div>
+      <div class="date-sep"></div>
+      <input class="din" type="number" id="priceWinInput" min="5" max="252" value="20" style="-moz-appearance:textfield;text-align:right;width:100%"/>
+      <span style="font-family:var(--fd);font-size:9px;color:rgba(255,255,255,0.2);padding:0 4px 0 3px;flex-shrink:0">d</span>
+    </div>
+    </div><!-- /lookbackBody -->
+    </div><!-- /winBlockBody -->
   </div>
 
   <div id="kwSection">
-    <div class="kw-header">
-      <div class="kw-header-label">News Gravity</div>
-      <div class="kw-header-count">0–4 keywords</div>
+    <div class="kw-header" id="kwToggle" style="cursor:crosshair">
+      <div class="kw-header-label">Regime Signal</div>
+      <div class="kw-header-count" id="kwCount">0–4 keywords</div>
+      <span class="bt-toggle-icon open" id="kwIcon">▸</span>
     </div>
+    <div class="kw-body open" id="kwBody">
     <div class="kwrow">
       <span class="kw-idx">1</span>
       <input class="kwin" id="kw0" placeholder="e.g. earnings"/>
@@ -590,16 +876,29 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
       <input class="kwin" id="kw3" placeholder="e.g. AI growth"/>
       <span class="kwsent" id="ks3" style="color:var(--muted)"></span>
     </div>
+    <div style="display:flex;gap:0;margin-bottom:8px">
+      <button class="regime-tf-btn regime-tf-on" id="tfBtn30" onclick="setRegimeTF('30d')">Sent 30d</button>
+      <button class="regime-tf-btn" id="tfBtn7" onclick="setRegimeTF('7d')">Sent 7d</button>
+    </div>
     <button class="kwfetch" id="kwBtn">
       <span class="kwfetch-icon">⬡</span>
-      <span>Pull News Sentiment</span>
+      <span>Pull Sentiment Data</span>
     </button>
+    <!-- SIMULATED SENTIMENT TOGGLE — lives inside Regime Signal -->
+    <div class="sim-sent-wrap" style="margin:8px -20px -15px;border-top:1px solid var(--border);border-bottom:none">
+      <button class="sim-sent-btn" id="simSentBtn">
+        <span class="sim-lhs"><span class="sim-dot"></span><span>SimSent</span></span>
+        <span class="sim-path">GET /api/sentiment</span>
+      </button>
+      <div class="sim-sent-note" id="simSentNote">Off</div>
+    </div>
+    </div><!-- /kw-body -->
   </div>
 
   <!-- BACKTEST ENGINE -->
   <div class="bt-block">
     <div class="bt-header" id="btToggle">
-      <span class="bt-header-label">Backtest Engine</span>
+      <span class="bt-header-label">Backtest</span>
       <span class="bt-toggle-icon" id="btIcon">▸</span>
     </div>
     <div class="bt-body" id="btBody">
@@ -632,72 +931,52 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
 
   <!-- SIGNAL FILTER -->
   <div class="nf-block">
-    <div class="nf-header">
+    <div class="nf-header" id="nfToggle" style="cursor:crosshair;margin-bottom:0">
       <span>Signal Filter</span>
       <span class="nf-count" id="nfCount"></span>
+      <span class="bt-toggle-icon" id="nfIcon">▸</span>
     </div>
-    <!-- Mode tabs -->
-    <div class="nf-tabs">
-      <button class="nf-tab nf-tab-on" id="nfTabThresh" onclick="switchNfTab('thresh')">Threshold</button>
-      <button class="nf-tab" id="nfTabCond" onclick="switchNfTab('cond')">Condition</button>
-    </div>
-    <!-- Threshold panel -->
+    <div class="nf-body" id="nfBody">
     <div id="nfThreshPanel">
       <select class="nf-select" id="nfMetric">
-        <option value="volume">Filter by volume</option>
-        <option value="return">Filter by |daily return|</option>
+        <option value="close_asc">Close price — low → high</option>
+        <option value="close_desc">Close price — high → low</option>
+        <option value="volume">Volume — low → high</option>
+        <option value="return">Daily return magnitude</option>
       </select>
       <div class="nf-slider-row">
         <input type="range" class="nf-slider" id="nfSlider" min="0" max="100" value="0"/>
         <span class="nf-val" id="nfVal">0%</span>
       </div>
-    </div>
-    <!-- Condition panel -->
-    <div id="nfCondPanel" style="display:none">
-      <div class="nf-cond-row">
-        <select class="nf-select nf-select-sm" id="nfField">
-          <option value="open">Open $</option>
-          <option value="close">Close $</option>
-          <option value="high">High $</option>
-          <option value="low">Low $</option>
-          <option value="volume">Volume</option>
-          <option value="return">Return %</option>
-        </select>
-        <select class="nf-select nf-select-sm" id="nfOp" style="max-width:42px;margin-bottom:0">
-          <option value="gte">≥</option>
-          <option value="lte">≤</option>
-        </select>
-      </div>
-      <div class="nf-cond-row" style="margin-bottom:0">
-        <input class="nf-val-input" id="nfCondVal" type="number" placeholder="value" step="any"/>
-        <button class="nf-apply" id="nfApply" onclick="applyConditionFilter()">Apply</button>
-      </div>
+      <div style="font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.2);letter-spacing:0.06em;margin-top:4px" id="nfDesc">Drag to hide bottom X% of days by this metric</div>
     </div>
     <button class="nf-clear" id="nfClear">✕ Clear Filter</button>
+    </div><!-- /nf-body -->
   </div>
 
   <!-- TARGET PRICE ORACLE -->
   <div class="tp-block" id="tpBlock">
-    <div class="tp-header">
-      <span>Target Oracle</span>
-      <span class="tp-header-icon">◎</span>
+    <div class="tp-header" id="tpToggle" style="cursor:crosshair;margin-bottom:0">
+      <span>Price Oracle</span>
+      <span class="bt-toggle-icon" id="tpIcon">▸</span>
     </div>
-    <div class="tp-row">
-      <div class="tp-lbl">Price $</div>
-      <input class="tp-input" id="tpPrice" type="number" placeholder="e.g. 195.00" step="0.01" min="0"/>
-    </div>
+    <div class="tp-body" id="tpBody">
+    <div class="tp-oracle-desc">If sentiment reaches X by date Y, what price does the model project?</div>
     <div class="tp-row">
       <div class="tp-lbl">By Date</div>
       <input class="tp-input" id="tpDate" type="date"/>
     </div>
-    <button class="tp-run" id="tpRun">◎ Compute Sentiment Delta</button>
+    <div id="tpSentSliderBlock" style="display:none;padding-top:6px;border-top:1px solid var(--border);margin-top:6px">
+      <div class="tp-hypo-note">Hypothetical sentiment at target date</div>
+      <div class="tp-sent-slider-row">
+        <input type="range" class="tp-sent-slider" id="tpSentSlider" min="-100" max="100" value="0" step="1"/>
+        <span class="tp-sent-slider-val" id="tpSentSliderVal">+0.00</span>
+      </div>
+      <div class="tp-sent-labels"><span>−1 Bear</span><span>0</span><span>+1 Bull</span></div>
+    </div>
+    <button class="tp-run" id="tpRun">◎ Project Price</button>
     <div class="tp-result" id="tpResult"></div>
-  </div>
-
-
-  <div class="panel-footer">
-    <span class="pf-label">ADAGE 3.0</span>
-    <span class="pf-val">✦ READY</span>
+    </div><!-- /tp-body -->
   </div>
 </div>
 
@@ -705,7 +984,7 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
 <div id="modes">
   <button class="mb" id="mb0">
     <span class="mb-num">01</span><span class="mb-icon">⊹</span><span class="mb-text">Scatter</span>
-    <span class="mb-tooltip">Scatter — all trading days</span>
+    <span class="mb-tooltip">Scatter - all trading days</span>
   </button>
   <button class="mb" id="mb1">
     <span class="mb-num">02</span><span class="mb-icon">◉</span><span class="mb-text">Cluster</span>
@@ -720,18 +999,108 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
     <span class="mb-tooltip">Morph to candlesticks</span>
   </button>
   <button class="mb news-mode" id="mb4">
-    <span class="mb-num">05</span><span class="mb-icon">⬡</span><span class="mb-text">Gravity</span>
-    <span class="mb-tooltip">News gravity field</span>
+    <span class="mb-num">05</span><span class="mb-icon">⬡</span><span class="mb-text">Regime</span>
+    <span class="mb-tooltip">Regime Engine</span>
   </button>
 </div>
 
-<!-- NEWS AXIS -->
+<!-- REGIME OVERLAY — right panel analogue insights -->
+<div id="regimeOverlay">
+  <div class="ro-header">
+    <span class="ro-icon">⬡</span>
+    <span class="ro-title">Regime</span>
+    <button onclick="toggleRegimePanel()" id="roPanelToggle" style="margin-left:auto;background:transparent;border:none;color:rgba(255,255,255,0.3);font-family:var(--fd);font-size:9px;letter-spacing:0.1em;cursor:crosshair;padding:0;text-transform:uppercase" title="Hide panel">✕</button>
+  </div>
+  <div id="roPanelBody">
+  <div class="ro-regime-score" id="roRegimeScore"></div>
+  <div id="roRegimeTypeBadge"></div>
+  <div class="ro-divider"></div>
+  <div class="ro-outcomes-grid" id="roOutcomesGrid" style="display:none">
+    <div class="ro-outcome-cell"><div class="ro-outcome-lbl">Avg 5d</div><div class="ro-outcome-val" id="roAvg5d">—</div></div>
+    <div class="ro-outcome-cell"><div class="ro-outcome-lbl">Avg 10d</div><div class="ro-outcome-val" id="roAvg10d">—</div></div>
+    <div class="ro-outcome-cell"><div class="ro-outcome-lbl">Avg 30d</div><div class="ro-outcome-val" id="roAvg30d">—</div></div>
+  </div>
+  <div id="roProbRow" style="display:none">
+    <div class="ro-prob-bar"><div class="ro-prob-bull" id="roProbBull"></div><div class="ro-prob-bear" id="roProbBear"></div></div>
+    <div class="ro-prob-labels"><span id="roProbBullLabel" style="color:var(--g)"></span><span id="roProbBearLabel" style="color:var(--r)"></span></div>
+  </div>
+  <div class="ro-divider-label">Historical Analogues</div>
+  <div id="roAnalogues"></div>
+  <div class="ro-divider"></div>
+  <div class="ro-summary" id="roSummary"></div>
+  </div><!-- /roPanelBody -->
+</div>
+
+<!-- REGIME AXIS (replaces newsAxis — shows regime match score) -->
 <div id="newsAxis">
-  <div class="nax">Bullish</div>
+  <div class="nax" style="color:rgba(0,255,136,0.5)">Strong analogue</div>
   <div class="nax-line"></div>
-  <div class="nax-mid">Sentiment</div>
+  <div class="nax-mid">Similarity</div>
   <div class="nax-line"></div>
-  <div class="nax">Bearish</div>
+  <div class="nax" style="color:rgba(255,61,90,0.5)">Weak analogue</div>
+</div>
+
+<!-- CONSTELLATION REGIME KEY — top-left when in regime mode -->
+<div id="regimeKeyWrap">
+  <button id="rkToggleBtn" onclick="toggleRegimeKey()">
+    <span class="rk-toggle-dot"></span>
+    <span id="rkToggleLabel">Regime Key</span>
+    <span id="rkToggleArrow" style="margin-left:4px;font-size:7px;opacity:0.5">▾</span>
+  </button>
+  <div id="regimeKey">
+    <div class="rk-item">
+      <div class="rk-dot" style="background:#00ff88"></div>
+      <div>
+        <div class="rk-lbl">Bullish Optimism</div>
+        <div class="rk-desc">Steady positive drift, low vol - controlled grind up</div>
+      </div>
+    </div>
+    <div class="rk-item">
+      <div class="rk-dot" style="background:#ff3d5a"></div>
+      <div>
+        <div class="rk-lbl">Panic / Crash</div>
+        <div class="rk-desc">Sharp negative momentum, high vol - fear event</div>
+      </div>
+    </div>
+    <div class="rk-item">
+      <div class="rk-dot" style="background:#f5c518"></div>
+      <div>
+        <div class="rk-lbl">Sideways Uncertainty</div>
+        <div class="rk-desc">Low momentum either direction, moderate vol - market waiting</div>
+      </div>
+    </div>
+    <div class="rk-item">
+      <div class="rk-dot" style="background:#aa66ff"></div>
+      <div>
+        <div class="rk-lbl">Hype / Speculation</div>
+        <div class="rk-desc">Positive momentum and high vol - aggressive risk-on</div>
+      </div>
+    </div>
+    <div class="rk-item">
+      <div class="rk-dot" style="background:#4488ff"></div>
+      <div>
+        <div class="rk-lbl">Regulation Fear</div>
+        <div class="rk-desc">Vol/drawdown signature with negative tilt</div>
+      </div>
+    </div>
+    <div class="rk-item">
+      <div class="rk-dot" style="background:#ff7755"></div>
+      <div>
+        <div class="rk-lbl">Macro Instability</div>
+        <div class="rk-desc">High vol, no clear direction - macro fog</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CURRENT STATE PULSE BADGE -->
+<div id="currentStateBadge"></div>
+
+<!-- BOTTOM REGIME TIMELINE SCRUBBER -->
+<div id="regimeTimeline">
+  <div class="rt-label">Time Depth</div>
+  <div class="rt-track"><input type="range" id="rtSlider" min="0" max="100" value="100"/></div>
+  <div class="rt-epoch" id="rtEpoch">—</div>
 </div>
 
 <!-- STATS BAR -->
@@ -742,16 +1111,21 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
   <div class="sblock"><div class="sl">Range</div><div class="sblock-inner"><div class="sv" id="sRange" style="color:var(--gold);font-size:11px"></div><div class="sv-sub">Price span</div></div></div>
   <div class="sblock"><div class="sl">Volume</div><div class="sblock-inner"><div class="sv" id="sVol" style="color:var(--muted)"></div><div class="sv-sub">Avg daily</div></div></div>
   <div class="sblock"><div class="sl">News</div><div class="sblock-inner"><div class="sv" id="sNewsSent" style="color:var(--purple);font-size:11px"></div><div class="sv-sub">Mood</div></div></div>
+  <div class="sblock" id="sDivBlock" style="display:none"><div class="sl">Div</div><div class="sblock-inner"><div class="sv" id="sDiv" style="color:var(--text)"></div><div class="sv-sub">Divergence 30d</div></div></div>
+  <div class="sblock" id="sCorrBlock" style="display:none"><div class="sl">Corr</div><div class="sblock-inner"><div class="sv" id="sCorr" style="color:var(--muted)"></div><div class="sv-sub" id="sCorrSub">News↔Price r</div></div></div>
 </div>
 
 <!-- legend moved to topbar -->
 
-<!-- NEWS LEGEND -->
-<div id="newsLegend">
-  <div class="nll">⬡ node size = article volume</div>
-  <div class="nll" style="color:rgba(170,102,255,0.6)">⬡ height = sentiment direction</div>
-  <div class="nll" style="color:rgba(255,255,255,0.25);margin-top:3px">particles drift toward</div>
-  <div class="nll" style="color:rgba(255,255,255,0.25)">matching sentiment node</div>
+<!-- newsLegend replaced by regimeOverlay above -->
+
+<!-- NARRATIVE STREAK BANNER -->
+<div id="narrativeStreak">
+  <div class="ns-title">⬡ Active Narrative Streak</div>
+  <div class="ns-kw" id="nsKw"></div>
+  <div class="ns-streak" id="nsStreak"></div>
+  <div class="ns-return" id="nsReturn"></div>
+  <div class="ns-note" id="nsNote"></div>
 </div>
 
 <!-- TOOLTIP -->
@@ -777,6 +1151,12 @@ canvas#c{position:fixed;inset:0;z-index:0;display:block}
   <div class="kwtt-scale-labels"><span>Bearish</span><span>Neutral</span><span>Bullish</span></div>
   <div class="kwtt-row"><span class="kwtt-row-label">Articles (30d)</span><span class="kwtt-row-val" id="kwttArt"></span></div>
   <div class="kwtt-row"><span class="kwtt-row-label">Days pulled here</span><span class="kwtt-row-val" id="kwttPull"></span></div>
+  <div id="kwttNarrBlock" style="display:none">
+    <div class="kwtt-divider"></div>
+    <div style="font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.22);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:7px">Price Correlation</div>
+    <div id="kwttNarrStats"></div>
+    <div id="kwttNarrVerdict" style="margin-top:6px;font-family:var(--fd);font-size:9px;line-height:1.6;color:rgba(255,255,255,0.35)"></div>
+  </div>
   <div class="kwtt-divider"></div>
   <div class="kwtt-body" id="kwttDesc"></div>
   <div class="kwtt-footer" id="kwttScale"></div>
@@ -812,7 +1192,7 @@ scene.fog=new THREE.FogExp2(0x04070c,0.014);
 const camera=new THREE.PerspectiveCamera(52,innerWidth/innerHeight,0.1,600);
 camera.position.set(0,0,38);
 camera.lookAt(0,0,0);
-window.addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderKeywordLabels();});
+window.addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();});
 renderer.setSize(innerWidth,innerHeight);
 
 scene.add(new THREE.AmbientLight(0xffffff,0.06));
@@ -837,6 +1217,23 @@ const lineP   =new Float32Array(MAX*3);
 const ohlcP   =new Float32Array(MAX*3);
 const newsP   =new Float32Array(MAX*3);
 const newsJitter=new Float32Array(MAX*3);
+const particleNode=new Int8Array(MAX).fill(-1);
+const particleFiltered=new Uint8Array(MAX);
+const windowFiltered=new Uint8Array(MAX);
+const exileP=new Float32Array(MAX*3);
+const filterFade=new Float32Array(MAX).fill(1);
+function isExiled(i){return particleFiltered[i]||windowFiltered[i];}
+// In regime mode, analogue particles must never be window-filtered (date window shouldn't shrink constellations)
+function isExiledNews(i){
+  if(ANALOGUE_OF_GLOBAL[i]>=0) return particleFiltered[i]?1:0; // analogue: only signal-filter applies
+  return particleFiltered[i]||windowFiltered[i]; // background: both filters apply
+}
+
+function seededRng(seed){
+  let s=seed>>>0;
+  return function(){s=(1664525*s+1013904223)>>>0;return s/4294967296;};
+}
+
 
 const pGeo=new THREE.BufferGeometry();
 pGeo.setAttribute('position',new THREE.BufferAttribute(pos,3));
@@ -872,70 +1269,133 @@ const candleGrp=new THREE.Group(); scene.add(candleGrp);
 const lineHitGrp=new THREE.Group(); scene.add(lineHitGrp);
 const lineHitMat=new THREE.MeshBasicMaterial({visible:false,side:THREE.DoubleSide});
 
+// Regime-mode hit planes — one invisible plane per analogue particle, used for mesh-based hover
+const regimeHitGrp=new THREE.Group(); scene.add(regimeHitGrp);
+const regimeHitMat=new THREE.MeshBasicMaterial({visible:false,side:THREE.DoubleSide});
+// Tracks which analogue (0-based) each particle belongs to; -1 = background
+const ANALOGUE_OF_GLOBAL=new Int8Array(MAX).fill(-1);
+
 let KEYWORDS=[];
-const kwGrp=new THREE.Group(); scene.add(kwGrp);
-const kwOverlay=document.getElementById('kwOverlay');
-let kwLabels=[];
+// keyword nodes removed — regime mode uses HTML overlays only
 
-function clearKeywordNodes(){
-  while(kwGrp.children.length)kwGrp.remove(kwGrp.children[0]);
-  kwLabels.forEach(l=>l.remove());kwLabels=[];
-}
-
-function buildKeywordNodes(){
-  clearKeywordNodes();
-  if(!KEYWORDS.length)return;
-  const maxCount=Math.max(...KEYWORDS.map(k=>k.count||1));
-  KEYWORDS.forEach((kw,i)=>{
-    const artNorm=(kw.count||1)/maxCount;
-    const side=(i%2===0?1:-1);
-    const xSpread=6+artNorm*10;
-    kw.x=side*xSpread;
-    kw.y=Math.max(-13,Math.min(13,kw.sentiment*10));
-    kw.z=-1+i*0.9;
-    const kwColor=kw.sentiment>0.15?0x00ff88:kw.sentiment<-0.15?0xff3d5a:0xaa66ff;
-    const sphereR=0.22+artNorm*0.7;
-    const geo=new THREE.SphereGeometry(sphereR,10,10);
-    const mat=new THREE.MeshBasicMaterial({color:kwColor,transparent:true,opacity:0,blending:THREE.AdditiveBlending});
-    const mesh=new THREE.Mesh(geo,mat);
-    mesh.position.set(kw.x,kw.y,kw.z);mesh.userData.kwIdx=i;kwGrp.add(mesh);
-    const ringGeo=new THREE.RingGeometry(sphereR+0.1,sphereR+0.18,24);
-    const ringMat=new THREE.MeshBasicMaterial({color:kwColor,transparent:true,opacity:0,blending:THREE.AdditiveBlending,side:THREE.DoubleSide});
-    const ring=new THREE.Mesh(ringGeo,ringMat);
-    ring.position.set(kw.x,kw.y,kw.z);ring.userData.isRing=true;kwGrp.add(ring);
-    const tier=sentimentTier(kw.sentiment);
-    const lbl=document.createElement('div');
-    lbl.className='kw-label';lbl.style.color=tier.col;
-    const bsc=kw.sentiment>0.15?'rgba(0,255,136,0.3)':kw.sentiment<-0.15?'rgba(255,61,90,0.3)':'rgba(170,102,255,0.35)';
-    lbl.style.borderColor=bsc;
-    const nameSpan=document.createElement('span');nameSpan.textContent=kw.keyword.toUpperCase();nameSpan.style.display='block';
-    const tierSpan=document.createElement('span');tierSpan.className='kw-label-tier';tierSpan.style.color=tier.col;tierSpan.textContent=tier.arrow+' '+tier.label.toUpperCase();
-    const artSpan=document.createElement('span');artSpan.className='kw-label-art';artSpan.textContent=kw.count>0?'· '+abbrevCount(kw.count)+' art':'';
-    lbl.appendChild(nameSpan);lbl.appendChild(tierSpan);lbl.appendChild(artSpan);
-    lbl.style.opacity='0';kwOverlay.appendChild(lbl);kwLabels.push(lbl);
-  });
-}
-
-function setKeywordOpacity(o){
-  kwGrp.children.forEach(c=>{if(c.material)c.material.opacity=o*(c.userData.isRing?0.35:0.55);});
-  kwLabels.forEach(l=>{l.style.opacity=String(Math.min(o*1.4,1));});
-}
-
-function renderKeywordLabels(){
-  if(!KEYWORDS.length)return;
-  const proj=new THREE.Vector3();
-  KEYWORDS.forEach((kw,i)=>{
-    if(!kwLabels[i])return;
-    proj.set(kw.x,kw.y,kw.z);proj.project(camera);
-    const sx=(proj.x*0.5+0.5)*innerWidth;
-    const sy=(-proj.y*0.5+0.5)*innerHeight;
-    kwLabels[i].style.left=sx+'px';kwLabels[i].style.top=(sy-28)+'px';
-  });
-}
+function setKeywordOpacity(){}   // stub — 3D nodes removed
+function renderKeywordLabels(){}  // stub — 3D nodes removed
+function clearKeywordNodes(){}    // stub — 3D nodes removed
+function buildKeywordNodes(){}    // stub — 3D nodes removed
 
 let OVERALL_NEWS_SENT=0,NEWS_LOADED=false;
+// DAILY_SENT_MAP: date string → {sentiment, articleCount, keyword}
+// Populated from /api/sentiment/trend — gives daily sentiment per keyword
+let DAILY_SENT_MAP={};
+// KEYWORD_DAILY_SENT: keyword string → {date → {sentiment, count}}
+// Per-keyword daily sentiment for correlation and dominant-narrative assignment
+let KEYWORD_DAILY_SENT={};
+// Per-particle daily sentiment score (matched by date from trend data)
+const dailySentScore=new Float32Array(MAX).fill(0);
+// Pearson correlation: daily news sentiment vs daily price return
+let PEARSON_R=null;
 
 function remapSentiment(v){return Math.max(-1,Math.min(1,v));}
+
+// ── SIMULATED SENTIMENT ENGINE ────────────────────────────────────────────────
+// Simulates GET /api/sentiment — matches the real endpoint's response schema exactly.
+// Activated via the toggle in the left panel when the real API is unavailable.
+let SIMULATE_SENTIMENT = false;
+
+document.getElementById('simSentBtn').addEventListener('click', ()=>{
+  SIMULATE_SENTIMENT = !SIMULATE_SENTIMENT;
+  const btn  = document.getElementById('simSentBtn');
+  const note = document.getElementById('simSentNote');
+  btn.classList.toggle('on', SIMULATE_SENTIMENT);
+  note.textContent = SIMULATE_SENTIMENT ? 'On - synthetic data' : 'Off';
+});
+
+// Deterministic hash so the same keyword always produces the same base sentiment.
+function _kwHash(str){
+  let h=0x811c9dc5;
+  for(let i=0;i<str.length;i++){h=(h^str.charCodeAt(i))*0x01000193>>>0;}
+  return h;
+}
+
+// Simulate a single /api/sentiment call.
+// Returns an object matching the real API's 200 response schema.
+function simulateSentimentCall(keyword, timeframe='30d'){
+  const h   = _kwHash(keyword.toLowerCase());
+  const rng = seededRng(h & 0x7fffffff);
+
+  // Deterministic base sentiment in [-0.8, 0.8]
+  const base    = (rng()-0.5) * 1.6;
+  const clamp   = v => Math.max(-1, Math.min(1, v));
+  const avgSent = clamp(base + (rng()-0.5)*0.2);
+
+  // Distribution must sum to 1
+  const pos = Math.max(0.05, Math.min(0.90, avgSent>0 ? 0.45+avgSent*0.35 : 0.15+Math.max(0,avgSent)*0.3));
+  const neg = Math.max(0.05, Math.min(0.90, avgSent<0 ? 0.45+Math.abs(avgSent)*0.35 : 0.15+Math.max(0,-avgSent)*0.3));
+  const neu = Math.max(0.04, 1 - pos - neg);
+  // Normalise
+  const tot = pos+neg+neu;
+  const dist = { positive: pos/tot, negative: neg/tot, neutral: neu/tot };
+
+  const days  = timeframe==='7d'?7:timeframe==='24h'?1:30;
+  const articleCount = Math.round(8 + rng()*45) * days;
+
+  return {
+    keyword,
+    sourceId:   'sim-' + keyword.toLowerCase().replace(/\s+/g,'-'),
+    sourceName: 'Simulated Feed',
+    timeframe,
+    articleCount,
+    averageSentiment: avgSent,
+    distribution: dist,
+    _simulated: true,
+  };
+}
+
+// Build a synthetic 30-day trend array from repeated simulated calls.
+// This feeds the same data structure that the real /trend endpoint returns
+// so the rest of the pipeline is completely unchanged.
+function simulateTrendData(keyword){
+  const h   = _kwHash(keyword.toLowerCase());
+  const rng = seededRng((h * 6364136223846793005 + 1442695040888963407) & 0x7fffffff);
+  const randn = ()=>{
+    const u=Math.max(1e-9,rng()),v=rng();
+    return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+  };
+
+  const base = simulateSentimentCall(keyword, '30d');
+  const target = base.averageSentiment;
+
+  // Walk backward 30 days from today
+  const pts=[];
+  const today=new Date(); let sent=target;
+  for(let i=29;i>=0;i--){
+    const d=new Date(today); d.setDate(d.getDate()-i);
+    const dow=d.getDay();
+    if(dow===0||dow===6) continue; // skip weekends — realistic
+    const noise=randn()*0.12;
+    sent=Math.max(-0.95,Math.min(0.95,sent*0.85+target*0.15+noise));
+    const articleCount=Math.round(3+rng()*25);
+    pts.push({
+      date: d.toISOString().slice(0,10),
+      averageSentiment: sent,
+      articleCount,
+      _simulated: true,
+    });
+  }
+  return { dataPoints: pts, keyword, _base: base };
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+function setRegimeTF(tf){
+  // Controls sentiment API timeframe only — REGIME_WINDOW is set by the LOOKBACK input
+  REGIME_TIMEFRAME = tf;
+  document.getElementById('tfBtn30').classList.toggle('regime-tf-on', tf==='30d');
+  document.getElementById('tfBtn7').classList.toggle('regime-tf-on',  tf==='7d');
+  if(NEWS_LOADED && N>0){
+    computeRegimeAnalogues(); computeRegimePositions(); applyRegimeColors();
+    if(state==='news') updateRegimeOverlay();
+  }
+}
 
 async function fetchKeywordSentiments(){
   const inputs=[0,1,2,3].map(i=>document.getElementById('kw'+i).value.trim()).filter(Boolean);
@@ -944,38 +1404,116 @@ async function fetchKeywordSentiments(){
     const inp=document.getElementById('kw'+i);const sp=document.getElementById('ks'+i);
     inp.classList.remove('loaded','err');sp.textContent='…';sp.style.color='var(--muted)';
   });
-  NEWS_LOADED=false;KEYWORDS=[];clearKeywordNodes();setStatus('Fetching news…');
+  NEWS_LOADED=false;KEYWORDS=[];clearKeywordNodes();setStatus(SIMULATE_SENTIMENT?'Simulating sentiment…':'Fetching news…');
+  DAILY_SENT_MAP={};KEYWORD_DAILY_SENT={};
   const kwInputs=inputs.slice(0,4);
+
   const results=await Promise.allSettled(kwInputs.map(async(kw)=>{
     const allKws=[0,1,2,3].map(i=>document.getElementById('kw'+i).value.trim());
     const inputIdx=allKws.indexOf(kw);
     const inp=document.getElementById('kw'+inputIdx);const sp=document.getElementById('ks'+inputIdx);
     try{
-      const r=await fetch(`${SENTIMENT_API}/api/sentiment?keyword=${encodeURIComponent(kw)}&timeframe=30d`,{headers:{'X-API-Key':SENTIMENT_KEY}});
-      if(!r.ok)throw new Error(r.status);
-      const j=await r.json();
-      const rawSent=j.averageSentiment??0.5;
+      let j;
+      if(SIMULATE_SENTIMENT){
+        // Simulate GET /api/sentiment — no real network call made
+        await new Promise(res=>setTimeout(res, 120+Math.random()*180)); // realistic delay
+        j = simulateTrendData(kw);
+      } else {
+        const r=await fetch(`${SENTIMENT_API}/api/sentiment/trend?keyword=${encodeURIComponent(kw)}&timeframe=${REGIME_TIMEFRAME}`,{headers:{'X-API-Key':SENTIMENT_KEY}});
+        if(!r.ok)throw new Error(r.status);
+        j=await r.json();
+      }
+      const pts=(j.dataPoints||[]).filter(p=>p.date&&p.articleCount>=1&&p.averageSentiment!=null);
+      if(!pts.length)throw new Error('No data');
+      pts.sort((a,b)=>a.date.localeCompare(b.date));
+
+      // 30d aggregate
+      const totalArt30=pts.reduce((s,p)=>s+p.articleCount,0)||1;
+      const rawSent=pts.reduce((s,p)=>s+p.averageSentiment*p.articleCount,0)/totalArt30;
+
+      // 7d
+      const pts7=pts.slice(-7);
+      const art7=pts7.reduce((s,p)=>s+p.articleCount,0);
+      const rawSent7=art7>=1?pts7.reduce((s,p)=>s+p.averageSentiment*p.articleCount,0)/art7:null;
+
+      // 24h
+      const pt24=pts[pts.length-1];
+      const art24=pt24.articleCount;
+      const rawSent24=art24>=1?pt24.averageSentiment:null;
+
       const mapped=remapSentiment(rawSent);
-      const articles=j.articleCount||0;
+      const sent7=art7>=3?remapSentiment(rawSent7):null;
+      const sent24=art24>=3?remapSentiment(rawSent24):null;
+
+      // Store per-keyword daily data
+      KEYWORD_DAILY_SENT[kw]={};
+      pts.forEach(pt=>{
+        const date=pt.date.slice(0,10);
+        KEYWORD_DAILY_SENT[kw][date]={sentiment:remapSentiment(pt.averageSentiment),count:pt.articleCount};
+      });
+
+      // Also merge into DAILY_SENT_MAP (weighted avg across keywords for fallback)
+      pts.forEach(pt=>{
+        const date=pt.date.slice(0,10);
+        const s=remapSentiment(pt.averageSentiment);
+        if(DAILY_SENT_MAP[date]){
+          const prev=DAILY_SENT_MAP[date];
+          const tc=prev.count+pt.articleCount;
+          DAILY_SENT_MAP[date]={sentiment:(prev.sentiment*prev.count+s*pt.articleCount)/tc,count:tc,keyword:kw};
+        }else{
+          DAILY_SENT_MAP[date]={sentiment:s,count:pt.articleCount,keyword:kw};
+        }
+      });
+
       inp.classList.add('loaded');
       const tier=sentimentTier(mapped);
       sp.style.color=tier.col;
       sp.innerHTML=`<span class="kwsent-arrow">${tier.arrow}</span><span class="kwsent-lbl">${tier.short}</span>`;
-      return{keyword:kw,sentiment:mapped,count:articles,rawSent};
+      return{keyword:kw,sentiment:mapped,count:totalArt30,rawSent,sent7,sent24,cnt7:art7,cnt24:art24,sources:[]};
     }catch(e){
       inp.classList.add('err');
       sp.innerHTML='<span class="kwsent-arrow" style="color:var(--r)">✕</span>';
       return null;
     }
   }));
+
   KEYWORDS=results.map(r=>r.status==='fulfilled'?r.value:null).filter(Boolean);
   if(!KEYWORDS.length){setStatus('');showErr('No keyword data returned');return;}
   const totalArt=KEYWORDS.reduce((s,k)=>s+(k.count||1),0)||1;
   OVERALL_NEWS_SENT=KEYWORDS.reduce((s,k)=>s+(k.sentiment*(k.count||1)),0)/totalArt;
   NEWS_LOADED=true;
+
+  // Compute per-keyword Pearson r with price returns (using date-matched data)
+  if(N>0){
+    KEYWORDS.forEach(kw=>{
+      const kwDaily=KEYWORD_DAILY_SENT[kw.keyword]||{};
+      const pairs=[];
+      DATA.forEach(d=>{
+        const entry=kwDaily[d.date];
+        if(entry)pairs.push([entry.sentiment,d.dailyReturn]);
+      });
+      kw.pearsonR=null;kw.nMatched=pairs.length;
+      if(pairs.length>=4){
+        const n=pairs.length;
+        const mx=pairs.reduce((s,p)=>s+p[0],0)/n;
+        const my=pairs.reduce((s,p)=>s+p[1],0)/n;
+        let num=0,dx2=0,dy2=0;
+        pairs.forEach(([x,y])=>{const dx=x-mx,dy=y-my;num+=dx*dy;dx2+=dx*dx;dy2+=dy*dy;});
+        const denom=Math.sqrt(dx2*dy2);
+        if(denom>1e-10)kw.pearsonR=Math.max(-1,Math.min(1,num/denom));
+      }
+    });
+  }
+
   buildKeywordNodes();
-  if(N>0){applyNewsToParticles();computeNewsGravityPositions();}
-  updateNewsSentimentUI();setStatus('');
+  setStatus('');
+  if(N>0){
+    applyNewsToParticles();computeRegimeAnalogues();computeRegimePositions();applyRegimeColors();
+    if(state==='news'||mode===4){
+      updateRegimeOverlay();
+    }
+  }
+  updateNewsSentimentUI();computePearson();updateCorrelationUI();
 }
 
 function priceDirNormalized(d){
@@ -985,61 +1523,825 @@ function priceDirNormalized(d){
 
 function applyNewsToParticles(){
   if(!KEYWORDS.length)return;
+  const hasTrendData=Object.keys(KEYWORD_DAILY_SENT).length>0;
+  KEYWORDS.forEach(kw=>{kw.pulledDays=[];});
+
   DATA.forEach((d,i)=>{
-    const pDir=priceDirNormalized(d);
-    let bestKw=0,bestDist=Infinity;
-    KEYWORDS.forEach((kw,ki)=>{const dist=Math.abs(pDir-kw.sentiment);if(dist<bestDist){bestDist=dist;bestKw=ki;}});
+    let bestKw=0,bestAbsSent=-1,daySent=null,hasDailyMatch=false;
+    if(hasTrendData){
+      KEYWORDS.forEach((kw,ki)=>{
+        const kwDaily=KEYWORD_DAILY_SENT[kw.keyword]||{};
+        const entry=kwDaily[d.date];
+        if(entry&&Math.abs(entry.sentiment)>bestAbsSent){
+          bestAbsSent=Math.abs(entry.sentiment);bestKw=ki;daySent=entry.sentiment;hasDailyMatch=true;
+        }
+      });
+    }
+    if(!hasDailyMatch){
+      KEYWORDS.forEach((kw,ki)=>{if(Math.abs(kw.sentiment)>bestAbsSent){bestAbsSent=Math.abs(kw.sentiment);bestKw=ki;}});
+      daySent=KEYWORDS[bestKw]?KEYWORDS[bestKw].sentiment:0;
+    }
     particleNode[i]=bestKw;
+    dailySentScore[i]=daySent!=null?daySent:0;
+    if(KEYWORDS[bestKw]){
+      KEYWORDS[bestKw].pulledDays.push({date:d.date,priceReturn:d.dailyReturn,daySent:dailySentScore[i],hasDailyMatch});
+    }
     newsJitter[i*3]  =(Math.sin(i*1.7)*0.5+Math.cos(i*2.3)*0.5)*2.4;
     newsJitter[i*3+1]=(Math.cos(i*1.1)*0.5+Math.sin(i*3.7)*0.5)*1.6;
     newsJitter[i*3+2]=(Math.sin(i*2.9)*0.5)*1.2;
-    const ki=particleNode[i];
-    const kwSent=(ki>=0&&ki<KEYWORDS.length)?KEYWORDS[ki].sentiment:0;
-    newsS[i]=kwSent;
+
+    // COLOR = signal accuracy: green=correct, red=diverged, gold=neutral move, purple=no daily data
     const nc=new THREE.Color();
-    if(kwSent>0.3)nc.setHex(0x00ff88);
-    else if(kwSent>0.1)nc.setHex(0x44ffaa);
-    else if(kwSent>-0.1)nc.setHex(0xaa66ff);
-    else if(kwSent>-0.3)nc.setHex(0xff7755);
-    else nc.setHex(0xff3d5a);
+    const effectiveSent=dailySentScore[i];
+    const priceBull=d.dailyReturn>0.002,priceBear=d.dailyReturn<-0.002;
+    const sentBull=effectiveSent>0.05,sentBear=effectiveSent<-0.05;
+    const strongSignal=Math.abs(effectiveSent)>0.05;
+    if(!hasDailyMatch||!strongSignal){nc.setHex(0x6633aa);anomaly[i]=0;}
+    else if((priceBull&&sentBull)||(priceBear&&sentBear)){nc.setHex(0x00ff88);anomaly[i]=0;}
+    else if((priceBull&&sentBear)||(priceBear&&sentBull)){nc.setHex(0xff3d5a);anomaly[i]=1;}
+    else{nc.setHex(0xf5c518);anomaly[i]=0;}
     newsCol[i*3]=nc.r;newsCol[i*3+1]=nc.g;newsCol[i*3+2]=nc.b;
-    const priceBull=d.sentiment>0.003,priceBear=d.sentiment<-0.003;
-    const newsBull=OVERALL_NEWS_SENT>0.08,newsBear=OVERALL_NEWS_SENT<-0.08;
-    anomaly[i]=((priceBull&&newsBear)||(priceBear&&newsBull))?1:0;
+  });
+
+  KEYWORDS.forEach(kw=>{
+    const bullDays=kw.pulledDays.filter(p=>p.daySent>0.05);
+    const bearDays=kw.pulledDays.filter(p=>p.daySent<-0.05);
+    kw.avgReturnBull=bullDays.length?bullDays.reduce((s,p)=>s+p.priceReturn,0)/bullDays.length:null;
+    kw.avgReturnBear=bearDays.length?bearDays.reduce((s,p)=>s+p.priceReturn,0)/bearDays.length:null;
+    kw.nBull=bullDays.length;kw.nBear=bearDays.length;
+  });
+
+  updateDivCount();
+  computeNarrativeStreak();
+}
+
+function computeNarrativeStreak(){
+  // Disabled in regime mode — streak banner concept retired
+  const banner=document.getElementById('narrativeStreak');
+  if(banner) banner.classList.remove('on');
+}
+
+// ── NARRATIVE REGIME ENGINE ──────────────────────────────────────────────────
+// "Markets have memory." Each particle = a historical market state.
+// Similar states cluster into galaxy-like formations by regime type.
+// The current state sits at the center; analogues orbit by similarity.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Six named regime archetypes — each gets a focal point in 3D space
+const REGIME_TYPES = [
+  {id:'bullish',  name:'Bullish Optimism',    shortName:'BULL OPT',  col:0x00ff88, cssCol:'#00ff88', cx: 15, cy: 5,  cz:-1},
+  {id:'panic',    name:'Panic / Crash',        shortName:'PANIC',     col:0xff3d5a, cssCol:'#ff3d5a', cx:-15, cy:-7,  cz:-1},
+  {id:'sideways', name:'Sideways Uncertainty', shortName:'LATERAL',   col:0xf5c518, cssCol:'#f5c518', cx:  0, cy: 1,  cz: 3},
+  {id:'hype',     name:'Hype / Speculation',   shortName:'HYPE',      col:0xaa66ff, cssCol:'#aa66ff', cx: 12, cy: 11, cz: 1},
+  {id:'regfear',  name:'Regulation Fear',      shortName:'REG FEAR',  col:0x4488ff, cssCol:'#4488ff', cx:-12, cy: 9,  cz: 0},
+  {id:'macro',    name:'Macro Instability',    shortName:'MACRO',     col:0xff7755, cssCol:'#ff7755', cx:  2, cy:-12, cz:-1},
+];
+
+let REGIME_WINDOW = 20;      // trading days per analogue window — 20≈1mo, 7=1wk
+let REGIME_TIMEFRAME = '30d'; // '30d' or '7d' — drives both API fetch and window size
+let REGIME_ANALOGUES = [];
+let REGIME_SCORE = 0;
+let regimeMatchScore = new Float32Array(MAX).fill(0);
+const particleRegimeType = new Int8Array(MAX).fill(2); // default = sideways
+
+// Per-window classification into one of the 6 regime archetypes
+function classifyWindowRegime(m){
+  const {momentum, vol, maxDD} = m;
+  if(momentum > 0.04 && vol < 0.016 && maxDD < 0.04)              return 0; // bullish
+  if(momentum < -0.04 || maxDD > 0.09)                              return 1; // panic
+  if(momentum > 0.025 && vol > 0.018)                              return 3; // hype
+  if(vol > 0.02 && momentum < -0.01)                               return 5; // macro instability
+  if(momentum < -0.01 && vol > 0.013 && maxDD > 0.025)             return 4; // reg fear
+  return 2; // sideways
+}
+
+function computeRegimeScore(){
+  if(!KEYWORDS.length) return 0;
+  const conviction = KEYWORDS.reduce((s,k)=>s+Math.abs(k.sentiment),0)/KEYWORDS.length;
+  return OVERALL_NEWS_SENT * conviction;
+}
+
+function windowMetrics(startIdx, len){
+  const slice = DATA.slice(startIdx, startIdx + len);
+  if(slice.length < 4) return null;
+  const closes = slice.map(d=>d.close);
+  const returns = [];
+  for(let i=1;i<closes.length;i++) returns.push((closes[i]-closes[i-1])/closes[i-1]);
+  const meanR = returns.reduce((s,r)=>s+r,0)/returns.length;
+  const variance = returns.reduce((s,r)=>s+(r-meanR)*(r-meanR),0)/returns.length;
+  const vol = Math.sqrt(variance);
+  let peak=closes[0], maxDD=0;
+  closes.forEach(c=>{if(c>peak)peak=c;const dd=(peak-c)/peak;if(dd>maxDD)maxDD=dd;});
+  const momentum=(closes[closes.length-1]-closes[0])/closes[0];
+  // Additional: momentum acceleration (trend of returns) and mean return skew
+  const firstHalf = returns.slice(0, Math.floor(returns.length/2));
+  const secHalf  = returns.slice(Math.floor(returns.length/2));
+  const momAccel = secHalf.reduce((s,r)=>s+r,0)/secHalf.length
+                 - firstHalf.reduce((s,r)=>s+r,0)/firstHalf.length;
+  return {momentum, vol, maxDD, startIdx, len, momAccel, meanR};
+}
+
+// Convert YYYY-MM-DD → DD-MM-YYYY for all display
+function fmtDate(s){ if(!s||s.length<10) return s||'—'; return s.slice(8,10)+'-'+s.slice(5,7)+'-'+s.slice(0,4); }
+
+function computeRegimeAnalogues(){
+  REGIME_ANALOGUES = [];
+  if(!N || N < REGIME_WINDOW * 2) return;
+  const W = REGIME_WINDOW;
+  REGIME_SCORE = computeRegimeScore();
+
+  // ── PRICE-FIRST: match against actual current window metrics, not sentiment proxies ──
+  // Take the real last W trading days and use those as the search template.
+  // Sentiment is computed separately and used only as a badge overlay on results.
+  const currentW = windowMetrics(Math.max(0, N - W), W);
+  if(!currentW) return;
+
+  // Normalisation denominators — typical ranges for each metric
+  const normMom   = 0.06;   // ~6% momentum range
+  const normVol   = 0.012;  // ~1.2% daily vol range
+  const normDD    = 0.08;   // ~8% drawdown range
+  const normAccel = 0.004;  // acceleration range
+
+  const candidates = [];
+  // Stop before the current window so we don't match today against itself
+  for(let i=0; i <= N - W*2; i++){
+    const m = windowMetrics(i, W);
+    if(!m) continue;
+    const dMom   = Math.abs(m.momentum - currentW.momentum) / normMom;
+    const dVol   = Math.abs(m.vol      - currentW.vol)      / normVol;
+    const dDD    = Math.abs(m.maxDD    - currentW.maxDD)    / normDD;
+    const dAccel = Math.abs(m.momAccel - currentW.momAccel) / normAccel;
+    const dist = dMom*0.40 + dVol*0.25 + dDD*0.20 + dAccel*0.15;
+
+    // Forward returns: measured from the close of the last day of the window
+    const baseOpen    = DATA[i].open;
+    const winLastIdx  = Math.min(i + W - 1, N-1);
+    const winLastClose= DATA[winLastIdx].close;
+    const fwdEnd5     = Math.min(winLastIdx + 5,  N-1);
+    const fwdEnd10    = Math.min(winLastIdx + 10, N-1);
+    const fwdEnd30    = Math.min(winLastIdx + 30, N-1);
+    const fwdReturn   = (winLastClose - baseOpen) / baseOpen;
+    const fwdReturn5  = (DATA[fwdEnd5].close  - winLastClose) / winLastClose;
+    const fwdReturn10 = (DATA[fwdEnd10].close - winLastClose) / winLastClose;
+    const fwdReturn30 = (DATA[fwdEnd30].close - winLastClose) / winLastClose;
+    const regimeType  = classifyWindowRegime(m);
+
+    // Sentiment alignment badge: does current sentiment direction match what
+    // price was doing in this historical window?
+    // sentAlign: 'bull' | 'bear' | 'neutral' | 'none'
+    const sentDir = NEWS_LOADED && KEYWORDS.length
+      ? (OVERALL_NEWS_SENT > 0.05 ? 'bull' : OVERALL_NEWS_SENT < -0.05 ? 'bear' : 'neutral')
+      : 'none';
+    // Price direction of this historical window
+    const winDir = m.momentum > 0.01 ? 'bull' : m.momentum < -0.01 ? 'bear' : 'neutral';
+    const sentAligned = sentDir === 'none' ? null : sentDir === winDir;
+
+    // kwLabel: top-2 keywords for display
+    const kwLabel = KEYWORDS.length
+      ? KEYWORDS.slice().sort((a,b)=>Math.abs(b.sentiment)-Math.abs(a.sentiment))
+                        .slice(0,2).map(k=>k.keyword.toUpperCase()).join(' / ')
+      : '—';
+
+    candidates.push({...m, dist, fwdReturn, fwdReturn5, fwdReturn10, fwdReturn30,
+                     regimeType, kwLabel, sentAligned, sentDir, winDir});
+  }
+
+  candidates.sort((a,b)=>a.dist-b.dist);
+  const picked=[];
+  candidates.forEach(c=>{
+    if(picked.every(p=>Math.abs(p.startIdx-c.startIdx)>=W)) picked.push(c);
+  });
+  REGIME_ANALOGUES = picked;
+  // Store current window metrics for display in the overlay header
+  REGIME_ANALOGUES._current = currentW;
+  const roN = document.getElementById('roN');
+  if(roN) roN.textContent = String(candidates.length);
+
+  // Score each particle by analogue proximity; assign regime type
+  const maxDist = Math.max(...REGIME_ANALOGUES.map(a=>a.dist), 0.001);
+  regimeMatchScore.fill(0);
+  DATA.forEach((d,i)=>{
+    let best=999, bestRT=2;
+    REGIME_ANALOGUES.forEach(a=>{
+      if(i>=a.startIdx&&i<a.startIdx+a.len&&a.dist<best){best=a.dist;bestRT=a.regimeType;}
+    });
+    if(best<900){
+      regimeMatchScore[i] = Math.max(0,1-best/maxDist);
+      particleRegimeType[i] = bestRT;
+    } else {
+      const ret=d.dailyReturn, absR=Math.abs(ret);
+      if(ret>0.015&&absR<0.025)      particleRegimeType[i]=0;
+      else if(ret<-0.015)            particleRegimeType[i]=1;
+      else if(absR>0.025)            particleRegimeType[i]=5;
+      else                           particleRegimeType[i]=2;
+    }
+  });
+  // Current state particle: classify by actual current window regime
+  particleRegimeType[N-1] = classifyWindowRegime(currentW);
+}
+
+// ── CONSTELLATION POSITIONS ──────────────────────────────────────────────────
+// Each analogue window forms its own tight constellation.
+// Non-analogue particles scatter in a galaxy spiral background.
+// Constellations placed via seeded galaxy scatter — always in frame.
+let FOCUSED_ANALOGUE = -1;
+
+function computeRegimePositions(){
+  if(!N) return;
+
+  ANALOGUE_OF_GLOBAL.fill(-1);
+  REGIME_ANALOGUES.forEach((a, ai)=>{
+    for(let k=a.startIdx; k<a.startIdx+a.len && k<N; k++){
+      if(ANALOGUE_OF_GLOBAL[k]===-1) ANALOGUE_OF_GLOBAL[k]=ai; // first-writer wins — no overlap
+    }
+  });
+
+  // Bake normalised price curves for each analogue (used in focused line formation)
+  REGIME_ANALOGUES.forEach(a=>{
+    const prices=[];
+    for(let k=a.startIdx;k<a.startIdx+a.len&&k<N;k++) prices.push(DATA[k].close);
+    const lo=Math.min(...prices),hi=Math.max(...prices),span=hi-lo||1;
+    a._prices=prices.map(p=>(p-lo)/span-0.5); // normalised -0.5..+0.5
+  });
+
+  const nA = REGIME_ANALOGUES.length;
+  // Seeded deterministic galaxy scatter — guaranteed in-frame (max 12 units from origin)
+  const clusterCentres = [];
+  const placed = [];
+  const MIN_SEP = 4.5;
+  for(let ai=0; ai<nA; ai++){
+    if(ai === FOCUSED_ANALOGUE){ clusterCentres.push({cx:0,cy:0,cz:0}); continue; }
+    const s = ai * 17 + nA * 3;
+    const rng = n => { let x=Math.sin(s*9301+n*49297+233720923)*43758.5453; return x-Math.floor(x); };
+    let best={cx:0,cy:0,cz:0}, bestD=-1;
+    for(let t=0;t<50;t++){
+      const angle = rng(t) * Math.PI * 2;
+      const r     = 4.5 + rng(t+1) * 8;   // 4.5–12.5 units — always in frame at camZ≈38
+      const cx    = Math.cos(angle) * r;
+      const cy    = Math.sin(angle) * r * 0.65;
+      const cz    = (rng(t+2)-0.5)*2.5;
+      const minD  = placed.length ? Math.min(...placed.map(p=>Math.hypot(p.cx-cx,p.cy-cy))) : 999;
+      if(minD > bestD){ bestD=minD; best={cx,cy,cz}; }
+      if(minD >= MIN_SEP) break;
+    }
+    clusterCentres.push(best);
+    placed.push(best);
+  }
+  window.ANALOGUE_CENTRES = clusterCentres;
+
+  DATA.forEach((d,i)=>{
+    const ai = ANALOGUE_OF_GLOBAL[i];
+    if(ai >= 0){
+      const a = REGIME_ANALOGUES[ai];
+      const progress = (i - a.startIdx) / Math.max(a.len-1, 1);
+      if(ai === FOCUSED_ANALOGUE){
+        // Line chart formation at screen centre — fixed spacing per particle so all window sizes spread clearly
+        const spacing = Math.min(22 / Math.max(a.len-1, 1), 3.2);
+        newsP[i*3]   = (progress - 0.5) * (a.len-1) * spacing;
+        newsP[i*3+1] = (a._prices[i - a.startIdx]||0) * 7;
+        newsP[i*3+2] = 0;
+      } else {
+        const {cx,cy,cz} = clusterCentres[ai];
+        const priceY = a._prices ? (a._prices[i - a.startIdx]||0) * 1.4 : 0;
+        newsP[i*3]   = cx + (progress-0.5)*(a.len>5?3.2:1.8);
+        newsP[i*3+1] = cy + priceY;
+        // When something else is focused: push non-focused analogues behind too
+        newsP[i*3+2] = FOCUSED_ANALOGUE>=0 ? -50 : cz + Math.sin(i*2.7)*0.12;
+      }
+    } else {
+      // Galaxy spiral background
+      const theta = (i * 2.399963) % (Math.PI*2);
+      const arm   = (i%3)*(Math.PI*2/3);
+      const r     = 16 + (i%9)*1.1;
+      newsP[i*3]   = Math.cos(theta+arm+r*0.07)*r;
+      newsP[i*3+1] = Math.sin(theta+arm+r*0.07)*r*0.42 + Math.sin(i*0.7)*1.4;
+      // When focused: push background far behind camera so they never overlap the focused line
+      newsP[i*3+2] = FOCUSED_ANALOGUE>=0 ? -60 : Math.sin(theta*0.55)*4-2;
+    }
+  });
+
+  // Delay hit spheres until particles have settled (~1.2s)
+  clearTimeout(window._hitRebuildTimer);
+  window._hitRebuildTimer = setTimeout(buildRegimeHitPlanes, 1200);
+}
+
+function buildRegimeHitPlanes(){
+  while(regimeHitGrp.children.length) regimeHitGrp.remove(regimeHitGrp.children[0]);
+  if(!REGIME_ANALOGUES.length) return;
+  DATA.forEach((d,i)=>{
+    if(ANALOGUE_OF_GLOBAL[i] < 0) return;
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.52,6,6), regimeHitMat);
+    mesh.position.set(pos[i*3], pos[i*3+1], pos[i*3+2]); // use settled pos, not newsP
+    mesh.userData.dataIdx = i;
+    regimeHitGrp.add(mesh);
   });
 }
 
-function computeNewsGravityPositions(){
-  if(!KEYWORDS.length){
-    for(let i=0;i<N;i++){newsP[i*3]=scatterP[i*3];newsP[i*3+1]=scatterP[i*3+1];newsP[i*3+2]=scatterP[i*3+2];}
+function toggleRegimeKey(){
+  const key=document.getElementById('regimeKey');
+  const arrow=document.getElementById('rkToggleArrow');
+  const isOpen=key.classList.toggle('open');
+  if(arrow)arrow.textContent=isOpen?'▴':'▾';
+}
+
+function flyToAnalogue(ai){
+  if(ai === FOCUSED_ANALOGUE){
+    FOCUSED_ANALOGUE = -1;
+    computeRegimePositions();
+    applyRegimeColors();
+    tPanX=0; tPanY=0; tCamZ=38;
+    highlightAnalogueCard(-1);
     return;
   }
+  FOCUSED_ANALOGUE = ai;
+  computeRegimePositions();
+  applyRegimeColors();
+  tPanX=0; tPanY=0; tCamZ=20;
+  highlightAnalogueCard(ai);
+}
+
+function highlightAnalogueCard(ai){
+  const container=document.getElementById('roAnalogues');
+  if(!container)return;
+  // Clear all highlights
+  container.querySelectorAll('.ro-analogue').forEach(el=>el.classList.remove('focused'));
+  if(ai<0)return;
+  // Find card by rank index (cards are appended in rank order)
+  const cards=container.querySelectorAll('.ro-analogue');
+  // ai is the index in REGIME_ANALOGUES; cards are in same order
+  const target=cards[ai];
+  if(!target)return;
+  target.classList.add('focused');
+  // Scroll the roAnalogues container so the card is visible
+  target.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+
+const RT_RGB = [
+  [0.0, 1.0, 0.53],  // bullish — green
+  [1.0, 0.24,0.35],  // panic — red
+  [0.96,0.77,0.09],  // sideways — gold
+  [0.67,0.40,1.0 ],  // hype — purple
+  [0.27,0.53,1.0 ],  // reg fear — blue
+  [1.0, 0.47,0.33],  // macro — orange
+];
+
+function applyRegimeColors(){
+  if(!N) return;
+  const analogueOf = new Int8Array(N).fill(-1);
+  REGIME_ANALOGUES.forEach((a, ai)=>{
+    for(let k=a.startIdx; k<a.startIdx+a.len && k<N; k++) analogueOf[k]=ai;
+  });
+  const hasFocus = FOCUSED_ANALOGUE >= 0;
   DATA.forEach((d,i)=>{
-    const ki=particleNode[i];
-    if(ki<0||ki>=KEYWORDS.length){newsP[i*3]=scatterP[i*3];newsP[i*3+1]=scatterP[i*3+1];newsP[i*3+2]=scatterP[i*3+2];return;}
-    const kw=KEYWORDS[ki];
-    const bx=scatterP[i*3],by=scatterP[i*3+1],bz=scatterP[i*3+2];
-    const tx=kw.x+newsJitter[i*3],ty=kw.y+newsJitter[i*3+1],tz=kw.z+newsJitter[i*3+2];
-    const pull=0.60;
-    newsP[i*3]=bx+(tx-bx)*pull;newsP[i*3+1]=by+(ty-by)*pull;newsP[i*3+2]=bz+(tz-bz)*pull;
+    const ai = analogueOf[i];
+    if(ai >= 0){
+      const isFocused = ai === FOCUSED_ANALOGUE;
+      const rt = Math.max(0,Math.min(5, REGIME_ANALOGUES[ai].regimeType));
+      const [cr,cg,cb] = RT_RGB[rt];
+      // Focused: full brightness. Unfocused when something else focused: very dim.
+      const bright = isFocused ? 1.0 : hasFocus ? 0.0 : (ai===0 ? 1.0 : Math.max(0.3, 0.72-ai*0.04));
+      newsCol[i*3  ] = cr * bright;
+      newsCol[i*3+1] = cg * bright;
+      newsCol[i*3+2] = cb * bright;
+    } else {
+      // Background: fully invisible when focused (pushed to z=-60 anyway), dim otherwise
+      const d = hasFocus ? 0.0 : 0.22;
+      newsCol[i*3  ] = d;
+      newsCol[i*3+1] = d;
+      newsCol[i*3+2] = hasFocus ? 0.0 : 0.26;
+    }
   });
 }
+
+// ── REGIME HIT PLANES — rebuilt after settling (see computeRegimePositions) ──
+
+
+
+const CONN_MAX = 24; // max line segments (pairs)
+const connBuf  = new Float32Array(CONN_MAX*2*3);
+const connGeo  = new THREE.BufferGeometry();
+connGeo.setAttribute('position', new THREE.BufferAttribute(connBuf,3));
+connGeo.setDrawRange(0,0);
+const connMat  = new THREE.LineSegments(connGeo,
+  new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0,
+    blending:THREE.AdditiveBlending,vertexColors:false}));
+scene.add(connMat);
+
+let connFlashT = 0;  // 0→1, drives connection line fade cycle
+
+// ── GREEN CONSTELLATION LINES between consecutive days in same analogue window ──
+const CONST_MAX = 1200;
+const constBuf     = new Float32Array(CONST_MAX * 2 * 3);
+const constColBuf  = new Float32Array(CONST_MAX * 2 * 3); // vertex colors
+const constGeo2 = new THREE.BufferGeometry();
+constGeo2.setAttribute('position', new THREE.BufferAttribute(constBuf,3));
+constGeo2.setAttribute('color',    new THREE.BufferAttribute(constColBuf,3));
+constGeo2.setDrawRange(0,0);
+const constLine = new THREE.LineSegments(constGeo2,
+  new THREE.LineBasicMaterial({vertexColors:true, transparent:true, opacity:0,
+    blending:THREE.AdditiveBlending}));
+scene.add(constLine);
+
+function updateConstellationLines(){
+  if(!N||state!=='news'||!REGIME_ANALOGUES.length){
+    constGeo2.setDrawRange(0,0);constLine.material.opacity=0;return;
+  }
+  const hasFocus = FOCUSED_ANALOGUE >= 0;
+  let seg=0;
+  REGIME_ANALOGUES.forEach((a, ai)=>{
+    const isFocused = ai === FOCUSED_ANALOGUE;
+    // Color: focused = bright white-gold, unfocused = dim green (extra dim when something else focused)
+    const cr = isFocused ? 1.0  : hasFocus ? 0.0 : 0.0;
+    const cg = isFocused ? 0.92 : hasFocus ? 0.0 : 0.55;
+    const cb = isFocused ? 0.3  : hasFocus ? 0.0 : 0.18;
+    for(let k=a.startIdx; k<a.startIdx+a.len-1 && k<N-1; k++){
+      if(seg>=CONST_MAX) return;
+      if(ANALOGUE_OF_GLOBAL[k]!==ai || ANALOGUE_OF_GLOBAL[k+1]!==ai) continue;
+      const dx=pos[(k+1)*3]-pos[k*3];
+      const dy=pos[(k+1)*3+1]-pos[k*3+1];
+      const dz=pos[(k+1)*3+2]-pos[k*3+2];
+      // In focus mode the analogue spreads across ~19 units as a line chart —
+      // use a large threshold so no segments are culled. Non-focused particles
+      // get pushed to z=-50 so their inter-segment distances are huge and still skipped.
+      const distThresh = isFocused ? 400 : 20;
+      if(dx*dx+dy*dy+dz*dz > distThresh) continue;
+      constBuf[seg*6+0]=pos[k*3];     constBuf[seg*6+1]=pos[k*3+1];   constBuf[seg*6+2]=pos[k*3+2];
+      constBuf[seg*6+3]=pos[(k+1)*3]; constBuf[seg*6+4]=pos[(k+1)*3+1]; constBuf[seg*6+5]=pos[(k+1)*3+2];
+      // Both vertices same color
+      constColBuf[seg*6+0]=cr; constColBuf[seg*6+1]=cg; constColBuf[seg*6+2]=cb;
+      constColBuf[seg*6+3]=cr; constColBuf[seg*6+4]=cg; constColBuf[seg*6+5]=cb;
+      seg++;
+    }
+  });
+  constGeo2.attributes.position.needsUpdate=true;
+  constGeo2.attributes.color.needsUpdate=true;
+  constGeo2.setDrawRange(0, seg*2);
+  constLine.material.opacity = 0.6 + Math.sin(connFlashT)*0.12;
+}
+
+function updateConnectionLines(){
+  // Disabled — spokes from current state removed in favour of per-analogue constellation lines
+  connGeo.setDrawRange(0,0);if(connMat.material)connMat.material.opacity=0;
+}
+
+// ── PULSE RING from current state on regime mode entry & new sentiment ────────
+const pulseRings=[];
+const MAX_PULSES=3;
+
+function spawnPulseRing(){
+  if(pulseRings.length>=MAX_PULSES) return;
+  const geo=new THREE.RingGeometry(0.1,0.22,48);
+  const mat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.6,
+    blending:THREE.AdditiveBlending,side:THREE.DoubleSide,depthWrite:false});
+  const mesh=new THREE.Mesh(geo,mat);
+  mesh.position.set(0,0,2.3);
+  scene.add(mesh);
+  pulseRings.push({mesh,t:0});
+}
+
+function tickPulseRings(dt){
+  for(let i=pulseRings.length-1;i>=0;i--){
+    const ring=pulseRings[i];
+    ring.t = Math.min(ring.t+dt*0.38, 1);
+    const scale = 1 + ring.t*22;
+    ring.mesh.scale.set(scale,scale,1);
+    ring.mesh.material.opacity = 0.55*(1-ring.t)*(1-ring.t);
+    if(ring.t>=1){scene.remove(ring.mesh);ring.mesh.geometry.dispose();ring.mesh.material.dispose();pulseRings.splice(i,1);}
+  }
+}
+
+// ── CINEMATIC CAMERA DRIFT in regime mode ────────────────────────────────────
+let regimeCamDrift = false;
+let regimeDriftPhase = 0;
+
+function tickRegimeCameraDrift(dt){} // killed — camera stays user-controlled
+
+// ── REGIME TIMELINE SCRUBBER ──────────────────────────────────────────────────
+let regimeTimelineEpoch = 1.0; // 0 = oldest, 1 = most recent (default: show all)
+
+document.getElementById('rtSlider').addEventListener('input', function(){
+  regimeTimelineEpoch = parseFloat(this.value)/100;
+  if(N && state==='news') applyRegimeTimelineFilter();
+});
+
+function applyRegimeTimelineFilter(){
+  const cutoff = Math.floor(regimeTimelineEpoch * (N-1));
+  const epochDate = DATA[cutoff] ? DATA[cutoff].date.slice(0,7) : '—';
+  document.getElementById('rtEpoch').textContent = epochDate;
+  // Grey out particles newer than the epoch
+  DATA.forEach((d,i)=>{
+    if(i > cutoff && i < N-1) {
+      windowFiltered[i] = 1; // exile forward of cutoff (soft grey)
+    } else if(i < N-1) {
+      windowFiltered[i] = 0;
+    }
+  });
+  // Also recompute positions so removed particles drift out
+  if(state==='news') computeRegimePositions();
+}
+
+function updateRegimeOverlay(){
+  const overlay     = document.getElementById('regimeOverlay');
+  const scoreEl     = document.getElementById('roRegimeScore');
+  const badgeEl     = document.getElementById('roRegimeTypeBadge');
+  const analoguesEl = document.getElementById('roAnalogues');
+  const summaryEl   = document.getElementById('roSummary');
+
+  // Show the panel whenever we're in regime mode — no longer requires keywords
+  if(!N || !REGIME_ANALOGUES.length){
+    if(!N) { overlay.classList.remove('on'); return; }
+  }
+
+  // ── HEADER: current price structure (always shown) ──────────────────────────
+  const cur = REGIME_ANALOGUES._current;
+  const curRT = cur ? classifyWindowRegime(cur) : 2;
+  const rtype = REGIME_TYPES[curRT];
+
+  let priceHeader = '';
+  if(cur){
+    const momPct  = (cur.momentum*100).toFixed(1);
+    const volPct  = (cur.vol*100).toFixed(2);
+    const ddPct   = (cur.maxDD*100).toFixed(1);
+    const momCol  = cur.momentum>0.01?'var(--g)':cur.momentum<-0.01?'var(--r)':'var(--gold)';
+    priceHeader = `
+      <div style="font-family:var(--fd);font-size:8px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:6px">Current Window · Last ${REGIME_WINDOW}d</div>
+      <div style="display:flex;gap:14px;margin-bottom:8px">
+        <div><div style="font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.28);letter-spacing:0.1em">MOMENTUM</div><div style="font-family:var(--fm);font-size:13px;font-weight:700;color:${momCol}">${cur.momentum>=0?'+':''}${momPct}%</div></div>
+        <div><div style="font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.28);letter-spacing:0.1em">VOL</div><div style="font-family:var(--fm);font-size:13px;font-weight:700;color:var(--text)">${volPct}%</div></div>
+        <div><div style="font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.28);letter-spacing:0.1em">MAX DD</div><div style="font-family:var(--fm);font-size:13px;font-weight:700;color:var(--r)">-${ddPct}%</div></div>
+      </div>`;
+  }
+  scoreEl.innerHTML = priceHeader;
+
+  // Current regime archetype from actual price structure
+  badgeEl.innerHTML = `<span class="ro-regime-type" style="color:${rtype.cssCol};border-color:${rtype.cssCol};margin-top:2px;margin-bottom:6px;display:inline-block">⬡ ${rtype.name.toUpperCase()}</span>`;
+
+  // ── SENTIMENT OVERLAY (only if keywords loaded) ──────────────────────────────
+  const hasSent = NEWS_LOADED && KEYWORDS.length > 0;
+  if(hasSent){
+    const tier = sentimentTier(OVERALL_NEWS_SENT);
+    const conviction = KEYWORDS.reduce((s,k)=>s+Math.abs(k.sentiment),0)/KEYWORDS.length;
+    const convLabel = conviction>0.6?'STRONG':conviction>0.3?'MODERATE':'WEAK';
+    const kwNames = KEYWORDS.map(k=>k.keyword.toUpperCase()).join(' / ');
+    const divSignal = cur
+      ? (OVERALL_NEWS_SENT > 0.05 && cur.momentum < -0.01) ? '⚠ Narrative bullish — price falling'
+      : (OVERALL_NEWS_SENT < -0.05 && cur.momentum > 0.01) ? '⚠ Narrative bearish — price rising'
+      : '✓ Narrative aligns with price'
+      : '';
+    const divCol = divSignal.startsWith('⚠') ? 'var(--gold)' : 'var(--g)';
+    // Append sentiment section after price header
+    const sentSection = document.createElement('div');
+    sentSection.style.cssText='margin-top:4px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.07)';
+    // convLabel explanation: WEAK = keywords avg sentiment near 0 (muted signal)
+    //   MODERATE = avg |sentiment| 0.3–0.6 (detectable lean)
+    //   STRONG = avg |sentiment| > 0.6 (clear directional conviction)
+    const convExplain = conviction>0.6
+      ? 'Keywords show clear directional conviction'
+      : conviction>0.3
+      ? 'Keywords show a detectable lean but mixed signals'
+      : 'Keywords near-neutral — low directional signal strength';
+    sentSection.innerHTML = `
+      <div style="font-family:var(--fd);font-size:8px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px">Narrative Sentiment · ${REGIME_TIMEFRAME}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+        <span style="font-family:var(--ff);font-size:14px;font-weight:700;color:${tier.col}">${tier.arrow} ${tier.label.toUpperCase()}</span>
+        <span style="font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:0.1em">${OVERALL_NEWS_SENT>=0?'+':''}${OVERALL_NEWS_SENT.toFixed(2)}</span>
+      </div>
+      <div style="font-family:var(--fd);font-size:9px;color:rgba(255,255,255,0.25);letter-spacing:0.06em;margin-bottom:5px">${kwNames}</div>
+      <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px">
+        <span style="font-family:var(--fd);font-size:8px;letter-spacing:0.12em;text-transform:uppercase;padding:2px 7px;border:1px solid rgba(255,255,255,0.1);color:${conviction>0.6?'var(--g)':conviction>0.3?'var(--gold)':'rgba(255,255,255,0.35)'}">${convLabel}</span>
+        <span style="font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.22);line-height:1.4">${convExplain}</span>
+      </div>
+      <div style="font-family:var(--fd);font-size:9px;color:${divCol};letter-spacing:0.06em">${divSignal}</div>`;
+    // Remove any previously injected section, then insert once
+    const prev = document.getElementById('roSentSection');
+    if(prev) prev.remove();
+    sentSection.id = 'roSentSection';
+    scoreEl.after(sentSection);
+  } else {
+    const prev = document.getElementById('roSentSection');
+    if(prev) prev.remove();
+  }
+
+  analoguesEl.innerHTML='';
+
+  if(!REGIME_ANALOGUES.length){
+    analoguesEl.innerHTML='<div style="font-family:var(--fd);font-size:9px;color:rgba(255,255,255,0.2);padding:6px 0">Need at least ' + (REGIME_WINDOW*2) + ' days of price data</div>';
+    summaryEl.textContent='';
+    overlay.classList.add('on');
+    return;
+  }
+
+  // Outcome grid averages
+  const validFwd  = REGIME_ANALOGUES.filter(a=>isFinite(a.fwdReturn));
+  const avg5d  = validFwd.reduce((s,a)=>s+a.fwdReturn5,  0)/Math.max(validFwd.length,1);
+  const avg10d = validFwd.reduce((s,a)=>s+a.fwdReturn10, 0)/Math.max(validFwd.length,1);
+  const avg30d = validFwd.reduce((s,a)=>s+(a.fwdReturn30||0), 0)/Math.max(validFwd.length,1);
+  const fmtPct = v=>(v>=0?'+':'')+(v*100).toFixed(1)+'%';
+  const pctCol = v=>v>0.01?'var(--g)':v<-0.01?'var(--r)':'var(--gold)';
+
+  document.getElementById('roAvg5d').style.color  = pctCol(avg5d);
+  document.getElementById('roAvg10d').style.color = pctCol(avg10d);
+  document.getElementById('roAvg30d').style.color = pctCol(avg30d);
+  document.getElementById('roAvg5d').textContent  = fmtPct(avg5d);
+  document.getElementById('roAvg10d').textContent = fmtPct(avg10d);
+  document.getElementById('roAvg30d').textContent = fmtPct(avg30d);
+  document.getElementById('roOutcomesGrid').style.display='';
+
+  // Bull/Bear probability bar (based on 30d forward)
+  const bullCount = validFwd.filter(a=>(a.fwdReturn30||0)>0).length;
+  const bullPct   = Math.round(bullCount/Math.max(validFwd.length,1)*100);
+  const bearPct   = 100-bullPct;
+  document.getElementById('roProbBull').style.width=bullPct+'%';
+  document.getElementById('roProbBear').style.width=bearPct+'%';
+  document.getElementById('roProbBullLabel').textContent=`▲ ${bullPct}% Bull`;
+  document.getElementById('roProbBearLabel').textContent=`${bearPct}% Bear ▼`;
+  document.getElementById('roProbRow').style.display='';
+
+  // Analogue cards
+  const maxDistAll = Math.max(...REGIME_ANALOGUES.map(a=>a.dist), 0.001);
+  REGIME_ANALOGUES.forEach((a,rank)=>{
+    const startD  = DATA[a.startIdx];
+    const endD    = DATA[Math.min(a.startIdx+a.len-1, N-1)];
+    const dateRange = startD ? fmtDate(startD.date) + (endD ? ' – ' + fmtDate(endD.date) : '') : '—';
+    const rt        = REGIME_TYPES[a.regimeType];
+    const confScore = Math.max(0,Math.min(100,Math.round((1-a.dist/maxDistAll)*100)));
+    const confCol   = confScore>70?'var(--g)':confScore>45?'var(--gold)':'var(--muted)';
+    const isTop     = rank===0;
+    const f30col    = (a.fwdReturn30||0)>=0?'var(--g)':'var(--r)';
+    const f5col     = (a.fwdReturn5 ||0)>=0?'var(--g)':'var(--r)';
+    const f10col    = (a.fwdReturn10||0)>=0?'var(--g)':'var(--r)';
+    const fmtR      = v=>((v||0)>=0?'+':'')+((v||0)*100).toFixed(1)+'%';
+
+    // Sentiment alignment badge
+    let sentBadge = '';
+    if(a.sentAligned === true){
+      sentBadge = `<span style="font-family:var(--fd);font-size:8px;color:var(--g);letter-spacing:0.1em;border:1px solid rgba(0,255,136,0.3);padding:1px 5px">✓ ALIGNED</span>`;
+    } else if(a.sentAligned === false){
+      sentBadge = `<span style="font-family:var(--fd);font-size:8px;color:var(--gold);letter-spacing:0.1em;border:1px solid rgba(245,197,24,0.3);padding:1px 5px">⚠ DIVERGENT</span>`;
+    }
+
+    const el = document.createElement('div');
+    el.className = 'ro-analogue'+(isTop?' top':'');
+    el.style.cssText='display:flex;align-items:flex-start;gap:0;padding:9px 10px;margin-bottom:5px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,0.05);background:rgba(0,0,0,0.18);cursor:crosshair;transition:border-color 0.15s';
+    if(isTop) el.style.borderColor=`${rt.cssCol}44`;
+    el.onclick = (()=>{ const r=rank; return ()=>flyToAnalogue(r); })();
+    el.addEventListener('mouseenter',()=>{ el.style.borderColor=`${rt.cssCol}88`; });
+    el.addEventListener('mouseleave',()=>{ el.style.borderColor=isTop?`${rt.cssCol}44`:'rgba(255,255,255,0.05)'; });
+
+    const barPct = Math.max(6, confScore);
+    el.innerHTML = `
+      <div class="ro-analogue-bar" style="width:${barPct}%;background:${rt.cssCol}18"></div>
+      <div class="ro-analogue-meta" style="flex:1">
+        <div class="ro-analogue-date" style="color:${isTop?rt.cssCol:'var(--text)'}">
+          ${isTop?'◆ ':''}<b>${dateRange}</b>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+          <div class="ro-analogue-regime" style="color:${rt.cssCol}">${rt.shortName}</div>
+          ${sentBadge}
+        </div>
+        ${a.kwLabel!=='—'?`<div class="ro-analogue-keywords" style="margin-top:2px">${a.kwLabel}</div>`:''}
+        <div style="display:flex;gap:10px;margin-top:6px">
+          <div style="font-family:var(--fd);font-size:8px;letter-spacing:0.08em">
+            <div style="color:rgba(255,255,255,0.25);margin-bottom:1px">+5d</div>
+            <div style="color:${f5col};font-weight:700">${fmtR(a.fwdReturn5)}</div>
+          </div>
+          <div style="font-family:var(--fd);font-size:8px;letter-spacing:0.08em">
+            <div style="color:rgba(255,255,255,0.25);margin-bottom:1px">+10d</div>
+            <div style="color:${f10col};font-weight:700">${fmtR(a.fwdReturn10)}</div>
+          </div>
+          <div style="font-family:var(--fd);font-size:8px;letter-spacing:0.08em">
+            <div style="color:rgba(255,255,255,0.25);margin-bottom:1px">+30d</div>
+            <div style="color:${f30col};font-weight:700">${fmtR(a.fwdReturn30)}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.05)">
+          <div style="font-family:var(--fd);font-size:8px;letter-spacing:0.08em">
+            <div style="color:rgba(255,255,255,0.22);margin-bottom:1px">MOM</div>
+            <div style="color:${a.momentum>=0?'var(--g)':'var(--r)'};font-weight:700">${a.momentum>=0?'+':''}${(a.momentum*100).toFixed(1)}%</div>
+          </div>
+          <div style="font-family:var(--fd);font-size:8px;letter-spacing:0.08em">
+            <div style="color:rgba(255,255,255,0.22);margin-bottom:1px">VOL</div>
+            <div style="color:var(--text);font-weight:700">${(a.vol*100).toFixed(2)}%</div>
+          </div>
+          <div style="font-family:var(--fd);font-size:8px;letter-spacing:0.08em">
+            <div style="color:rgba(255,255,255,0.22);margin-bottom:1px">MAX DD</div>
+            <div style="color:var(--r);font-weight:700">-${(a.maxDD*100).toFixed(1)}%</div>
+          </div>
+        </div>
+      </div>
+      <div class="ro-analogue-metrics">
+        <div class="ro-analogue-conf" style="color:${confCol};font-size:11px;font-weight:700">${confScore}%</div>
+        <div style="font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.25);letter-spacing:0.08em">match</div>
+        <div class="ro-analogue-days" style="color:rgba(255,255,255,0.28);font-family:var(--fd);font-size:8px;margin-top:4px;letter-spacing:0.1em">${a.len}d</div>
+      </div>`;
+    analoguesEl.appendChild(el);
+  });
+
+  // ── SUMMARY: honest, price-driven ─────────────────────────────────────────
+  if(validFwd.length && cur){
+    const momPct  = (cur.momentum*100).toFixed(1);
+    const momDir  = cur.momentum>=0?'up':'down';
+    const avgCol  = pctCol(avg30d);
+    const alignedCount = hasSent ? REGIME_ANALOGUES.filter(a=>a.sentAligned===true).length : null;
+    let sentNote = '';
+    if(hasSent && alignedCount !== null){
+      const divCount = REGIME_ANALOGUES.length - REGIME_ANALOGUES.filter(a=>a.sentAligned===null).length - alignedCount;
+      sentNote = alignedCount > divCount
+        ? ` Sentiment aligns in ${alignedCount}/${REGIME_ANALOGUES.length} — narrative and price agree.`
+        : ` Sentiment diverges in ${divCount}/${REGIME_ANALOGUES.length} — watch for reversal.`;
+    }
+    summaryEl.innerHTML = `Last ${REGIME_WINDOW}d: <b>${momDir} ${Math.abs(parseFloat(momPct)).toFixed(1)}%</b>, `
+      + `vol <b>${(cur.vol*100).toFixed(2)}%</b>. `
+      + `${validFwd.length} structural analogues found — avg <b style="color:${pctCol(avg5d)}">${fmtPct(avg5d)}</b> over 5d, `
+      + `<b style="color:${avgCol}">${fmtPct(avg30d)}</b> over 30d. `
+      + `${bullCount}/${validFwd.length} resolved bullish.`
+      + `<span style="color:var(--gold)">${sentNote}</span>`;
+  } else {
+    summaryEl.textContent='Insufficient price history for forward projections.';
+  }
+
+  overlay.classList.add('on');
+}
+
+
 
 function updateNewsSentimentUI(){
   const sn=document.getElementById('sNewsSent');
   if(!NEWS_LOADED||!KEYWORDS.length){sn.textContent='';sn.style.color='var(--purple)';return;}
   const tier=sentimentTier(OVERALL_NEWS_SENT);
+  // Compute overall hit rate across all matched pairs
+  let totalHits=0,totalPairs=0;
+  DATA.forEach((d,i)=>{
+    const s=dailySentScore[i];
+    if(Math.abs(s)>0.05&&DAILY_SENT_MAP[d.date]){
+      totalPairs++;
+      if((s>0&&d.dailyReturn>0)||(s<0&&d.dailyReturn<0))totalHits++;
+    }
+  });
+  const hitPct=totalPairs>=3?Math.round(totalHits/totalPairs*100):null;
+  const sSubEl=document.querySelector('#stats .sblock:nth-child(6) .sv-sub');
+  if(sSubEl)sSubEl.textContent='News Mood';
   sn.style.color=tier.col;
   sn.innerHTML=`${tier.arrow} ${tier.label.toUpperCase()}`;
   sn.title=(OVERALL_NEWS_SENT>=0?'+':'')+OVERALL_NEWS_SENT.toFixed(3);
   const fogC=new THREE.Color();
-  if(OVERALL_NEWS_SENT>0.15)fogC.setRGB(0.004,0.025,0.015);
-  else if(OVERALL_NEWS_SENT<-0.15)fogC.setRGB(0.02,0.004,0.008);
-  else fogC.setRGB(0.016,0.028,0.047);
+  if(state==='news'||mode===4){
+    // Deep space — almost black with faint blue undertone
+    fogC.setRGB(0.002,0.004,0.010);
+  }else if(OVERALL_NEWS_SENT>0.15){
+    fogC.setRGB(0.004,0.025,0.015);
+  }else if(OVERALL_NEWS_SENT<-0.15){
+    fogC.setRGB(0.020,0.004,0.008);
+  }else{
+    fogC.setRGB(0.016,0.028,0.047);
+  }
   scene.fog.color.copy(fogC);renderer.setClearColor(fogC,1);
+  updateOracleSentSlider();
 }
 
-// ── BUILD EMA LINE (replaces sentiment line) ──
+// ── PEARSON CORRELATION: daily news sentiment vs daily price return ──
+function computePearson(){
+  PEARSON_R=null;
+  if(!N||!NEWS_LOADED)return;
+  const hasTrendData=Object.keys(DAILY_SENT_MAP).length>0;
+  // Build matched pairs: [dailySentiment, dailyReturn]
+  const pairs=[];
+  DATA.forEach((d,i)=>{
+    let s=null;
+    if(hasTrendData&&DAILY_SENT_MAP[d.date])s=DAILY_SENT_MAP[d.date].sentiment;
+    if(s==null)return; // only include days with actual daily sentiment data
+    pairs.push([s,d.dailyReturn]);
+  });
+  if(pairs.length<4){
+    // Fall back to overall sentiment vs returns (weaker but something)
+    DATA.forEach(d=>{pairs.push([OVERALL_NEWS_SENT,d.dailyReturn]);});
+    if(pairs.length<4)return;
+  }
+  const n=pairs.length;
+  const mx=pairs.reduce((s,p)=>s+p[0],0)/n;
+  const my=pairs.reduce((s,p)=>s+p[1],0)/n;
+  let num=0,dx2=0,dy2=0;
+  pairs.forEach(([x,y])=>{const dx=x-mx,dy=y-my;num+=dx*dy;dx2+=dx*dx;dy2+=dy*dy;});
+  const denom=Math.sqrt(dx2*dy2);
+  if(denom<1e-10)return;
+  PEARSON_R=Math.max(-1,Math.min(1,num/denom));
+}
+
+function updateCorrelationUI(){
+  const block=document.getElementById('sCorrBlock');
+  const el=document.getElementById('sCorr');
+  if(!block||!el)return;
+  if(!NEWS_LOADED||PEARSON_R===null){block.style.display='none';return;}
+  const hasTrendData=Object.keys(DAILY_SENT_MAP).length>0;
+  block.style.display='';
+  const abs=Math.abs(PEARSON_R);
+  const sign=PEARSON_R>=0?'+':'';
+  const col=abs>0.4?'var(--g)':abs>0.2?'var(--gold)':'var(--muted)';
+  el.style.color=col;
+  el.textContent=sign+PEARSON_R.toFixed(2);
+  const subEl=document.getElementById('sCorrSub');
+  if(subEl)subEl.textContent=hasTrendData?'News↔Price r':'Approx r';
+}
 // Shows 7-period exponential moving average of closing price.
 // Always visible in Line mode — gives a real technical reference distinct from raw price.
 function buildEMALine(){
@@ -1068,7 +2370,7 @@ let trNextState='scatter',trNextMode=0;
 let explodeT=0,exploding=false,explodeScheduled=false;
 let lineProgress=0;
 const LINE_SPEED=80;
-let newsWellsVisible=false,newsWellsT=0;
+// newsWells removed
 let spreadScale=1.0;
 
 function computeSpread(from,to){
@@ -1240,47 +2542,61 @@ function goMode(newMode){
   if(state==='transitioning'&&trActive)return;
   const stateNames=['scatter','cluster','linedraw','ohlc','news'];
   if(newMode===4){
-    computeNewsGravityPositions();
+    computeRegimeAnalogues();
+    computeRegimePositions();
+    applyRegimeColors();
+    // Reset timeline scrubber to full view
+    const slider=document.getElementById('rtSlider');
+    slider.value=100; regimeTimelineEpoch=1.0;
+    windowFiltered.fill(0);
+    if(DATA[N-1]) document.getElementById('rtEpoch').textContent=DATA[N-1].date.slice(0,7);
     trFrom.set(pos.slice(0,N*3),0);trTo.set(newsP.slice(0,N*3),0);
-    trActive=true;trT=0;trDur=2.2;trNextState='news';trNextMode=4;
+    trActive=true;trT=0;trDur=2.8;trNextState='news';trNextMode=4;
     state='transitioning';mode=4;
     lMat.opacity=0;lGeo.setDrawRange(0,0);slMat.opacity=0;slGeo.setDrawRange(0,0);
     setCandleOpacity(0);setParticleVisibility(true);updateUI();return;
   }
   if(newMode===2){
     lMat.opacity=0;lGeo.setDrawRange(0,0);slMat.opacity=0;slGeo.setDrawRange(0,0);
-    setCandleOpacity(0);setParticleVisibility(true);setKeywordOpacity(0);newsWellsVisible=false;
+    setCandleOpacity(0);setParticleVisibility(true);
+    document.getElementById('narrativeStreak').classList.remove('on');
+    document.getElementById('regimeOverlay').classList.remove('on');
+    document.getElementById('newsAxis').classList.remove('on');
+    document.getElementById('regimeKeyWrap').classList.remove('on');
+    // Clear constellation and connection lines so they don't persist in line mode
+    constGeo2.setDrawRange(0,0);constLine.material.opacity=0;
+    connGeo.setDrawRange(0,0);
     lineProgress=0;state='linedraw';mode=2;updateUI();return;
   }
   if(newMode===3){
     setCandleOpacity(0);
+    document.getElementById('regimeOverlay').classList.remove('on');
+    document.getElementById('newsAxis').classList.remove('on');
+    document.getElementById('regimeKeyWrap').classList.remove('on');
     trFrom.set(pos.slice(0,N*3),0);trTo.set(ohlcP.slice(0,N*3),0);
     trActive=true;trT=0;trDur=1.8;trNextState='ohlc';trNextMode=3;
     state='transitioning';mode=3;
     lMat.opacity=0;lGeo.setDrawRange(0,0);slMat.opacity=0;slGeo.setDrawRange(0,0);
-    setKeywordOpacity(0);newsWellsVisible=false;updateUI();return;
+    updateUI();return;
   }
   const destArr=newMode===0?scatterP:clusterP;
   trFrom.set(pos.slice(0,N*3),0);trTo.set(destArr.slice(0,N*3),0);
   trActive=true;trT=0;trDur=newMode===0?1.8:2.4;
   trNextState=stateNames[newMode]||'scatter';trNextMode=newMode;
   state='transitioning';mode=newMode;
+  document.getElementById('regimeOverlay').classList.remove('on');
+  document.getElementById('newsAxis').classList.remove('on');
+  document.getElementById('regimeKeyWrap').classList.remove('on');
   lMat.opacity=0;lGeo.setDrawRange(0,0);slMat.opacity=0;slGeo.setDrawRange(0,0);
-  setCandleOpacity(0);setParticleVisibility(true);setKeywordOpacity(0);newsWellsVisible=false;updateUI();
+  setCandleOpacity(0);setParticleVisibility(true);updateUI();
 }
 
 const clock=new THREE.Clock();
 let anomalyPhase=0;
-const particleNode=new Int8Array(MAX).fill(-1);
-const particleFiltered=new Uint8Array(MAX);
-const windowFiltered=new Uint8Array(MAX);   // date-window filter
-const exileP=new Float32Array(MAX*3);
-const filterFade=new Float32Array(MAX).fill(1);
 
 // EXILE_SPEED: slow drift out (~4s), normal state speed handles return
 const EXILE_SPEED=0.45;
 
-function isExiled(i){return particleFiltered[i]||windowFiltered[i];}
 
 // ── BACKTEST RANGE HIGHLIGHT — must be declared before animate() ──
 const btHighlightMesh=new THREE.Mesh(
@@ -1447,25 +2763,72 @@ function animate(){
     updateCandleFilter();
     pGeo.attributes.position.needsUpdate=true;
   }else if(state==='news'){
+    // Analogue particles: very gentle breathe only — must stay near newsP for mesh hover to work.
+    // Background particles: slow spiral galaxy motion — angular velocity proportional to 1/radius.
     for(let i=0;i<N;i++){
-      if(isExiled(i)){
+      if(isExiledNews(i)){
         pos[i*3]  +=(exileP[i*3]  -pos[i*3]  )*dt*EXILE_SPEED;
         pos[i*3+1]+=(exileP[i*3+1]-pos[i*3+1])*dt*EXILE_SPEED;
         pos[i*3+2]+=(exileP[i*3+2]-pos[i*3+2])*dt*EXILE_SPEED;
         continue;
       }
-      const nx2=Math.sin(t*0.6+i*0.22)*0.35;const ny2=Math.cos(t*0.5+i*0.18)*0.22;
-      pos[i*3]+=(newsP[i*3]+nx2-pos[i*3])*dt*1.8;
-      pos[i*3+1]+=(newsP[i*3+1]+ny2-pos[i*3+1])*dt*1.8;
-      pos[i*3+2]+=(newsP[i*3+2]-pos[i*3+2])*dt*1.5;
+      if(ANALOGUE_OF_GLOBAL[i] >= 0){
+        // ── Analogue particle: stay pinned to newsP with tiny breathe ──
+        const breatheY = Math.sin(t*0.35 + i*0.11) * 0.035;
+        const breatheX = Math.cos(t*0.28 + i*0.07) * 0.018;
+        const lerpSpeed = 2.2 + regimeMatchScore[i]*1.8;
+        pos[i*3]   += (newsP[i*3]   + breatheX - pos[i*3])   * dt * lerpSpeed;
+        pos[i*3+1] += (newsP[i*3+1] + breatheY - pos[i*3+1]) * dt * lerpSpeed;
+        pos[i*3+2] += (newsP[i*3+2]             - pos[i*3+2]) * dt * lerpSpeed;
+      } else {
+        // ── Background star: galaxy spiral orbit ──
+        // Pull toward newsP resting shell, then apply angular velocity
+        const tx=newsP[i*3], ty=newsP[i*3+1], tz=newsP[i*3+2];
+        pos[i*3]   += (tx - pos[i*3])   * dt * 0.6;
+        pos[i*3+1] += (ty - pos[i*3+1]) * dt * 0.25;
+        pos[i*3+2] += (tz - pos[i*3+2]) * dt * 0.5;
+        // Compute current radius from origin in XZ plane
+        const rx = pos[i*3], rz = pos[i*3+2];
+        const radius = Math.sqrt(rx*rx + rz*rz) || 0.1;
+        // Angular velocity: inner stars move faster (differential rotation)
+        const omega = (0.06 + 0.4/radius) * dt;
+        const cosO=Math.cos(omega), sinO=Math.sin(omega);
+        const newRx = rx*cosO - rz*sinO;
+        const newRz = rx*sinO + rz*cosO;
+        pos[i*3]   = newRx;
+        pos[i*3+2] = newRz;
+        // Very slight vertical oscillation
+        pos[i*3+1] += Math.sin(t*0.18 + i*0.23) * 0.008;
+      }
     }
+    connFlashT += dt * 0.9;
+    updateConnectionLines();
+    updateConstellationLines();
+    tickPulseRings(dt);
     pGeo.attributes.position.needsUpdate=true;
   }else if(state==='transitioning'){
     trT+=dt/trDur;
     if(trT>=1){
       trT=1;trActive=false;state=trNextState;mode=trNextMode;updateUI();
-      if(trNextMode===4){newsWellsVisible=true;document.getElementById('newsLegend').classList.add('on');document.getElementById('newsAxis').classList.add('on');}
-      else{document.getElementById('newsLegend').classList.remove('on');document.getElementById('newsAxis').classList.remove('on');}
+      if(trNextMode===4){
+        document.getElementById('newsAxis').classList.add('on');
+        document.getElementById('regimeKeyWrap').classList.add('on');
+        document.getElementById('currentStateBadge').classList.remove('on');
+        updateRegimeOverlay();
+        regimeCamDrift=false;
+      }
+      else{
+        document.getElementById('newsAxis').classList.remove('on');
+        document.getElementById('narrativeStreak').classList.remove('on');
+        document.getElementById('regimeOverlay').classList.remove('on');
+        document.getElementById('regimeKeyWrap').classList.remove('on');
+        document.getElementById('currentStateBadge').classList.remove('on');
+        regimeCamDrift=false;
+        FOCUSED_ANALOGUE=-1;
+        connGeo.setDrawRange(0,0);
+        constGeo2.setDrawRange(0,0);constLine.material.opacity=0;
+        windowFiltered.fill(0);
+      }
     }
     const e=ease3(Math.min(trT,1));
     for(let i=0;i<N;i++){
@@ -1477,33 +2840,16 @@ function animate(){
       }
     }
     if(trNextMode===3)setCandleOpacity(trT);
-    if(trNextMode===4){setKeywordOpacity(trT*0.9);pL.intensity=trT*2.5;}
     pGeo.attributes.position.needsUpdate=true;
-  }
-
-  if(newsWellsVisible&&KEYWORDS.length){
-    newsWellsT=Math.min(newsWellsT+dt*0.8,1);setKeywordOpacity(newsWellsT*0.9);
-    pL.intensity=newsWellsT*2.5+Math.sin(t*1.8)*0.5;
-    const maxC=Math.max(...KEYWORDS.map(k=>k.count))||1;
-    kwGrp.children.forEach((c)=>{
-      if(!c.userData.isRing&&c.isMesh){
-        const ki=c.userData.kwIdx;if(ki===undefined)return;
-        const kw=KEYWORDS[ki];const pulse=0.7+Math.sin(t*(1.2+ki*0.3)+ki)*0.3*(kw.count/maxC);
-        if(c.material)c.material.opacity=pulse*0.55*newsWellsT;
-      }
-    });
-    renderKeywordLabels();
-  }else if(!newsWellsVisible&&newsWellsT>0){
-    newsWellsT=Math.max(newsWellsT-dt*2,0);setKeywordOpacity(newsWellsT);pL.intensity=newsWellsT*2;
-    if(newsWellsT<=0)pL.intensity=0;
   }
 
   setParticleVisibility(state!=='ohlc');
 
   if(state!=='exploding'&&state!=='gathering'&&state!=='dot'){
-    const newsBlend=(state==='news')?0.85:0.0;
+    const newsBlend=(state==='news')?0.92:0.0;
     for(let i=0;i<N;i++){
-      if(isExiled(i)){filterFade[i]=Math.max(0,filterFade[i]-dt*2.0);}
+      const _exiled = state==='news' ? isExiledNews(i) : isExiled(i);
+      if(_exiled){filterFade[i]=Math.max(0,filterFade[i]-dt*2.0);}
       else{filterFade[i]=Math.min(1,filterFade[i]+dt*3.0);}
       const ff=filterFade[i];
       if(i===hovI){col[i*3]=1;col[i*3+1]=1;col[i*3+2]=1;continue;}
@@ -1524,19 +2870,31 @@ function animate(){
       col[i*3]=((baseCol[i*3]*(1-nb)+newsCol[i*3]*nb)*p)*ff+0.18*(1-ff);
       col[i*3+1]=((baseCol[i*3+1]*(1-nb)+newsCol[i*3+1]*nb)*p)*ff+0.20*(1-ff);
       col[i*3+2]=((baseCol[i*3+2]*(1-nb)+newsCol[i*3+2]*nb)*p)*ff+0.22*(1-ff);
+      // In regime mode: analogues slightly larger, background same size
+      if(state==='news'&&nb>0){
+        const ms=regimeMatchScore[i];
+        sz[i]=(0.38+glowA[i]*0.25+ms*0.45)*ff;
+      }
     }
     pGeo.attributes.color.needsUpdate=true;
+    if(state==='news') pGeo.attributes.aSize.needsUpdate=true;
   }
 
   gL.intensity=4+Math.sin(t*1.1)*1.2;rL.intensity=3+Math.cos(t*0.82)*0.9;
   tickBtHighlight(dt);
+
+  // ── Project current-state badge to screen coords ──
+  updateAxisGuide();
   checkHover();renderer.render(scene,camera);
 }
 animate();
 
 // ── PANEL SCROLL ISOLATION ──
-// Prevent wheel events inside the left panel from zooming the 3D scene
+// Prevent wheel events inside the left panel and regime overlay from zooming the 3D scene
 document.getElementById('panel').addEventListener('wheel', e=>{
+  e.stopPropagation();
+}, {passive:true});
+document.getElementById('regimeOverlay').addEventListener('wheel', e=>{
   e.stopPropagation();
 }, {passive:true});
 
@@ -1553,9 +2911,18 @@ window.addEventListener('mousedown',e=>{if(e.button===2||e.button===1){isDrag=tr
 window.addEventListener('mouseup',e=>{if(e.button===2||e.button===1)isDrag=false;});
 window.addEventListener('click',e=>{
   // Only handle left clicks on canvas (not panel buttons)
-  if(e.target.closest('#panel,#modes,#stats,#err,#tt,#kwtt,#kwOverlay'))return;
+  if(e.target.closest('#panel,#modes,#stats,#err,#tt'))return;
+  // Regime mode: clicking a constellation node zooms/focuses that analogue
+  if(state==='news' && hovI>=0){
+    const ai = ANALOGUE_OF_GLOBAL ? ANALOGUE_OF_GLOBAL[hovI] : -1;
+    if(ai >= 0){
+      // If date-pick mode is active, pick this particle's date instead of flying
+      if(btPickMode!==0){ btPickClick(hovI); return; }
+      flyToAnalogue(ai);
+      return;
+    }
+  }
   if(btPickMode===0)return;
-  // Find hovered particle/candle index and pass to pick handler
   if(hovI>=0)btPickClick(hovI);
 });
 window.addEventListener('contextmenu',e=>e.preventDefault());
@@ -1570,29 +2937,45 @@ window.addEventListener('mousemove',e=>{
 
 // ── HOVER / RAYCAST ──
 const ray=new THREE.Raycaster();
-ray.params.Points.threshold=0.65;
+ray.params.Points.threshold=0.65; // bumped dynamically in checkHover for regime
 const mVec=new THREE.Vector2(-9,-9);
-let hovI=-1,hovKw=-1;
+let hovI=-1;
 const ttEl=document.getElementById('tt');
-const kwttEl=document.getElementById('kwtt');
-
 window.addEventListener('mousemove',e=>{
   mVec.x=(e.clientX/innerWidth)*2-1;mVec.y=-(e.clientY/innerHeight)*2+1;
-  const tx=e.clientX+14+280>innerWidth?e.clientX-290:e.clientX+14;
-  const ty=Math.min(e.clientY-6,innerHeight-240);
+  const tw=300, th=260;
+  const tx = e.clientX + tw + 16 > innerWidth  ? e.clientX - tw - 8 : e.clientX + 14;
+  const ty = e.clientY + th + 8  > innerHeight ? e.clientY - th - 8 : e.clientY + 10;
   ttEl.style.left=tx+'px';ttEl.style.top=ty+'px';
-  kwttEl.style.left=tx+'px';kwttEl.style.top=ty+'px';
 });
 
 function checkHover(){
   if(N===0||state==='gathering'||state==='dot'||state==='exploding')return;
   ray.setFromCamera(mVec,camera);
-  if((state==='news'||(state==='transitioning'&&trNextMode===4))&&KEYWORDS.length){
-    const nodeMeshes=kwGrp.children.filter(c=>c.isMesh&&!c.userData.isRing&&c.userData.kwIdx!==undefined);
-    const nhits=ray.intersectObjects(nodeMeshes,false);
-    if(nhits.length){const ki=nhits[0].object.userData.kwIdx;if(ki!==hovKw){hovKw=ki;ttEl.classList.remove('on');hovI=-1;showKwTT(ki);}return;}
-    else{if(hovKw!==-1){kwttEl.classList.remove('on');hovKw=-1;}}
+
+  if(state==='news'){
+    // Mesh-based hover. In focused mode, only particles of the focused analogue are hoverable.
+    // Background particles and non-focused analogues get hidden hit planes.
+    const hasFocus = FOCUSED_ANALOGUE >= 0;
+    regimeHitGrp.children.forEach(m=>{
+      const i=m.userData.dataIdx;
+      if(i==null||i>=N){ m.visible=false; return; }
+      const exiled = isExiledNews(i);
+      // When focused: only show hits for the focused analogue's particles
+      const wrongGroup = hasFocus && ANALOGUE_OF_GLOBAL[i] !== FOCUSED_ANALOGUE;
+      m.position.set(pos[i*3],pos[i*3+1],pos[i*3+2]);
+      m.visible = !exiled && !wrongGroup;
+    });
+    const hits=ray.intersectObjects(regimeHitGrp.children,false);
+    if(hits.length){
+      const i=hits[0].object.userData.dataIdx;
+      if(i!=null&&i!==hovI&&!isExiledNews(i)){hovI=i;showTT(i);}
+    } else {
+      if(hovI!==-1){ttEl.classList.remove('on');hovI=-1;}
+    }
+    return;
   }
+
   if(state!=='line'&&state!=='linedraw'&&state!=='ohlc'&&state!=='transitioning')return;
   if(state==='ohlc'){
     const meshes=candleGrp.children.filter(c=>c.isMesh);
@@ -1607,52 +2990,75 @@ function checkHover(){
   else{if(hovI!==-1)ttEl.classList.remove('on');hovI=-1;}
 }
 
-function showKwTT(ki){
-  const kw=KEYWORDS[ki];if(!kw)return;
-  const tier=sentimentTier(kw.sentiment);
-  const bsc=kw.sentiment>0.15?'rgba(0,255,136,0.22)':kw.sentiment<-0.15?'rgba(255,61,90,0.22)':'rgba(170,102,255,0.22)';
-  kwttEl.style.borderColor=bsc;
-  document.getElementById('kwttName').textContent=kw.keyword.toUpperCase();
-  document.getElementById('kwttName').style.color=tier.col;
-  document.getElementById('kwttTierLabel').innerHTML=`<span style="color:${tier.col}">${tier.arrow} ${tier.label}</span>`;
-  const clamped=Math.max(-1,Math.min(1,kw.sentiment));
-  const needlePct=((clamped+1)/2)*100;
-  document.getElementById('kwttNeedle').style.left=needlePct+'%';
-  document.getElementById('kwttArt').textContent=kw.count>0?kw.count.toLocaleString():'0';
-  let pulled=0;for(let i=0;i<N;i++){if(particleNode[i]===ki)pulled++;}
-  const pct=N>0?Math.round(pulled/N*100):0;
-  document.getElementById('kwttPull').innerHTML=`<span style="color:var(--text)">${pulled}</span><span style="color:var(--muted)"> / ${N} (${pct}%)</span>`;
-  const artStr=kw.count>0?` in ${kw.count.toLocaleString()} articles`:'';
-  const rawDisp=kw.rawSent!=null?kw.rawSent.toFixed(3):kw.sentiment.toFixed(3);
-  const dirWord=kw.sentiment>0.15?'positive (bullish)':kw.sentiment<-0.15?'negative (bearish)':'mixed (neutral)';
-  document.getElementById('kwttDesc').innerHTML=`Over the past 30 days, news coverage of <b style="color:${tier.col}">${kw.keyword}</b> has been <b style="color:${tier.col}">${dirWord}</b>${artStr}.<br><br>In News Gravity mode, <b style="color:var(--text)">${pct}%</b> of trading days are pulled to this node.`;
-  document.getElementById('kwttScale').innerHTML=`Raw score: <b>${rawDisp}</b>, clamped to <b style="color:${tier.col}">${kw.sentiment>=0?'+':''}${kw.sentiment.toFixed(2)}</b>`;
-  kwttEl.classList.add('on');
-}
-
 function showTT(i){
   if(!DATA[i])return;
   const d=DATA[i];
-  // FIX: use close-to-close daily return, not intraday open-to-close
   const ret=d.dailyReturn*100;
   const rc=ret>0?'var(--g)':ret<0?'var(--r)':'var(--gold)';
-  document.getElementById('ttDate').textContent=d.date;
+  document.getElementById('ttDate').textContent=fmtDate(d.date);
   document.getElementById('ttO').textContent='$'+d.open.toFixed(2);
   document.getElementById('ttC').textContent='$'+d.close.toFixed(2);
   document.getElementById('ttH').textContent='$'+d.high.toFixed(2);
   document.getElementById('ttL').textContent='$'+d.low.toFixed(2);
   const v=d.volume;
   document.getElementById('ttV').textContent=v>1e6?(v/1e6).toFixed(1)+'M':(v/1e3).toFixed(0)+'K';
-  // FIX: removed "Neutral" label — just show the percentage move
   document.getElementById('ttS').innerHTML=`<span style="color:${rc}">${ret>0?'+':''}${ret.toFixed(2)}% day</span>`;
   const ttN=document.getElementById('ttN');
+
+  // ── Regime mode: show analogue card ──────────────────────────────────────
+  if(state==='news'){
+    const rt   = Math.max(0,Math.min(5,particleRegimeType[i]));
+    const rtype= REGIME_TYPES[rt];
+    const ms   = regimeMatchScore[i];
+    const isCurrentState = (i===N-1);
+    // Find if this particle belongs to one of the top analogues
+    const analogue = REGIME_ANALOGUES.find(a=>i>=a.startIdx&&i<a.startIdx+a.len);
+    let analogueHTML='';
+    if(analogue){
+      // Per-particle returns: +5d and +30d from this day's open
+      const fwd5Idx  = Math.min(i+5,  N-1);
+      const fwd30Idx = Math.min(i+30, N-1);
+      const baseOp   = DATA[i].open;
+      const perFwd5  = (DATA[fwd5Idx].close  - baseOp) / baseOp;
+      const perFwd30 = (DATA[fwd30Idx].close - baseOp) / baseOp;
+      const f5col    = perFwd5  >= 0 ? 'var(--g)' : 'var(--r)';
+      const f30col   = perFwd30 >= 0 ? 'var(--g)' : 'var(--r)';
+      const maxD  = Math.max(...REGIME_ANALOGUES.map(a=>a.dist),0.001);
+      const conf  = Math.max(0,Math.min(100,Math.round((1-analogue.dist/maxD)*100)));
+      let alignBadge = '';
+      if(analogue.sentAligned===true)  alignBadge = `<span style="color:var(--g);font-size:8px"> · ✓ ALIGNED</span>`;
+      if(analogue.sentAligned===false) alignBadge = `<span style="color:var(--gold);font-size:8px"> · ⚠ DIVERGENT</span>`;
+      analogueHTML=`
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+          <div style="font-family:var(--fd);font-size:7px;color:rgba(255,255,255,0.25);letter-spacing:0.16em;text-transform:uppercase;margin-bottom:5px">Price Match: <span style="color:${conf>70?'var(--g)':conf>45?'var(--gold)':'var(--muted)'}">${conf}%</span>${alignBadge}</div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+            <span style="font-family:var(--fd);font-size:9px;color:rgba(255,255,255,0.4)">+5d return</span>
+            <span style="font-family:var(--fm);font-size:12px;font-weight:700;color:${f5col}">${perFwd5>=0?'+':''}${(perFwd5*100).toFixed(1)}%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <span style="font-family:var(--fd);font-size:9px;color:rgba(255,255,255,0.4)">+30d return</span>
+            <span style="font-family:var(--fm);font-size:11px;color:${f30col}">${perFwd30>=0?'+':''}${(perFwd30*100).toFixed(1)}%</span>
+          </div>
+        </div>`;
+    }
+    ttN.innerHTML=`
+      <span style="font-family:var(--fd);font-size:7px;color:rgba(255,255,255,0.25);letter-spacing:0.14em;text-transform:uppercase">Regime</span><br>
+      <span style="font-family:var(--ff);font-size:12px;font-weight:700;color:${rtype.cssCol}">${isCurrentState?'◎ CURRENT STATE':rtype.name.toUpperCase()}</span>
+      ${ms>0.1?`<div style="font-family:var(--fd);font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px">Match: <span style="color:${ms>0.7?'var(--g)':ms>0.4?'var(--gold)':'var(--muted)'}">${(ms*100).toFixed(0)}%</span></div>`:''}
+      ${analogueHTML}`;
+    ttN.style.display='';
+    ttEl.classList.add('on');
+    return;
+  }
+
   if(NEWS_LOADED&&KEYWORDS.length){
-    const assignedKw=particleNode[i]>=0?KEYWORDS[particleNode[i]]:null;
-    const tier=assignedKw?sentimentTier(assignedKw.sentiment):null;
-    const pDir=priceDirNormalized(d);
-    const domStr=assignedKw&&tier?`<span style="color:var(--muted);font-size:7px">PULLED BY </span><span style="color:${tier.col}">${assignedKw.keyword.toUpperCase()}  ${tier.label.toUpperCase()}</span><br><span style="color:rgba(255,255,255,0.2);font-size:7px">Price: ${pDir>=0?'+':''}${pDir.toFixed(2)}  Keyword: ${assignedKw.sentiment>=0?'+':''}${assignedKw.sentiment.toFixed(2)}</span><br>`:'';
+    const hasDailySent=DAILY_SENT_MAP[d.date]!=null;
+    const daySent=hasDailySent?DAILY_SENT_MAP[d.date].sentiment:null;
+    const daySentTier=daySent!=null?sentimentTier(daySent):null;
+    const dailySentStr=daySent!=null?`<span style="color:var(--muted);font-size:7px">SIGNAL </span><span style="color:${daySentTier.col}">${daySentTier.arrow} ${daySent>=0?'+':''}${daySent.toFixed(2)}</span><br>`:'';
     const anom=anomaly[i];
-    ttN.innerHTML=`${domStr}${anom?'<span class="anomaly-badge">PRICE vs NEWS DIVERGENCE</span>':''}`;
+    const hitMiss=daySent!=null?`<span style="font-family:var(--fd);font-size:8px;color:${anom?'var(--r)':'var(--g)'}">${anom?'✕ Signal diverged from price':'✓ Signal matched price'}</span>`:'';
+    ttN.innerHTML=`${dailySentStr}${hitMiss}`;
     ttN.style.display='';
   }else{ttN.style.display='none';}
   ttEl.classList.add('on');
@@ -1694,7 +3100,10 @@ async function loadTicker(ticker,from,to){
   if(N>0){
     if(gatherInterval){clearInterval(gatherInterval);gatherInterval=null;}
     lMat.opacity=0;lGeo.setDrawRange(0,0);slMat.opacity=0;slGeo.setDrawRange(0,0);
-    setCandleOpacity(0);setKeywordOpacity(0);newsWellsVisible=false;newsWellsT=0;pL.intensity=0;
+    setCandleOpacity(0);
+    // Clear constellation lines so they don't bleed into the new data
+    constGeo2.setDrawRange(0,0);constLine.material.opacity=0;
+    connGeo.setDrawRange(0,0);
     pendingData=null;applyScheduled=false;startGather();
   }
   try{
@@ -1744,16 +3153,85 @@ async function loadTicker(ticker,from,to){
 }
 
 function showWindowControls(){
-  const wb=document.getElementById('winBlock');
-  if(wb){
-    wb.style.display='block';
-    document.getElementById('winSize').value='0';
-    document.getElementById('winScrub').value='0';
-    document.getElementById('winScrubRow').style.display='none';
-    document.getElementById('winRange').textContent='';
-    updateWinLabel();
-  }
+  if(!DATA.length)return;
+  // winBlock always visible
+  WIN_SIZE=0; // start on All
+  document.getElementById('winSizeSlider').max=N;
+  document.getElementById('winSizeSlider').value=Math.min(30,N);
+  document.getElementById('winScrub').value=100;
+  setWinSize(0);
 }
+
+let WIN_SIZE=0; // 0 = all; >0 = n trading days
+
+function setWinSize(days){
+  WIN_SIZE=days;
+  // Update preset button highlight
+  ['wbAll','wb7','wb14','wb30','wb60','wb90'].forEach(id=>{
+    const btn=document.getElementById(id);
+    if(btn)btn.classList.remove('on');
+  });
+  const activeId=days===0?'wbAll':days===7?'wb7':days===14?'wb14':days===30?'wb30':days===60?'wb60':days===90?'wb90':null;
+  if(activeId){const b=document.getElementById(activeId);if(b)b.classList.add('on');}
+  const sizeRow=document.getElementById('winSizeSliderRow');
+  const scrubRow=document.getElementById('winScrubRow');
+  if(days===0){
+    if(sizeRow)sizeRow.style.display='block';
+    if(scrubRow)scrubRow.style.display='block';
+    windowFiltered.fill(0);
+    document.getElementById('winFrom').value=DATA[0]?.date||'';
+    document.getElementById('winTo').value=DATA[N-1]?.date||'';
+    document.getElementById('winRange').textContent='';
+    // Size slider maxed out = All, position slider shows full span
+    const sl=document.getElementById('winSizeSlider');
+    if(sl){sl.value=N;sl.max=N;}
+    document.getElementById('winSizeVal').textContent=N+'d';
+    document.getElementById('winScrub').value=100;
+    document.getElementById('winScrubVal').textContent='Latest';
+  }else{
+    if(sizeRow)sizeRow.style.display='block';
+    if(scrubRow)scrubRow.style.display='block';
+    document.getElementById('winSizeSlider').value=Math.min(days,N);
+    document.getElementById('winSizeVal').textContent=days+'d';
+    applyTwoSliderWindow();
+  }
+  updateWinLabel();updateFilterCount();updateCandleFilter();
+}
+
+function applyTwoSliderWindow(){
+  if(!N||WIN_SIZE===0)return;
+  const winDays=Math.min(parseInt(document.getElementById('winSizeSlider').value)||WIN_SIZE,N);
+  const pct=parseInt(document.getElementById('winScrub').value)/100;
+  const maxStart=Math.max(0,N-winDays);
+  const startIdx=Math.round(pct*maxStart);
+  const endIdx=Math.min(startIdx+winDays-1,N-1);
+  for(let i=0;i<N;i++)windowFiltered[i]=(i<startIdx||i>endIdx)?1:0;
+  const s=DATA[startIdx]?.date||'', e=DATA[endIdx]?.date||'';
+  document.getElementById('winFrom').value=s;
+  document.getElementById('winTo').value=e;
+  document.getElementById('winRange').textContent=s+' → '+e;
+  document.getElementById('winSizeVal').textContent=winDays+'d';
+  // Scrub label: Early / Mid / Latest
+  const scrubPct=parseInt(document.getElementById('winScrub').value);
+  document.getElementById('winScrubVal').textContent=
+    scrubPct>=95?'Latest':scrubPct<=5?'Earliest':`${s.slice(5)}`;
+  updateWinLabel();updateFilterCount();updateCandleFilter();
+}
+
+// Slider listeners
+document.getElementById('winSizeSlider').addEventListener('input',()=>{
+  WIN_SIZE=parseInt(document.getElementById('winSizeSlider').value);
+  // Clear preset highlight since user is dragging custom value
+  ['wbAll','wb7','wb14','wb30','wb60','wb90'].forEach(id=>{
+    const b=document.getElementById(id);if(b)b.classList.remove('on');
+  });
+  applyTwoSliderWindow();
+});
+document.getElementById('winScrub').addEventListener('input',applyTwoSliderWindow);
+
+// applyDateWindowFilter kept as alias for any legacy calls
+function applyDateWindowFilter(){ applyTwoSliderWindow(); }
+function setWinPreset(days){ setWinSize(days); }
 
 function updateStats(){
   const closes=DATA.map(d=>d.close);
@@ -1764,6 +3242,36 @@ function updateStats(){
   document.getElementById('sBear').textContent=N-bull;
   document.getElementById('sRange').textContent='$'+Math.min(...closes).toFixed(0)+'–$'+Math.max(...closes).toFixed(0);
   document.getElementById('sVol').textContent=avgVol>1e6?(avgVol/1e6).toFixed(1)+'M':(avgVol/1e3).toFixed(0)+'K';
+}
+
+function updateDivCount(){
+  const block=document.getElementById('sDivBlock');
+  const el=document.getElementById('sDiv');
+  if(!NEWS_LOADED||!KEYWORDS.length||!N){block.style.display='none';return;}
+  const count=Array.from({length:N},(_,i)=>anomaly[i]).filter(Boolean).length;
+  block.style.display='';
+  el.textContent=count;
+  // Green = market ignoring bad news (price up despite bearish sentiment = potential buy signal)
+  // Red = market ignoring good news (price down despite bullish sentiment = potential sell signal)
+  if(OVERALL_NEWS_SENT<-0.08)el.style.color='var(--g)';
+  else if(OVERALL_NEWS_SENT>0.08)el.style.color='var(--r)';
+  else el.style.color='var(--gold)';
+}
+
+let _regimePanelCollapsed = false;
+function toggleRegimePanel(){
+  _regimePanelCollapsed = !_regimePanelCollapsed;
+  const body = document.getElementById('roPanelBody');
+  const btn  = document.getElementById('roPanelToggle');
+  if(_regimePanelCollapsed){
+    body.style.display='none';
+    btn.textContent='◈ SHOW';
+    btn.title='Show panel';
+  } else {
+    body.style.display='';
+    btn.textContent='✕';
+    btn.title='Hide panel';
+  }
 }
 
 function updateUI(){
@@ -1796,11 +3304,11 @@ document.getElementById('mb3').addEventListener('click',()=>goMode(3));
 document.getElementById('mb4').addEventListener('click',()=>goMode(4));
 
 // ── AUTO LOAD + WARMUP ──
-// Compute today's date and 1W ago
+// Compute today's date and 3M ago
 (function(){
   const now=new Date();
   const fmt=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  const from=new Date(now);from.setDate(now.getDate()-7);
+  const from=new Date(now);from.setMonth(now.getMonth()-3);
   const fromStr=fmt(from),toStr=fmt(now);
   // Pre-fill the inputs so the UI reflects what will load
   document.getElementById('fromIn').value=fromStr;
@@ -1841,37 +3349,43 @@ function updateWinLabel(){
   if(el)el.textContent=vis+' / '+N;
 }
 
-function applyWindowFilter(){
-  if(!N)return;
-  const size=parseInt(document.getElementById('winSize').value);
-  const scrubRow=document.getElementById('winScrubRow');
-  if(size===0){
-    for(let i=0;i<N;i++)windowFiltered[i]=0;
-    if(scrubRow)scrubRow.style.display='none';
-    document.getElementById('winRange').textContent='';
-    updateWinLabel();updateFilterCount();updateCandleFilter();return;
-  }
-  if(scrubRow)scrubRow.style.display='flex';
-  const winSz=Math.min(size,N);
-  const maxStart=Math.max(0,N-winSz);
-  const pct=parseInt(document.getElementById('winScrub').value)/100;
-  const startIdx=Math.round(pct*maxStart);
-  const endIdx=Math.min(startIdx+winSz-1,N-1);
-  for(let i=0;i<N;i++){windowFiltered[i]=(i<startIdx||i>endIdx)?1:0;}
-  const s=DATA[startIdx]?.date||'';const e=DATA[endIdx]?.date||'';
-  document.getElementById('winRange').textContent=s.slice(5)+' – '+e.slice(5);
-  updateWinLabel();updateFilterCount();updateCandleFilter();
-}
-
-document.getElementById('winSize').addEventListener('change',function(){
-  document.getElementById('winScrub').value='0';applyWindowFilter();
-});
-document.getElementById('winScrub').addEventListener('input',applyWindowFilter);
+// applyWindowFilter is now applyDateWindowFilter (uses winFrom/winTo inputs)
 
 // ── BACKTEST ENGINE ──
 document.getElementById('btToggle').addEventListener('click',()=>{
   const body=document.getElementById('btBody');const icon=document.getElementById('btIcon');
   const open=body.classList.toggle('open');icon.classList.toggle('open',open);
+});
+
+// ── COLLAPSIBLE: Regime Signal (starts closed) ──────────────────────────────────
+(()=>{
+  const body=document.getElementById('kwBody');
+  const icon=document.getElementById('kwIcon');
+  if(body)body.classList.remove('open');
+  if(icon)icon.classList.remove('open');
+})();
+document.getElementById('kwToggle').addEventListener('click',()=>{
+  const body=document.getElementById('kwBody'),icon=document.getElementById('kwIcon');
+  const open=body.classList.toggle('open');icon.classList.toggle('open',open);
+});
+
+// ── COLLAPSIBLE: Signal Filter ────────────────────────────────────────────────
+document.getElementById('nfToggle').addEventListener('click',()=>{
+  const body=document.getElementById('nfBody'),icon=document.getElementById('nfIcon');
+  const open=body.classList.toggle('open');icon.classList.toggle('open',open);
+});
+
+// ── COLLAPSIBLE: Price Oracle ─────────────────────────────────────────────────
+document.getElementById('tpToggle').addEventListener('click',()=>{
+  const body=document.getElementById('tpBody'),icon=document.getElementById('tpIcon');
+  const open=body.classList.toggle('open');icon.classList.toggle('open',open);
+});
+
+// ── LOOKBACK INPUT (in dates block) ──────────────────────────────────────────
+document.getElementById('priceWinInput').addEventListener('change',function(){
+  const val=Math.max(5,Math.min(252,parseInt(this.value)||20));
+  this.value=val; REGIME_WINDOW=val;
+  if(N>0){computeRegimeAnalogues();computeRegimePositions();applyRegimeColors();if(state==='news')updateRegimeOverlay();}
 });
 
 // Update liquidation note when leverage changes
@@ -1887,6 +3401,19 @@ document.getElementById('btLeverage').addEventListener('input',function(){
 
 document.getElementById('btRun').addEventListener('click',runBacktest);
 
+// ── DATE WINDOW + LOOKBACK COLLAPSE TOGGLES ──
+let _winBlockOpen=true, _lookbackOpen=true;
+function toggleWinBlock(){
+  _winBlockOpen=!_winBlockOpen;
+  document.getElementById('winBlockBody').style.display=_winBlockOpen?'':'none';
+  document.getElementById('winBlockIcon').textContent=_winBlockOpen?'▾':'▸';
+}
+function toggleLookback(){
+  _lookbackOpen=!_lookbackOpen;
+  document.getElementById('lookbackBody').style.display=_lookbackOpen?'':'none';
+  document.getElementById('lookbackIcon').textContent=_lookbackOpen?'▾':'▸';
+}
+
 // ── BACKTEST DATE PICK MODE ──
 // 0=off, 1=waiting for entry click, 2=waiting for exit click
 let btPickMode=0;
@@ -1896,10 +3423,10 @@ const btPickHint=document.getElementById('btPickHint');
 btPickBtn.addEventListener('click',()=>{
   if(btPickMode!==0){btPickMode=0;btPickBtn.classList.remove('picking');btPickHint.textContent='';return;}
   if(!N||!DATA.length){showErr('Load data first');return;}
-  if(state!=='line'&&state!=='linedraw'&&state!=='ohlc'){showErr('Switch to Line or OHLC mode first');return;}
+  if(state!=='line'&&state!=='linedraw'&&state!=='ohlc'&&state!=='news'){showErr('Switch to Line, OHLC, or Regime mode first');return;}
   btPickMode=1;
   btPickBtn.classList.add('picking');
-  btPickHint.textContent='Click a node for ENTRY date…';
+  btPickHint.textContent='Click a star for ENTRY date…';
 });
 
 // Called from checkHover click path — returns true if it consumed the click
@@ -1909,7 +3436,7 @@ function btPickClick(dataIdx){
   if(btPickMode===1){
     document.getElementById('btFrom').value=d.date;
     btPickMode=2;
-    btPickHint.textContent='Now click EXIT date node…';
+    btPickHint.textContent='Now click EXIT date…';
     flashBtHighlight(dataIdx,dataIdx);
     return true;
   }
@@ -1923,7 +3450,7 @@ function btPickClick(dataIdx){
     document.getElementById('btTo').value=DATA[exitIdx].date;
     btPickMode=0;
     btPickBtn.classList.remove('picking');
-    btPickHint.textContent='✓ '+DATA[entryIdx].date+' → '+DATA[exitIdx].date;
+    btPickHint.textContent='✓ '+fmtDate(DATA[entryIdx].date)+' → '+fmtDate(DATA[exitIdx].date);
     flashBtHighlight(entryIdx,exitIdx);
     return true;
   }
@@ -1974,8 +3501,8 @@ function runBacktest(){
 
   const el=document.getElementById('btResult');
   el.innerHTML=`
-    <div class="bt-stat"><span class="bt-stat-l">Entry</span><span class="bt-stat-v" style="color:var(--muted)">$${entry.toFixed(2)} <span style="font-size:9px;color:rgba(255,255,255,0.2)">${DATA[startIdx].date}</span></span></div>
-    <div class="bt-stat"><span class="bt-stat-l">Exit</span><span class="bt-stat-v" style="color:var(--muted)">$${exit.toFixed(2)} <span style="font-size:9px;color:rgba(255,255,255,0.2)">${DATA[endIdx].date}</span></span></div>
+    <div class="bt-stat"><span class="bt-stat-l">Entry</span><span class="bt-stat-v" style="color:var(--muted)">$${entry.toFixed(2)} <span style="font-size:9px;color:rgba(255,255,255,0.2)">${fmtDate(DATA[startIdx].date)}</span></span></div>
+    <div class="bt-stat"><span class="bt-stat-l">Exit</span><span class="bt-stat-v" style="color:var(--muted)">$${exit.toFixed(2)} <span style="font-size:9px;color:rgba(255,255,255,0.2)">${fmtDate(DATA[endIdx].date)}</span></span></div>
     <div class="bt-stat"><span class="bt-stat-l">Hold</span><span class="bt-stat-v" style="color:var(--muted)">${holdDays}d</span></div>
     <div class="bt-divider"></div>
     <div class="bt-stat"><span class="bt-stat-l">Return ${lev}×</span><span class="bt-stat-v" style="color:${pnlCol}">${retStr}</span></div>
@@ -2007,14 +3534,23 @@ function applyNoiseFilter(){
   if(!N)return;
   const metric=document.getElementById('nfMetric').value;
   const pct=parseInt(document.getElementById('nfSlider').value)/100;
-  const maxVol=Math.max(...DATA.map(d=>d.volume))||1;
-  const maxRet=Math.max(...DATA.map(d=>Math.abs(d.dailyReturn)))||1;
-  DATA.forEach((d,i)=>{
-    let v;
-    if(metric==='volume')v=d.volume/maxVol;
-    else v=Math.abs(d.dailyReturn)/maxRet;
-    particleFiltered[i]=(v<pct)?1:0;
+  const vals=DATA.map(d=>{
+    if(metric==='close_asc')  return d.close;
+    if(metric==='close_desc') return -d.close;
+    if(metric==='volume')     return d.volume;
+    if(metric==='return')     return Math.abs(d.dailyReturn);
+    return d.close;
   });
+  // Rank-based: hide bottom pct by rank
+  const sorted=[...vals].sort((a,b)=>a-b);
+  const cutoff=sorted[Math.floor(pct*sorted.length)]??-Infinity;
+  DATA.forEach((d,i)=>{particleFiltered[i]=(vals[i]<cutoff)?1:0;});
+  const hidden=DATA.reduce((s,_,i)=>s+particleFiltered[i],0);
+  const desc=document.getElementById('nfDesc');
+  if(desc){
+    const labels={'close_asc':`Hiding ${hidden} lowest-close days`,'close_desc':`Hiding ${hidden} highest-close days`,'volume':`Hiding ${hidden} lowest-volume days`,'return':`Hiding ${hidden} smallest-move days`};
+    desc.textContent=pct===0?'Drag to hide bottom X% of days by this metric':(labels[metric]||'');
+  }
   updateFilterCount();updateCandleFilter();
 }
 
@@ -2038,7 +3574,7 @@ function applyConditionFilter(){
     if(meets)shown++;
   });
   updateFilterCount();updateCandleFilter();
-  if(shown===0)showErr('No days match — try a different value');
+  if(shown===0)showErr('No days match - try a different value');
 }
 
 function clearNoiseFilter(){
@@ -2054,15 +3590,37 @@ document.getElementById('nfSlider').addEventListener('input',function(){
 });
 document.getElementById('nfMetric').addEventListener('change',applyNoiseFilter);
 document.getElementById('nfClear').addEventListener('click',clearNoiseFilter);
+document.getElementById('tpRun').addEventListener('click',()=>runTargetOracle(null));
 
-// ── TARGET PRICE ORACLE ──
-document.getElementById('tpRun').addEventListener('click', runTargetOracle);
 
-function runTargetOracle(){
+
+// Show/update sentiment sliderwhen keywords are loaded
+function updateOracleSentSlider(){
+  const block=document.getElementById('tpSentSliderBlock');
+  if(!block)return;
+  if(NEWS_LOADED&&KEYWORDS.length){
+    block.style.display='block';
+    const totalArt=KEYWORDS.reduce((s,k)=>s+(k.count||1),0)||1;
+    const cur=KEYWORDS.reduce((s,k)=>s+(k.sentiment*(k.count||1)),0)/totalArt;
+    const v=Math.round(cur*100);
+    document.getElementById('tpSentSlider').value=v;
+    document.getElementById('tpSentSliderVal').textContent=(cur>=0?'+':'')+cur.toFixed(2);
+  }else{
+    block.style.display='none';
+  }
+}
+
+document.getElementById('tpSentSlider').addEventListener('input',function(){
+  const v=parseFloat(this.value)/100;
+  document.getElementById('tpSentSliderVal').textContent=(v>=0?'+':'')+v.toFixed(2);
+  // If oracle result is shown, rerun with hypothetical sentiment
+  if(document.getElementById('tpResult').classList.contains('on'))runTargetOracle(v);
+});
+
+function runTargetOracle(hypoSentOverride){
   if(!N||!DATA.length){showErr('Load data first');return;}
-  const targetPrice=parseFloat(document.getElementById('tpPrice').value);
+  const hypoSent=(typeof hypoSentOverride==='number')?hypoSentOverride:null;
   const targetDateStr=document.getElementById('tpDate').value.trim();
-  if(isNaN(targetPrice)||targetPrice<=0){showErr('Enter a valid target price');return;}
   if(!targetDateStr){showErr('Enter a target date');return;}
 
   const targetDate=new Date(targetDateStr+'T00:00:00');
@@ -2070,112 +3628,205 @@ function runTargetOracle(){
   if(targetDate<=lastDate){showErr('Target date must be after the last loaded date');return;}
 
   const currentPrice=DATA[N-1].close;
-  const requiredMove=(targetPrice-currentPrice)/currentPrice; // e.g. +0.12 = needs 12% gain
-
   const daysRemaining=Math.round((targetDate-lastDate)/(1000*86400));
   const tradingDaysEst=Math.max(1,Math.round(daysRemaining*5/7));
 
-  // Required daily return to reach target (compounded)
-  const reqDailyReturn=Math.pow(targetPrice/currentPrice,1/tradingDaysEst)-1;
-
-  // ── SENTIMENT MODEL ──
-  // "Avg Sentiment Now" = average of loaded keyword sentiments (−1 to +1 scale)
-  // "Required Sentiment" = what keyword sentiment would need to be to drive that daily return
-  // We build an OLS regression: dailyReturn_i = k * kwSentiment_i + c
-  // Using particle→keyword assignments from NEWS gravity
-
-  let avgKwSentNow=0;
-  let hasKeywords=NEWS_LOADED&&KEYWORDS.length>0;
-
+  // Current sentiment (weighted avg of keywords)
+  const hasKeywords=NEWS_LOADED&&KEYWORDS.length>0;
+  let currentSent=0;
   if(hasKeywords){
-    // Weighted average of keyword sentiments (weighted by article count)
     const totalArt=KEYWORDS.reduce((s,k)=>s+(k.count||1),0)||1;
-    avgKwSentNow=KEYWORDS.reduce((s,k)=>s+(k.sentiment*(k.count||1)),0)/totalArt;
+    currentSent=KEYWORDS.reduce((s,k)=>s+(k.sentiment*(k.count||1)),0)/totalArt;
   }
+  // Target sentiment from slider, or current if no keywords
+  const targetSent=hypoSent!=null?hypoSent:currentSent;
 
-  // Build regression only if we have keyword↔particle mappings
-  let k_slope=null,c_intercept=0;
-  if(hasKeywords&&N>3){
-    // For each particle, get its assigned keyword sentiment and daily return
+  // Build OLS regression: dailyReturn = slope * dailySentiment + intercept
+  // Use DAILY_SENT_MAP[date].sentiment (per-day value from trend API) as x — gives real variance.
+  // Keyword aggregate (same value for every day in a cluster) kills the slope → slider does nothing.
+  const hasDailySent=Object.keys(DAILY_SENT_MAP).length>0;
+  let slope=null,intercept=0,residualStd=0,nPairs=0;
+  if(N>3){
     let sumX=0,sumY=0,sumXX=0,sumXY=0,cnt=0;
     DATA.forEach((d,i)=>{
       if(isExiled(i))return;
-      const ki=particleNode[i];
-      if(ki<0||ki>=KEYWORDS.length)return;
-      const x=KEYWORDS[ki].sentiment; // keyword sent [−1,1]
-      const y=d.dailyReturn;          // close-to-close return
+      let x;
+      if(hasDailySent&&DAILY_SENT_MAP[d.date]){
+        x=DAILY_SENT_MAP[d.date].sentiment;
+      }else if(hasKeywords){
+        const ki=particleNode[i];
+        if(ki<0||ki>=KEYWORDS.length)return;
+        x=KEYWORDS[ki].sentiment;
+      }else return;
+      const y=d.dailyReturn;
       sumX+=x;sumY+=y;sumXX+=x*x;sumXY+=x*y;cnt++;
     });
     if(cnt>2){
       const denom=cnt*sumXX-sumX*sumX;
       if(Math.abs(denom)>1e-10){
-        k_slope=(cnt*sumXY-sumX*sumY)/denom;
-        c_intercept=(sumY-k_slope*sumX)/cnt;
+        slope=(cnt*sumXY-sumX*sumY)/denom;
+        intercept=(sumY-slope*sumX)/cnt;
+        let sumR2=0;
+        DATA.forEach((d,i)=>{
+          if(isExiled(i))return;
+          let x;
+          if(hasDailySent&&DAILY_SENT_MAP[d.date])x=DAILY_SENT_MAP[d.date].sentiment;
+          else if(hasKeywords){const ki=particleNode[i];if(ki<0||ki>=KEYWORDS.length)return;x=KEYWORDS[ki].sentiment;}
+          else return;
+          const pred=slope*x+intercept;
+          sumR2+=(d.dailyReturn-pred)**2;
+        });
+        residualStd=Math.sqrt(sumR2/Math.max(cnt-2,1));
+        nPairs=cnt;
       }
     }
   }
 
-  // Required keyword sentiment to produce reqDailyReturn
-  // reqDailyReturn = k_slope * reqSent + c_intercept → reqSent = (reqDailyReturn - c) / k
-  let reqKwSent=null,sentDelta=null;
-  if(k_slope!==null&&Math.abs(k_slope)>1e-6){
-    reqKwSent=(reqDailyReturn-c_intercept)/k_slope;
-    reqKwSent=Math.max(-1,Math.min(1,reqKwSent)); // clamp to valid sentiment range
-    sentDelta=reqKwSent-avgKwSentNow;
+  // Project cumulative return: sentiment linearly interpolates currentSent → targetSent
+  let projReturn=0,projReturnLow=0,projReturnHigh=0;
+  if(slope!==null){
+    for(let t=1;t<=tradingDaysEst;t++){
+      const progress=t/tradingDaysEst;
+      const interpSent=currentSent+(targetSent-currentSent)*progress;
+      const daily=slope*interpSent+intercept;
+      projReturn+=daily;
+      projReturnLow+=daily-residualStd;
+      projReturnHigh+=daily+residualStd;
+    }
+  }else{
+    // No regression: use historical mean
+    const avgReturn=DATA.reduce((s,d)=>s+d.dailyReturn,0)/N;
+    projReturn=avgReturn*tradingDaysEst;
+    projReturnLow=projReturn;projReturnHigh=projReturn;
   }
 
-  // Classify difficulty
-  const absDelta=sentDelta!==null?Math.abs(sentDelta):null;
-  let difficultyLabel,difficultyCol;
-  if(absDelta===null){difficultyLabel='Load keywords for delta';difficultyCol='var(--muted)';}
-  else if(absDelta<0.05){difficultyLabel='Marginal shift';difficultyCol='#44ffaa';}
-  else if(absDelta<0.15){difficultyLabel='Moderate shift';difficultyCol='var(--gold)';}
-  else if(absDelta<0.35){difficultyLabel='Significant shift';difficultyCol='#ff7755';}
-  else if(absDelta<0.6){difficultyLabel='Major shift';difficultyCol='var(--r)';}
-  else{difficultyLabel='Extreme / unlikely';difficultyCol='var(--r)';}
+  const projPrice=currentPrice*(1+projReturn);
+  const projLow=slope!==null?currentPrice*(1+projReturnLow):null;
+  const projHigh=slope!==null?currentPrice*(1+projReturnHigh):null;
+  const priceCol=projPrice>=currentPrice?'var(--g)':'var(--r)';
+  const moveDir=projPrice>=currentPrice?'▲':'▼';
+  const movePct=(projPrice-currentPrice)/currentPrice*100;
+  const movePctStr=(movePct>=0?'+':'')+movePct.toFixed(2)+'%';
 
-  const moveCol=requiredMove>=0?'var(--g)':'var(--r)';
-  const movStr=(requiredMove*100>=0?'+':'')+(requiredMove*100).toFixed(2)+'%';
+  // Pearson r context
+  const rAbs=PEARSON_R!==null?Math.abs(PEARSON_R):null;
+  let rLabel='No correlation data',rCol='var(--muted)';
+  if(rAbs!==null){
+    if(rAbs>0.5){rLabel='Strong signal';rCol='var(--g)';}
+    else if(rAbs>0.25){rLabel='Moderate signal';rCol='var(--gold)';}
+    else if(rAbs>0.1){rLabel='Weak signal';rCol='#ff7755';}
+    else{rLabel='Negligible signal - wide range';rCol='var(--r)';}
+  }
+  const rDisp=PEARSON_R!==null?`r=${PEARSON_R>=0?'+':''}${PEARSON_R.toFixed(2)}, n=${nPairs||N} days`:'Load keywords for regression';
 
-  // Needle positions: map [−1,+1] → [0%,100%]
-  const toNeedle=v=>Math.max(0,Math.min(100,(v+1)/2*100));
-  const nowNeedlePct=toNeedle(avgKwSentNow);
-  const reqNeedlePct=reqKwSent!==null?toNeedle(reqKwSent):50;
-  const dirCol=sentDelta!==null?(sentDelta>=0?'var(--g)':'var(--r)'):'var(--muted)';
-  const arrow=sentDelta!==null?(sentDelta>=0?'▲':'▼'):'◆';
-
-  // Sentiment rows — only show if keywords are loaded
   const sentRows=hasKeywords?`
     <div class="tp-divider"></div>
-    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">News Sent Now</span><span class="bt-stat-v" style="color:var(--muted);font-size:12px">${avgKwSentNow>=0?'+':''}${avgKwSentNow.toFixed(3)}</span></div>
-    ${reqKwSent!==null?`<div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">Required Sent</span><span class="bt-stat-v" style="color:${dirCol};font-size:12px">${reqKwSent>=0?'+':''}${reqKwSent.toFixed(3)}</span></div>
-    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">Delta Needed</span><span class="bt-stat-v" style="color:${dirCol};font-size:12px">${sentDelta>=0?'+':''}${sentDelta.toFixed(3)}</span></div>
+    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">Current Sent</span><span class="bt-stat-v" style="color:var(--muted);font-size:12px">${currentSent>=0?'+':''}${currentSent.toFixed(3)}</span></div>
+    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--gold)">Hypo Sent</span><span class="bt-stat-v" style="color:var(--gold);font-size:12px">${targetSent>=0?'+':''}${targetSent.toFixed(3)}</span></div>
+  `:`<div class="tp-divider"></div><div class="tp-verdict" style="color:rgba(255,255,255,0.25)">Load Regime Signal keywords to improve projection accuracy.</div>`;
+
+  const rangeRow=projLow!==null?`
     <div class="tp-divider"></div>
-    <div style="font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.22);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:5px">Keyword Sentiment Scale</div>
-    <div class="tp-sent-bar">
-      <div class="tp-sent-needle" style="left:${nowNeedlePct}%;background:var(--text)"></div>
-      <div class="tp-sent-needle" style="left:${reqNeedlePct}%;background:${dirCol}"></div>
-    </div>
-    <div class="tp-sent-labels"><span>−1 Bear</span><span>0</span><span>+1 Bull</span></div>
-    <div class="tp-verdict">
-      News keyword sentiment must shift <b style="color:${dirCol}">${arrow} ${sentDelta>=0?'+':''}${sentDelta.toFixed(3)}</b> (from <b style="color:var(--muted)">${avgKwSentNow>=0?'+':''}${avgKwSentNow.toFixed(3)}</b> to <b style="color:${dirCol}">${reqKwSent>=0?'+':''}${reqKwSent.toFixed(3)}</b>) to reach <b style="color:var(--gold)">$${targetPrice.toFixed(2)}</b> by <b style="color:var(--text)">${targetDateStr}</b>.<br><br>
-      Difficulty: <b style="color:${difficultyCol}">${difficultyLabel}</b>
-    </div>`:'<div class="tp-verdict" style="color:rgba(255,255,255,0.25)">Delta requires keywords — pull News Gravity first.</div>'}
-  `:`<div class="tp-divider"></div><div class="tp-verdict" style="color:rgba(255,255,255,0.25)">Pull News Gravity keywords to see sentiment delta.</div>`;
+    <div style="font-family:var(--fd);font-size:8px;color:rgba(255,255,255,0.22);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px">Projection Range (±1σ/day)</div>
+    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:rgba(255,255,255,0.3)">Low</span><span class="bt-stat-v" style="color:var(--r);font-size:11px">$${projLow.toFixed(2)}</span></div>
+    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:rgba(255,255,255,0.3)">High</span><span class="bt-stat-v" style="color:var(--g);font-size:11px">$${projHigh.toFixed(2)}</span></div>
+  `:'';
 
   const el=document.getElementById('tpResult');
   el.innerHTML=`
     <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">Current</span><span class="bt-stat-v" style="color:var(--muted);font-size:12px">$${currentPrice.toFixed(2)}</span></div>
-    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">Target</span><span class="bt-stat-v" style="color:var(--gold);font-size:12px">$${targetPrice.toFixed(2)}</span></div>
-    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">Move Needed</span><span class="bt-stat-v" style="color:${moveCol};font-size:12px">${movStr}</span></div>
+    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">By</span><span class="bt-stat-v" style="color:var(--muted);font-size:10px">${targetDateStr}</span></div>
+    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">~Trade Days</span><span class="bt-stat-v" style="color:var(--muted);font-size:12px">${tradingDaysEst}d</span></div>
     <div class="tp-divider"></div>
-    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">Cal. Days</span><span class="bt-stat-v" style="color:var(--muted);font-size:12px">${daysRemaining}d</span></div>
-    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">~Trading Days</span><span class="bt-stat-v" style="color:var(--muted);font-size:12px">${tradingDaysEst}d</span></div>
-    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">Daily Req.</span><span class="bt-stat-v" style="color:${moveCol};font-size:12px">${reqDailyReturn>=0?'+':''}${(reqDailyReturn*100).toFixed(3)}%/d</span></div>
+    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:${priceCol};font-weight:700">Proj. Price</span><span class="bt-stat-v" style="color:${priceCol};font-size:16px;font-weight:700">$${projPrice.toFixed(2)}</span></div>
+    <div class="bt-stat"><span class="bt-stat-l" style="font-size:9px;color:var(--muted)">Move</span><span class="bt-stat-v" style="color:${priceCol};font-size:12px">${moveDir} ${movePctStr}</span></div>
+    ${rangeRow}
     ${sentRows}
+    <div class="tp-divider"></div>
+    <div class="tp-verdict" style="color:${rCol};font-size:9px">${rDisp} - ${rLabel}</div>
+    ${hasKeywords?`<div class="tp-verdict" style="margin-top:5px">If <b>${document.getElementById('kw0').value.trim()||'news'}</b> sentiment trends to <b style="color:var(--gold)">${targetSent>=0?'+':''}${targetSent.toFixed(2)}</b> by <b>${targetDateStr}</b>, model projects <b style="color:${priceCol}">${moveDir} $${projPrice.toFixed(2)}</b>.</div>`:''}
   `;
   el.classList.add('on');
 }
+
+// ── AXIS GUIDE: month labels on X, price gridlines on Y (line + OHLC modes) ──
+function updateAxisGuide(){
+  const axisGuideEl = document.getElementById('axisGuide');
+  if(!axisGuideEl) return;
+  if(!N||!DATA.length){axisGuideEl.classList.remove('on');axisGuideEl.innerHTML='';return;}
+  if(state!=='line'&&state!=='linedraw'&&state!=='ohlc'){
+    axisGuideEl.classList.remove('on');axisGuideEl.innerHTML='';return;
+  }
+  axisGuideEl.classList.add('on');
+
+  const closes = DATA.map(d=>d.close);
+  const minP = Math.min(...closes), maxP = Math.max(...closes);
+  const priceRange = maxP-minP||1;
+  const panelW = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--panel-w'))||280;
+  const railW  = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--rail-w'))||120;
+  const topH   = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--topbar-h'))||52;
+  const statsH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--stats-h'))||56;
+  const usableH = innerHeight - topH - statsH;
+
+  // Project a 3D point to screen
+  const proj = new THREE.Vector3();
+  function to2D(x3,y3,z3){
+    proj.set(x3,y3,z3);
+    proj.project(camera);
+    return {x:(proj.x*0.5+0.5)*innerWidth, y:(-proj.y*0.5+0.5)*innerHeight};
+  }
+
+  let html = '';
+
+  // ── MONTH LABELS along the bottom ──
+  // Group particles by month, find first particle of each month
+  let lastMonth = '';
+  const monthTicks = [];
+  DATA.forEach((d,i)=>{
+    if(isExiled(i)) return;
+    const m = d.date.slice(0,7); // "2024-03"
+    if(m !== lastMonth){
+      lastMonth = m;
+      const px3 = lineP[i*3], py3 = lineP[i*3+1];
+      const sc = to2D(px3, py3, 0);
+      if(sc.x > panelW && sc.x < innerWidth - railW) monthTicks.push({m, sx:sc.x, sy:sc.y});
+    }
+  });
+
+  // Bottom of chart area (above stats bar)
+  const labelY = innerHeight - statsH - 22;
+  const tickTop = innerHeight - statsH - 32;
+  const tickBot = innerHeight - statsH - 4;
+
+  monthTicks.forEach(({m, sx})=>{
+    const parts = m.split('-');
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const mLabel = monthNames[parseInt(parts[1])-1] + ' ' + parts[0].slice(2);
+    html += `<div class="ax-month-tick" style="left:${sx}px;top:${tickTop}px;height:${tickBot-tickTop}px"></div>`;
+    html += `<div class="ax-month-label" style="left:${sx}px;top:${labelY}px">${mLabel}</div>`;
+  });
+
+  // ── PRICE GRIDLINES on Y ──
+  // 5 evenly spaced price levels between min and max
+  const nLines = 5;
+  for(let k=0;k<=nLines;k++){
+    const frac = k/nLines;
+    const price = minP + frac*priceRange;
+    // Find the 3D Y position for this price level
+    const y3 = frac*11-5.5; // same mapping as lineP: norm(close,mn,mx)*11-5.5
+    const sc = to2D(0, y3, 0);
+    const sy = sc.y;
+    if(sy < topH || sy > innerHeight - statsH) continue;
+    // Horizontal price line
+    html += `<div class="ax-price-line" style="top:${sy}px"></div>`;
+    // Price label on right side (before the mode rail)
+    const priceStr = price >= 1000 ? '$'+price.toFixed(0) : '$'+price.toFixed(2);
+    html += `<div class="ax-price-label" style="right:${railW+6}px;top:${sy}px">${priceStr}</div>`;
+  }
+
+  axisGuideEl.innerHTML = html;
+}
+
 
 </script>
 </body>
